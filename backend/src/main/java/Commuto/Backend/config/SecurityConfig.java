@@ -3,6 +3,7 @@ package Commuto.Backend.config;
 import Commuto.Backend.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -10,48 +11,61 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter) {
+
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
+
+    // =========================
+    // PASSWORD ENCODER
+    // =========================
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // =========================
+    // SECURITY FILTER CHAIN
+    // =========================
+
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http) throws Exception {
 
         http
-                // JWT ke saath CSRF ki zarurat nahi
+
+                // Disable CSRF because we are using JWT
                 .csrf(csrf -> csrf.disable())
 
-                // Session ki jagah JWT use karenge
+                // JWT authentication is stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
+                // API authorization rules
                 .authorizeHttpRequests(auth -> auth
 
-                        // Login/Register public
+                        // Public APIs
                         .requestMatchers(
-                                "/api/auth/**"
+                                "/api/auth/register",
+                                "/api/auth/login"
                         ).permitAll()
 
-                        // Baaki requests ab authenticated hongi
+                        // Every other API requires authentication
                         .anyRequest().authenticated()
                 )
 
-                // JWT filter ko Spring Security ke
-                // username/password filter se pehle run karo
+                // JWT filter runs before Spring's
+                // username/password authentication filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
