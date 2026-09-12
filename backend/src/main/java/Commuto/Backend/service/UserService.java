@@ -5,6 +5,7 @@ import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import Commuto.Backend.dto.UpdateProfileRequest;
 
 @Service
 public class UserService {
@@ -61,5 +62,16 @@ public class UserService {
         }
 
         return user;
+
+
+    }
+    public User updateProfile(
+            User user,
+            UpdateProfileRequest request) {
+
+        user.setFullName(request.getFullName());
+        user.setPhone(request.getPhone());
+
+        return userRepository.save(user);
     }
 }
