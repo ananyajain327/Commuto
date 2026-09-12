@@ -1,5 +1,5 @@
 package Commuto.Backend.service;
-
+import Commuto.Backend.dto.SearchRideRequest;
 import Commuto.Backend.dto.CreateRideRequest;
 import Commuto.Backend.entity.Ride;
 import Commuto.Backend.entity.User;
@@ -53,5 +53,22 @@ public class RideService {
     public Ride getRideById(Long id) {
         return rideRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
+    }
+    public List<Ride> searchRides(SearchRideRequest request) {
+
+        if (request.getRideDate() != null) {
+            return rideRepository
+                    .findByStartLocationIgnoreCaseAndDestinationIgnoreCaseAndRideDate(
+                            request.getStartLocation(),
+                            request.getDestination(),
+                            request.getRideDate()
+                    );
+        }
+
+        return rideRepository
+                .findByStartLocationIgnoreCaseAndDestinationIgnoreCase(
+                        request.getStartLocation(),
+                        request.getDestination()
+                );
     }
 }

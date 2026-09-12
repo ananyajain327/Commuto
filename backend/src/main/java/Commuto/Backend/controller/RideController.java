@@ -2,6 +2,7 @@ package Commuto.Backend.controller;
 
 import Commuto.Backend.dto.CreateRideRequest;
 import Commuto.Backend.dto.RideResponse;
+import Commuto.Backend.dto.SearchRideRequest;
 import Commuto.Backend.entity.Ride;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.service.RideService;
@@ -25,6 +26,10 @@ public class RideController {
         this.rideService = rideService;
     }
 
+    // =========================
+    // CREATE RIDE
+    // =========================
+
     @PostMapping
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<RideResponse> createRide(
@@ -39,6 +44,10 @@ public class RideController {
                 .status(HttpStatus.CREATED)
                 .body(new RideResponse(ride));
     }
+
+    // =========================
+    // GET MY RIDES
+    // =========================
 
     @GetMapping("/my-rides")
     @PreAuthorize("hasRole('DRIVER')")
@@ -55,6 +64,27 @@ public class RideController {
 
         return ResponseEntity.ok(rides);
     }
+
+    // =========================
+    // SEARCH RIDES
+    // =========================
+
+    @PostMapping("/search")
+    public ResponseEntity<List<RideResponse>> searchRides(
+            @Valid @RequestBody SearchRideRequest request) {
+
+        List<RideResponse> rides = rideService
+                .searchRides(request)
+                .stream()
+                .map(RideResponse::new)
+                .toList();
+
+        return ResponseEntity.ok(rides);
+    }
+
+    // =========================
+    // GET RIDE BY ID
+    // =========================
 
     @GetMapping("/{id}")
     public ResponseEntity<RideResponse> getRideById(
