@@ -2,15 +2,90 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Backend authentication will be connected here later.
-    console.log("Login submitted");
+    setError("");
+
+    if (!email.trim() || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      });
+
+      let data: any = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            data?.error ||
+            "Invalid email or password."
+        );
+      }
+
+      // Save JWT for protected API calls
+      localStorage.setItem("token", data.token);
+
+      // Save basic logged-in user information
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          userId: data.userId,
+          fullName: data.fullName,
+          email: data.email,
+          role: data.role,
+        })
+      );
+
+      // Redirect according to role
+      if (data.role === "DRIVER") {
+        router.push("/driver/dashboard");
+      } else if (data.role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -103,6 +178,7 @@ export default function LoginPage() {
 
               <div>
                 <p className="text-xl font-extrabold">Commuto</p>
+
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                   Smart Mobility
                 </p>
@@ -124,6 +200,13 @@ export default function LoginPage() {
               </p>
             </div>
 
+            {/* Error */}
+            {error && (
+              <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                ⚠️ {error}
+              </div>
+            )}
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="mt-9 space-y-5">
 
@@ -140,6 +223,8 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium outline-none transition placeholder:text-slate-400 focus:border-[#5b5ce2] focus:ring-4 focus:ring-indigo-100"
                 />
@@ -158,6 +243,9 @@ export default function LoginPage() {
                   <button
                     type="button"
                     className="text-xs font-bold text-[#5b5ce2] transition hover:text-[#4546c7]"
+                    onClick={() =>
+                      alert("Password recovery will be available soon.")
+                    }
                   >
                     Forgot password?
                   </button>
@@ -168,6 +256,8 @@ export default function LoginPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 pr-14 text-sm font-medium outline-none transition placeholder:text-slate-400 focus:border-[#5b5ce2] focus:ring-4 focus:ring-indigo-100"
                   />
@@ -176,7 +266,9 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-lg text-slate-400 transition hover:text-slate-700"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? "🙈" : "👁️"}
                   </button>
@@ -202,24 +294,34 @@ export default function LoginPage() {
               {/* Submit */}
               <button
                 type="submit"
-                className="h-14 w-full rounded-2xl bg-[#5b5ce2] text-sm font-extrabold text-white shadow-lg shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-[#4d4ecf] hover:shadow-xl"
+                disabled={loading}
+                className={`h-14 w-full rounded-2xl text-sm font-extrabold text-white shadow-lg transition ${
+                  loading
+                    ? "cursor-not-allowed bg-slate-400"
+                    : "bg-[#5b5ce2] shadow-indigo-200 hover:-translate-y-0.5 hover:bg-[#4d4ecf] hover:shadow-xl"
+                }`}
               >
-                Sign in →
+                {loading ? "Signing in..." : "Sign in →"}
               </button>
             </form>
 
             {/* Divider */}
             <div className="my-8 flex items-center gap-4">
               <div className="h-px flex-1 bg-slate-200" />
+
               <span className="text-xs font-semibold text-slate-400">
                 OR
               </span>
+
               <div className="h-px flex-1 bg-slate-200" />
             </div>
 
             {/* Google button */}
             <button
               type="button"
+              onClick={() =>
+                alert("Google login will be available soon.")
+              }
               className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
             >
               <span className="text-lg font-black">G</span>
@@ -270,7 +372,10 @@ function Feature({
 
       <div>
         <p className="text-sm font-bold text-white">{title}</p>
-        <p className="mt-1 text-xs text-slate-400">{description}</p>
+
+        <p className="mt-1 text-xs text-slate-400">
+          {description}
+        </p>
       </div>
     </div>
   );

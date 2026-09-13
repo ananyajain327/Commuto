@@ -1,9 +1,115 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CreateRidePage() {
+  const router = useRouter();
+
   const [womenOnly, setWomenOnly] = useState(false);
+
+  const [startLocation, setStartLocation] = useState("");
+  const [destination, setDestination] = useState("");
+  const [rideDate, setRideDate] = useState("");
+  const [departureTime, setDepartureTime] = useState("");
+  const [availableSeats, setAvailableSeats] = useState("1");
+  const [expectedFare, setExpectedFare] = useState("");
+  const [vehicleModel, setVehicleModel] = useState("");
+  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const handlePublishRide = async () => {
+    setMessage("");
+    setError("");
+
+    if (
+      !startLocation.trim() ||
+      !destination.trim() ||
+      !rideDate ||
+      !departureTime ||
+      !expectedFare ||
+      !vehicleModel.trim() ||
+      !vehicleNumber.trim()
+    ) {
+      setError("Please fill all required ride details.");
+      return;
+    }
+
+    if (Number(availableSeats) < 1 || Number(availableSeats) > 6) {
+      setError("Available seats must be between 1 and 6.");
+      return;
+    }
+
+    if (Number(expectedFare) <= 0) {
+      setError("Expected fare must be greater than 0.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("Please login as a driver before publishing a ride.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch("http://localhost:8080/api/rides", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          startLocation: startLocation.trim(),
+          destination: destination.trim(),
+          rideDate,
+          departureTime,
+          availableSeats: Number(availableSeats),
+          expectedFare: Number(expectedFare),
+          vehicleModel: vehicleModel.trim(),
+          vehicleNumber: vehicleNumber.trim(),
+          womenOnly,
+          notes: notes.trim(),
+        }),
+      });
+
+      let data: any = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            data?.error ||
+            "Failed to publish ride. Please try again."
+        );
+      }
+
+      setMessage("Ride published successfully! 🚗");
+
+      setTimeout(() => {
+        router.push("/rides");
+      }, 1200);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while publishing the ride."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -14,6 +120,7 @@ export default function CreateRidePage() {
             <div className="text-2xl font-bold tracking-tight">
               Commuto<span className="text-blue-600">.</span>
             </div>
+
             <p className="mt-1 text-sm text-slate-500">
               Share your journey with trusted co-passengers
             </p>
@@ -45,11 +152,26 @@ export default function CreateRidePage() {
           </p>
         </section>
 
+        {/* Success Message */}
+        {message && (
+          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-semibold text-green-700">
+            ✓ {message}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
+            ⚠ {error}
+          </div>
+        )}
+
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
           {/* Form */}
           <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
             <div className="mb-7">
               <h2 className="text-xl font-bold">Ride details</h2>
+
               <p className="mt-1 text-sm text-slate-500">
                 Enter the details of your upcoming journey.
               </p>
@@ -67,12 +189,16 @@ export default function CreateRidePage() {
                     label="Starting point"
                     icon="📍"
                     placeholder="e.g. Jaipur"
+                    value={startLocation}
+                    onChange={(e) => setStartLocation(e.target.value)}
                   />
 
                   <InputField
                     label="Destination"
                     icon="🎯"
                     placeholder="e.g. Ajmer"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
                   />
                 </div>
               </div>
@@ -88,12 +214,16 @@ export default function CreateRidePage() {
                     label="Travel date"
                     icon="📅"
                     type="date"
+                    value={rideDate}
+                    onChange={(e) => setRideDate(e.target.value)}
                   />
 
                   <InputField
                     label="Departure time"
                     icon="🕐"
                     type="time"
+                    value={departureTime}
+                    onChange={(e) => setDepartureTime(e.target.value)}
                   />
                 </div>
               </div>
@@ -110,11 +240,17 @@ export default function CreateRidePage() {
                       Available seats
                     </label>
 
-                    <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white">
-                      <option>1 Seat</option>
-                      <option>2 Seats</option>
-                      <option>3 Seats</option>
-                      <option>4 Seats</option>
+                    <select
+                      value={availableSeats}
+                      onChange={(e) => setAvailableSeats(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white"
+                    >
+                      <option value="1">1 Seat</option>
+                      <option value="2">2 Seats</option>
+                      <option value="3">3 Seats</option>
+                      <option value="4">4 Seats</option>
+                      <option value="5">5 Seats</option>
+                      <option value="6">6 Seats</option>
                     </select>
                   </div>
 
@@ -123,6 +259,8 @@ export default function CreateRidePage() {
                     icon="₹"
                     placeholder="e.g. 350"
                     type="number"
+                    value={expectedFare}
+                    onChange={(e) => setExpectedFare(e.target.value)}
                   />
                 </div>
               </div>
@@ -138,12 +276,16 @@ export default function CreateRidePage() {
                     label="Vehicle model"
                     icon="🚗"
                     placeholder="e.g. Hyundai Creta"
+                    value={vehicleModel}
+                    onChange={(e) => setVehicleModel(e.target.value)}
                   />
 
                   <InputField
                     label="Vehicle number"
                     icon="🔢"
                     placeholder="e.g. RJ14AB1234"
+                    value={vehicleNumber}
+                    onChange={(e) => setVehicleNumber(e.target.value)}
                   />
                 </div>
               </div>
@@ -168,6 +310,7 @@ export default function CreateRidePage() {
                       <p className="text-sm font-bold">
                         Women-only ride
                       </p>
+
                       <p className="mt-1 text-xs text-slate-500">
                         Only accept female passengers for this ride
                       </p>
@@ -196,14 +339,25 @@ export default function CreateRidePage() {
 
                 <textarea
                   rows={4}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add pickup instructions, luggage information, etc."
                   className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white"
                 />
               </div>
 
               {/* Publish */}
-              <button className="w-full rounded-xl bg-blue-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
-                🚀 Publish Ride
+              <button
+                type="button"
+                onClick={handlePublishRide}
+                disabled={loading}
+                className={`w-full rounded-xl px-6 py-4 text-sm font-bold text-white shadow-lg transition ${
+                  loading
+                    ? "cursor-not-allowed bg-slate-400"
+                    : "bg-blue-600 shadow-blue-600/20 hover:bg-blue-700"
+                }`}
+              >
+                {loading ? "Publishing Ride..." : "🚀 Publish Ride"}
               </button>
             </div>
           </section>
@@ -230,22 +384,43 @@ export default function CreateRidePage() {
                   <div className="space-y-5">
                     <div>
                       <p className="text-xs text-slate-400">FROM</p>
-                      <p className="font-bold">Jaipur</p>
+                      <p className="font-bold">
+                        {startLocation || "Not selected"}
+                      </p>
                     </div>
 
                     <div>
                       <p className="text-xs text-slate-400">TO</p>
-                      <p className="font-bold">Ajmer</p>
+                      <p className="font-bold">
+                        {destination || "Not selected"}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <InfoBox title="Date" value="Not selected" />
-                <InfoBox title="Time" value="Not selected" />
-                <InfoBox title="Seats" value="1 Seat" />
-                <InfoBox title="Fare" value="₹ —" />
+                <InfoBox
+                  title="Date"
+                  value={rideDate || "Not selected"}
+                />
+
+                <InfoBox
+                  title="Time"
+                  value={departureTime || "Not selected"}
+                />
+
+                <InfoBox
+                  title="Seats"
+                  value={`${availableSeats} ${
+                    Number(availableSeats) === 1 ? "Seat" : "Seats"
+                  }`}
+                />
+
+                <InfoBox
+                  title="Fare"
+                  value={expectedFare ? `₹${expectedFare}` : "₹ —"}
+                />
               </div>
             </div>
 
@@ -280,11 +455,15 @@ function InputField({
   icon,
   placeholder,
   type = "text",
+  value,
+  onChange,
 }: {
   label: string;
   icon: string;
   placeholder?: string;
   type?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div>
@@ -297,6 +476,8 @@ function InputField({
 
         <input
           type={type}
+          value={value}
+          onChange={onChange}
           placeholder={placeholder}
           className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
         />
@@ -318,10 +499,9 @@ function InfoBox({
         {title}
       </p>
 
-      <p className="mt-1 text-xs font-bold text-slate-700">
+      <p className="mt-1 truncate text-xs font-bold text-slate-700">
         {value}
       </p>
     </div>
   );
 }
-
