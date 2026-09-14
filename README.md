@@ -409,3 +409,27 @@ B.Tech — Computer Science & Engineering
 ## 📄 License
 
 This project is developed for academic and educational purposes.
+
+## Tech Stack
+
+### Frontend
+- Next.js
+- React.js
+- TypeScript
+- Tailwind CSS
+
+### Backend
+- Spring Boot
+- Java
+- REST APIs
+
+### Database
+- PostgreSQL
+
+## Project Structure
+
+```text
+Commuto/
+├── backend/
+├── frontend/
+└── README.md
