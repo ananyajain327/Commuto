@@ -1,3 +1,14 @@
+# Commuto Frontend
+
+The frontend of Commuto is built with Next.js and provides the user interface for the smart ride-sharing and mobility platform.
+
+## Features
+
+- User registration and login
+- Ride search and ride management
+- Driver and passenger workflows
+- Backend API integration
+- Responsive and user-friendly interface
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
