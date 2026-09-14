@@ -2,16 +2,100 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<"PASSENGER" | "DRIVER">("PASSENGER");
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Backend registration will be connected later.
-    console.log("Registration submitted", { role });
+    setError("");
+    setSuccess("");
+
+    if (!fullName.trim() || !email.trim() || !phone.trim() || !password) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must contain at least 8 characters.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        "http://localhost:8080/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullName: fullName.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            password,
+            role,
+          }),
+        }
+      );
+
+      const responseText = await response.text();
+
+      console.log("Register API status:", response.status);
+      console.log("Register API response:", responseText);
+
+      if (!response.ok) {
+        let errorMessage = `Registration failed (${response.status})`;
+
+        if (responseText) {
+          try {
+            const errorData = JSON.parse(responseText);
+
+            errorMessage =
+              errorData.message ||
+              errorData.error ||
+              responseText ||
+              errorMessage;
+          } catch {
+            errorMessage = responseText;
+          }
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      setSuccess("Account created successfully! Redirecting to login...");
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 1200);
+    } catch (err) {
+      console.error("Registration error:", err);
+
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong while creating your account.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,6 +118,7 @@ export default function RegisterPage() {
                 <p className="text-xl font-extrabold text-white">
                   Commuto
                 </p>
+
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                   Smart Mobility
                 </p>
@@ -86,6 +171,7 @@ export default function RegisterPage() {
 
               <div>
                 <p className="text-xl font-extrabold">Commuto</p>
+
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                   Smart Mobility
                 </p>
@@ -121,6 +207,8 @@ export default function RegisterPage() {
                   id="name"
                   type="text"
                   required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
                   className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#5b5ce2] focus:ring-4 focus:ring-indigo-100"
                 />
@@ -139,6 +227,8 @@ export default function RegisterPage() {
                   id="email"
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#5b5ce2] focus:ring-4 focus:ring-indigo-100"
                 />
@@ -157,6 +247,8 @@ export default function RegisterPage() {
                   id="phone"
                   type="tel"
                   required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 XXXXX XXXXX"
                   className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#5b5ce2] focus:ring-4 focus:ring-indigo-100"
                 />
@@ -228,6 +320,8 @@ export default function RegisterPage() {
                     type={showPassword ? "text" : "password"}
                     required
                     minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Create a strong password"
                     className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 pr-14 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#5b5ce2] focus:ring-4 focus:ring-indigo-100"
                   />
@@ -263,12 +357,27 @@ export default function RegisterPage() {
                 </label>
               </div>
 
+              {/* ERROR */}
+              {error && (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+                  {error}
+                </div>
+              )}
+
+              {/* SUCCESS */}
+              {success && (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-600">
+                  {success}
+                </div>
+              )}
+
               {/* SUBMIT */}
               <button
                 type="submit"
-                className="h-14 w-full rounded-2xl bg-[#5b5ce2] text-sm font-extrabold text-white shadow-lg shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-[#4d4ecf] hover:shadow-xl"
+                disabled={loading}
+                className="h-14 w-full rounded-2xl bg-[#5b5ce2] text-sm font-extrabold text-white shadow-lg shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-[#4d4ecf] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Create account →
+                {loading ? "Creating account..." : "Create account →"}
               </button>
             </form>
 
@@ -290,6 +399,7 @@ export default function RegisterPage() {
                 be required before offering rides.
               </p>
             </div>
+
           </div>
         </section>
       </div>
@@ -307,7 +417,10 @@ function InfoCard({
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
       <div className="text-xl">{icon}</div>
-      <p className="mt-3 text-sm font-bold text-white">{title}</p>
+
+      <p className="mt-3 text-sm font-bold text-white">
+        {title}
+      </p>
     </div>
   );
 }
