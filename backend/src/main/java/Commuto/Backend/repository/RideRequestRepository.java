@@ -4,23 +4,16 @@ import Commuto.Backend.entity.Ride;
 import Commuto.Backend.entity.RideRequest;
 import Commuto.Backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface RideRequestRepository
-        extends JpaRepository<RideRequest, Long> {
+@Repository
+public interface RideRequestRepository extends JpaRepository<RideRequest, Long> {
 
-    List<RideRequest> findByPassenger(User passenger);
+    boolean existsByRideAndPassenger(Ride ride, User passenger);
 
-    List<RideRequest> findByRide(Ride ride);
+    List<RideRequest> findByPassengerOrderByCreatedAtDesc(User passenger);
 
-    List<RideRequest> findByRideAndStatus(
-            Ride ride,
-            RideRequest.RequestStatus status
-    );
-
-    boolean existsByRideAndPassenger(
-            Ride ride,
-            User passenger
-    );
+    List<RideRequest> findByRideOrderByCreatedAtDesc(Ride ride);
 }

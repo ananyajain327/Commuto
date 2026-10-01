@@ -2,10 +2,12 @@ package Commuto.Backend.service;
 
 import Commuto.Backend.entity.Ride;
 import Commuto.Backend.entity.RideRequest;
+import Commuto.Backend.entity.RideRequest.RequestStatus;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.RideRepository;
 import Commuto.Backend.repository.RideRequestRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,80 +20,113 @@ public class RideRequestService {
     public RideRequestService(
             RideRequestRepository rideRequestRepository,
             RideRepository rideRepository) {
-
         this.rideRequestRepository = rideRequestRepository;
         this.rideRepository = rideRepository;
     }
 
+    @Transactional
     public RideRequest createRequest(
             User passenger,
             Long rideId,
-            int seatsRequested,
+            Integer seatsRequested,
             String pickupPreference,
             String note) {
 
         Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() ->
-                        new RuntimeException("Ride not found"));
-
-        if (ride.getStatus() != Ride.RideStatus.UPCOMING) {
-            throw new RuntimeException(
-                    "Ride is not available for booking");
-        }
-
-        if (seatsRequested <= 0) {
-            throw new RuntimeException(
-                    "At least one seat must be requested");
-        }
-
-        if (seatsRequested > ride.getAvailableSeats()) {
-            throw new RuntimeException(
-                    "Not enough seats available");
-        }
-
-        if (rideRequestRepository.existsByRideAndPassenger(
-                ride, passenger)) {
-
-            throw new RuntimeException(
-                    "You have already requested this ride");
-        }
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
 
         if (ride.getDriver().getId().equals(passenger.getId())) {
-            throw new RuntimeException(
-                    "Driver cannot request their own ride");
+            throw new RuntimeException("Driver cannot request their own ride");
         }
 
-        RideRequest request = new RideRequest();
+        if (rideRequestRepository.existsByRideAndPassenger(ride, passenger)) {
+            throw new RuntimeException("You have already requested this ride");
+        }
 
+        if (seatsRequested == null || seatsRequested <= 0) {
+            throw new RuntimeException("Invalid seat count requested");
+        }
+
+        if (ride.getAvailableSeats() < seatsRequested) {
+            throw new RuntimeException("Not enough seats available");
+        }
+
+        // Calculate fare per seat
+        double farePerSeat = ride.getAvailableSeats() > 0
+                ? (ride.getExpectedFare() / (double) ride.getAvailableSeats())
+                : ride.getExpectedFare();
+        double calculatedFare = farePerSeat * seatsRequested;
+
+        RideRequest request = new RideRequest();
         request.setRide(ride);
         request.setPassenger(passenger);
         request.setSeatsRequested(seatsRequested);
         request.setPickupPreference(pickupPreference);
         request.setNote(note);
-
-        double farePerSeat =
-                ride.getExpectedFare() / ride.getAvailableSeats();
-
-        double totalFare =
-                farePerSeat * seatsRequested;
-
-        request.setFare(totalFare);
-        request.setStatus(
-                RideRequest.RequestStatus.PENDING);
+        request.setFare(calculatedFare);
+        request.setStatus(RequestStatus.PENDING);
 
         return rideRequestRepository.save(request);
     }
 
-    public List<RideRequest> getPassengerRequests(
-            User passenger) {
-
-        return rideRequestRepository
-                .findByPassenger(passenger);
+    public List<RideRequest> getPassengerRequests(User passenger) {
+        return rideRequestRepository.findByPassengerOrderByCreatedAtDesc(passenger);
     }
 
-    public List<RideRequest> getRideRequests(Ride ride) {
+    public List<RideRequest> getRideRequestsForDriver(Long rideId, User driver) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
 
-        return rideRequestRepository
-                .findByRide(ride);
+        if (!ride.getDriver().getId().equals(driver.getId())) {
+            throw new RuntimeException("Unauthorized: You are not the driver of this ride");
+        }
+
+        return rideRequestRepository.findByRideOrderByCreatedAtDesc(ride);
+    }
+
+    @Transactional
+    public RideRequest acceptRequest(Long requestId, User driver) {
+        RideRequest request = rideRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Ride request not found"));
+
+        Ride ride = request.getRide();
+
+        if (!ride.getDriver().getId().equals(driver.getId())) {
+            throw new RuntimeException("Unauthorized: You are not the driver of this ride");
+        }
+
+        if (request.getStatus() != RequestStatus.PENDING) {
+            throw new RuntimeException("Request has already been processed: " + request.getStatus());
+        }
+
+        if (ride.getAvailableSeats() < request.getSeatsRequested()) {
+            throw new RuntimeException("Cannot accept: Not enough seats remaining");
+        }
+
+        // Deduct seats
+        ride.setAvailableSeats(ride.getAvailableSeats() - request.getSeatsRequested());
+        rideRepository.save(ride);
+
+        request.setStatus(RequestStatus.ACCEPTED);
+        return rideRequestRepository.save(request);
+    }
+
+    @Transactional
+    public RideRequest rejectRequest(Long requestId, User driver) {
+        RideRequest request = rideRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Ride request not found"));
+
+        Ride ride = request.getRide();
+
+        if (!ride.getDriver().getId().equals(driver.getId())) {
+            throw new RuntimeException("Unauthorized: You are not the driver of this ride");
+        }
+
+        if (request.getStatus() != RequestStatus.PENDING) {
+            throw new RuntimeException("Request has already been processed: " + request.getStatus());
+        }
+
+        request.setStatus(RequestStatus.REJECTED);
+        return rideRequestRepository.save(request);
     }
 }

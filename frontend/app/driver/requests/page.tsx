@@ -1,107 +1,161 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-type RequestStatus = "pending" | "accepted" | "rejected";
+type RequestStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
 
-type RideRequest = {
+interface Passenger {
   id: number;
-  initials: string;
-  name: string;
-  rating: string;
-  rides: number;
-  route: string;
-  pickup: string;
-  destination: string;
-  date: string;
-  time: string;
-  seats: number;
-  fare: number;
-  verified: boolean;
-  womenOnly: boolean;
-};
+  fullName: string;
+  email: string;
+  phone?: string;
+}
 
-const initialRequests: RideRequest[] = [
-  {
-    id: 1,
-    initials: "RK",
-    name: "Riya Kapoor",
-    rating: "4.9",
-    rides: 42,
-    route: "Jaipur → Ajmer",
-    pickup: "Jaipur Railway Station",
-    destination: "Ajmer Bus Stand",
-    date: "12 September 2026",
-    time: "6:30 PM",
-    seats: 1,
-    fare: 280,
-    verified: true,
-    womenOnly: false,
-  },
-  {
-    id: 2,
-    initials: "NS",
-    name: "Neha Singh",
-    rating: "5.0",
-    rides: 31,
-    route: "Jaipur → Ajmer",
-    pickup: "Tonk Road",
-    destination: "Ajmer City",
-    date: "13 September 2026",
-    time: "8:00 AM",
-    seats: 2,
-    fare: 560,
-    verified: true,
-    womenOnly: true,
-  },
-  {
-    id: 3,
-    initials: "MS",
-    name: "Mohit Sharma",
-    rating: "4.7",
-    rides: 18,
-    route: "Jaipur → Kishangarh",
-    pickup: "Malviya Nagar",
-    destination: "Kishangarh",
-    date: "13 September 2026",
-    time: "7:00 PM",
-    seats: 1,
-    fare: 220,
-    verified: true,
-    womenOnly: false,
-  },
-];
+interface RideSummary {
+  id: number;
+  startLocation: string;
+  destination: string;
+  rideDate: string;
+  departureTime: string;
+  availableSeats: number;
+}
+
+interface BackendRideRequest {
+  id: number;
+  seatsRequested: number;
+  pickupPreference: string;
+  note: string;
+  fare: number;
+  status: RequestStatus;
+  createdAt: string;
+  passenger: Passenger;
+  ride: RideSummary;
+}
 
 export default function DriverRequestsPage() {
-  const [requests, setRequests] = useState(initialRequests);
-  const [activeTab, setActiveTab] = useState<"pending" | "history">(
-    "pending"
-  );
+  const [requests, setRequests] = useState<BackendRideRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [activeTab, setActiveTab] = useState<"pending" | "history">("pending");
 
-  const [statuses, setStatuses] = useState<
-    Record<number, RequestStatus>
-  >({});
+  const fetchDriverRequests = async () => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+      const token = localStorage.getItem("token");
 
-  const handleAction = (
-    id: number,
-    status: "accepted" | "rejected"
-  ) => {
-    setStatuses((previous) => ({
-      ...previous,
-      [id]: status,
-    }));
+      if (!token) {
+        setErrorMessage("Please login as a driver to view requests.");
+        setLoading(false);
+        return;
+      }
+
+      // Step 1: Fetch all rides published by this driver
+      const ridesRes = await fetch("http://localhost:8080/api/rides/my-rides", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!ridesRes.ok) {
+        throw new Error("Failed to fetch driver rides");
+      }
+
+      const ridesData: RideSummary[] = await ridesRes.json();
+
+      // Step 2: Fetch all requests for each ride
+      const allRequests: BackendRideRequest[] = [];
+      for (const ride of ridesData) {
+        const reqRes = await fetch(
+          `http://localhost:8080/api/ride-requests/ride/${ride.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (reqRes.ok) {
+          const reqData: BackendRideRequest[] = await reqRes.json();
+          allRequests.push(...reqData);
+        }
+      }
+
+      // Sort newest first
+      allRequests.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      setRequests(allRequests);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to load requests");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const pendingRequests = requests.filter(
-    (request) => !statuses[request.id]
-  );
+  useEffect(() => {
+    fetchDriverRequests();
+  }, []);
 
-  const historyRequests = requests.filter(
-    (request) => statuses[request.id]
-  );
+  const handleAction = async (id: number, action: "accept" | "reject") => {
+    try {
+      setActionLoadingId(id);
+      setErrorMessage("");
+      setSuccessMessage("");
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `http://localhost:8080/api/ride-requests/${id}/${action}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message || `Failed to ${action} ride request.`
+        );
+      }
+
+      setSuccessMessage(
+        `Request ${action === "accept" ? "Accepted" : "Rejected"} successfully!`
+      );
+
+      // Update local state
+      setRequests((prev) =>
+        prev.map((req) =>
+          req.id === id
+            ? { ...req, status: action === "accept" ? "ACCEPTED" : "REJECTED" }
+            : req
+        )
+      );
+    } catch (err: any) {
+      setErrorMessage(err.message || "Action failed");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const pendingRequests = requests.filter((r) => r.status === "PENDING");
+  const acceptedRequests = requests.filter((r) => r.status === "ACCEPTED");
+  const rejectedRequests = requests.filter((r) => r.status === "REJECTED");
+  const historyRequests = requests.filter((r) => r.status !== "PENDING");
 
   const visibleRequests =
     activeTab === "pending" ? pendingRequests : historyRequests;
+
+  const potentialEarnings = pendingRequests.reduce(
+    (sum, r) => sum + (r.fare || 0),
+    0
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -125,6 +179,18 @@ export default function DriverRequestsPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
+        {errorMessage && (
+          <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
+            {errorMessage}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-700">
+            {successMessage}
+          </div>
+        )}
+
         {/* Summary */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
@@ -135,30 +201,19 @@ export default function DriverRequestsPage() {
 
           <SummaryCard
             title="Accepted"
-            value={
-              Object.values(statuses).filter(
-                (status) => status === "accepted"
-              ).length.toString()
-            }
+            value={acceptedRequests.length.toString()}
             icon="✓"
           />
 
           <SummaryCard
             title="Rejected"
-            value={
-              Object.values(statuses).filter(
-                (status) => status === "rejected"
-              ).length.toString()
-            }
+            value={rejectedRequests.length.toString()}
             icon="×"
           />
 
           <SummaryCard
             title="Potential Earnings"
-            value={`₹${pendingRequests.reduce(
-              (total, request) => total + request.fare,
-              0
-            )}`}
+            value={`₹${Math.round(potentialEarnings)}`}
             icon="₹"
           />
         </section>
@@ -168,10 +223,10 @@ export default function DriverRequestsPage() {
           <div className="flex gap-6">
             <button
               onClick={() => setActiveTab("pending")}
-              className={`border-b-2 pb-3 text-sm font-semibold ${
+              className={`border-b-2 pb-3 text-sm font-semibold transition ${
                 activeTab === "pending"
                   ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-500"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
               New Requests
@@ -184,20 +239,29 @@ export default function DriverRequestsPage() {
 
             <button
               onClick={() => setActiveTab("history")}
-              className={`border-b-2 pb-3 text-sm font-semibold ${
+              className={`border-b-2 pb-3 text-sm font-semibold transition ${
                 activeTab === "history"
                   ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-500"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
               Request History
+              {historyRequests.length > 0 && (
+                <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                  {historyRequests.length}
+                </span>
+              )}
             </button>
           </div>
         </section>
 
-        {/* Requests */}
+        {/* Requests List */}
         <section className="mt-6">
-          {visibleRequests.length === 0 ? (
+          {loading ? (
+            <div className="rounded-2xl bg-white p-12 text-center text-slate-500">
+              Loading requests...
+            </div>
+          ) : visibleRequests.length === 0 ? (
             <EmptyState activeTab={activeTab} />
           ) : (
             <div className="space-y-5">
@@ -205,7 +269,7 @@ export default function DriverRequestsPage() {
                 <RequestCard
                   key={request.id}
                   request={request}
-                  status={statuses[request.id]}
+                  isActionLoading={actionLoadingId === request.id}
                   onAction={handleAction}
                 />
               ))}
@@ -224,9 +288,9 @@ export default function DriverRequestsPage() {
               </h2>
 
               <p className="mt-1 text-sm leading-6 text-indigo-700">
-                Review passenger details before accepting a request. Never
-                share sensitive information and use Commuto's safety tools
-                whenever necessary.
+                Review passenger details before accepting a request. Never share
+                sensitive information and use Commuto's safety tools whenever
+                necessary.
               </p>
             </div>
           </div>
@@ -240,94 +304,88 @@ export default function DriverRequestsPage() {
 
 function RequestCard({
   request,
-  status,
+  isActionLoading,
   onAction,
 }: {
-  request: RideRequest;
-  status?: RequestStatus;
-  onAction: (
-    id: number,
-    status: "accepted" | "rejected"
-  ) => void;
+  request: BackendRideRequest;
+  isActionLoading: boolean;
+  onAction: (id: number, action: "accept" | "reject") => void;
 }) {
+  const passengerName = request.passenger?.fullName || "Commuto Passenger";
+  const initials = passengerName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-      {/* Top */}
+    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 border border-slate-200">
+      {/* Top Header */}
       <div className="flex flex-col justify-between gap-5 lg:flex-row">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-700">
-            {request.initials}
+            {initials}
           </div>
 
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-bold">{request.name}</h2>
+              <h2 className="text-lg font-bold">{passengerName}</h2>
 
-              {request.verified && (
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                  ✓ Verified Passenger
-                </span>
-              )}
-
-              {request.womenOnly && (
-                <span className="rounded-full bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700">
-                  ♀ Women Preference
-                </span>
-              )}
+              <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                ✓ Verified Passenger
+              </span>
             </div>
 
             <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-500">
-              <span>★ {request.rating}</span>
-              <span>{request.rides} rides</span>
-              <span>Passenger</span>
+              <span>✉ {request.passenger?.email}</span>
+              {request.passenger?.phone && <span>📞 {request.passenger.phone}</span>}
             </div>
           </div>
         </div>
 
-        {/* Status */}
-        {status && (
+        {/* Status Badge */}
+        {request.status !== "PENDING" && (
           <span
             className={`h-fit rounded-full px-4 py-2 text-xs font-semibold ${
-              status === "accepted"
+              request.status === "ACCEPTED"
                 ? "bg-emerald-50 text-emerald-700"
                 : "bg-red-50 text-red-700"
             }`}
           >
-            {status === "accepted"
-              ? "✓ Accepted"
-              : "× Rejected"}
+            {request.status === "ACCEPTED" ? "✓ Accepted" : "× Rejected"}
           </span>
         )}
       </div>
 
-      {/* Route */}
+      {/* Route & Ride Details */}
       <div className="mt-6 rounded-xl bg-slate-50 p-5">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Requested Route
+              Requested Ride Route
             </p>
 
             <p className="mt-2 text-lg font-bold">
-              {request.route}
+              {request.ride?.startLocation} → {request.ride?.destination}
             </p>
           </div>
 
           <div className="flex flex-wrap gap-5 text-sm">
             <div>
               <p className="text-xs text-slate-400">Date</p>
-              <p className="mt-1 font-medium">{request.date}</p>
+              <p className="mt-1 font-medium">{request.ride?.rideDate}</p>
             </div>
 
             <div>
               <p className="text-xs text-slate-400">Departure</p>
-              <p className="mt-1 font-medium">{request.time}</p>
+              <p className="mt-1 font-medium">{request.ride?.departureTime}</p>
             </div>
 
             <div>
-              <p className="text-xs text-slate-400">Seats</p>
-              <p className="mt-1 font-medium">
-                {request.seats}
+              <p className="text-xs text-slate-400">Seats Requested</p>
+              <p className="mt-1 font-semibold text-indigo-700">
+                {request.seatsRequested} Seat(s)
               </p>
             </div>
           </div>
@@ -337,65 +395,68 @@ function RequestCard({
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <Location
             color="bg-indigo-600"
-            title="Pickup"
-            value={request.pickup}
+            title="Pickup Preference"
+            value={request.pickupPreference || request.ride?.startLocation || "Main Point"}
           />
 
           <Location
             color="bg-emerald-500"
             title="Destination"
-            value={request.destination}
+            value={request.ride?.destination || "Drop Location"}
           />
         </div>
+
+        {request.note && (
+          <div className="mt-4 rounded-lg bg-white p-3 text-xs text-slate-600 border border-slate-200">
+            <span className="font-semibold text-slate-800">Passenger Note: </span>
+            {request.note}
+          </div>
+        )}
       </div>
 
-      {/* Bottom */}
+      {/* Bottom Footer */}
       <div className="mt-5 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
         <div>
-          <p className="text-xs text-slate-400">
-            Passenger Fare
-          </p>
+          <p className="text-xs text-slate-400">Passenger Fare</p>
 
           <p className="mt-1 text-2xl font-bold text-indigo-700">
-            ₹{request.fare}
+            ₹{Math.round(request.fare)}
           </p>
 
           <p className="mt-1 text-xs text-slate-400">
-            Estimated earning from this request
+            Earning from this passenger
           </p>
         </div>
 
-        {!status && (
+        {request.status === "PENDING" && (
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
-              onClick={() =>
-                onAction(request.id, "rejected")
-              }
-              className="rounded-xl border border-red-200 px-6 py-3 text-sm font-semibold text-red-600 hover:bg-red-50"
+              disabled={isActionLoading}
+              onClick={() => onAction(request.id, "reject")}
+              className="rounded-xl border border-red-200 px-6 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
             >
-              Reject
+              {isActionLoading ? "Processing..." : "Reject"}
             </button>
 
             <button
-              onClick={() =>
-                onAction(request.id, "accepted")
-              }
-              className="rounded-xl bg-indigo-600 px-7 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
+              disabled={isActionLoading}
+              onClick={() => onAction(request.id, "accept")}
+              className="rounded-xl bg-indigo-600 px-7 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
             >
-              Accept Request
+              {isActionLoading ? "Processing..." : "Accept Request"}
             </button>
           </div>
         )}
 
-        {status === "accepted" && (
-          <button className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white">
-            View Booking →
-          </button>
+        {request.status === "ACCEPTED" && (
+          <span className="text-sm font-semibold text-emerald-600">
+            ✓ Passenger Confirmed on this ride
+          </span>
         )}
 
-        {status === "rejected" && (
+        {request.status === "REJECTED" && (
           <span className="text-sm text-slate-400">
-            This request has been rejected.
+            This request was rejected.
           </span>
         )}
       </div>
@@ -403,7 +464,7 @@ function RequestCard({
   );
 }
 
-/* ---------- Location ---------- */
+/* ---------- Sub-components ---------- */
 
 function Location({
   color,
@@ -426,8 +487,6 @@ function Location({
   );
 }
 
-/* ---------- Summary ---------- */
-
 function SummaryCard({
   title,
   value,
@@ -438,7 +497,7 @@ function SummaryCard({
   icon: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200">
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">{title}</p>
 
@@ -452,15 +511,9 @@ function SummaryCard({
   );
 }
 
-/* ---------- Empty State ---------- */
-
-function EmptyState({
-  activeTab,
-}: {
-  activeTab: "pending" | "history";
-}) {
+function EmptyState({ activeTab }: { activeTab: "pending" | "history" }) {
   return (
-    <div className="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-slate-200">
+    <div className="rounded-2xl bg-white p-12 text-center shadow-sm border border-slate-200">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-2xl">
         {activeTab === "pending" ? "✓" : "📋"}
       </div>
@@ -473,7 +526,7 @@ function EmptyState({
 
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
         {activeTab === "pending"
-          ? "You're all caught up! New passenger requests will appear here."
+          ? "You're all caught up! New passenger requests for your published rides will appear here."
           : "Your accepted and rejected requests will appear here."}
       </p>
 
