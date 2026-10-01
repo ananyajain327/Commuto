@@ -56,6 +56,21 @@ public class RideRequestController {
         );
     }
 
+    @PutMapping("/{requestId}/cancel")
+    @PreAuthorize("hasRole('PASSENGER')")
+    public ResponseEntity<RideRequest> cancelRequest(
+            @PathVariable Long requestId,
+            @AuthenticationPrincipal User passenger) {
+
+        if (passenger == null) {
+            throw new RuntimeException("Unauthorized: Passenger not found");
+        }
+
+        return ResponseEntity.ok(
+                rideRequestService.cancelRequest(requestId, passenger)
+        );
+    }
+
     @GetMapping("/ride/{rideId}")
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<List<RideRequest>> getRideRequests(

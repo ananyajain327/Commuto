@@ -73,6 +73,34 @@ public class RideRequestService {
         return rideRequestRepository.findByPassengerOrderByCreatedAtDesc(passenger);
     }
 
+    @Transactional
+    public RideRequest cancelRequest(Long requestId, User passenger) {
+        RideRequest request = rideRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Ride request not found"));
+
+        if (!request.getPassenger().getId().equals(passenger.getId())) {
+            throw new RuntimeException("Unauthorized: You are not the passenger for this request");
+        }
+
+        if (request.getStatus() != RequestStatus.PENDING
+                && request.getStatus() != RequestStatus.ACCEPTED) {
+            throw new RuntimeException("Request cannot be cancelled in its current status");
+        }
+
+        Ride ride = request.getRide();
+        if (request.getStatus() == RequestStatus.ACCEPTED) {
+            if (ride.getStatus() != Ride.RideStatus.UPCOMING) {
+                throw new RuntimeException("An accepted request can only be cancelled before the ride starts");
+            }
+
+            ride.setAvailableSeats(ride.getAvailableSeats() + request.getSeatsRequested());
+            rideRepository.save(ride);
+        }
+
+        request.setStatus(RequestStatus.CANCELLED);
+        return rideRequestRepository.save(request);
+    }
+
     public List<RideRequest> getRideRequestsForDriver(Long rideId, User driver) {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
