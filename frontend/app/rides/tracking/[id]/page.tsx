@@ -17,7 +17,8 @@ type Point = [number, number];
 
 interface Ride {
   id: number;
-  driverId: number;
+  driverId?: number;
+  driver?: { id: number };
   driverName: string;
   startLocation: string;
   destination: string;
@@ -164,7 +165,8 @@ export default function PassengerTrackingPage() {
         client.subscribe(`/topic/ride/${ride.id}/location`, (message) => {
           try {
             const update = JSON.parse(message.body) as RideLocation;
-            if (update.rideId === ride.id && update.driverId === ride.driverId) {
+            const driverId = ride.driverId ?? ride.driver?.id;
+            if (update.rideId === ride.id && update.driverId === driverId) {
               setLocation(update);
             }
           } catch {
