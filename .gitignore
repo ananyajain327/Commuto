@@ -1,0 +1,10 @@
+# External / non-project directories
+Stacks/
+Trees/
+demo/
+.vscode/
+
+# Environment files
+.env
+.env.*
+!.env.example

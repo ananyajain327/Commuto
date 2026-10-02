@@ -410,6 +410,10 @@ B.Tech — Computer Science & Engineering
 
 This project is developed for academic and educational purposes.
 
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for environment setup, Docker Compose deployment, TLS, and database operations.
+
 ## Tech Stack
 
 ### Frontend
