@@ -1,12 +1,16 @@
 package Commuto.Backend.config;
 
 import Commuto.Backend.security.JwtAuthenticationFilter;
+import Commuto.Backend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -21,11 +25,14 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final String[] allowedOrigins;
 
     public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter) {
+                        JwtAuthenticationFilter jwtAuthenticationFilter,
+                        @Value("${app.cors.allowed-origins}") String[] allowedOrigins) {
 
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+                this.allowedOrigins = allowedOrigins;
     }
 
     // =========================
@@ -37,6 +44,18 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+        @Bean
+        public UserDetailsService userDetailsService(UserRepository userRepository) {
+                return email -> userRepository.findByEmail(email)
+                                .map(user -> org.springframework.security.core.userdetails.User
+                                                .withUsername(user.getEmail())
+                                                .password(user.getPassword())
+                                                .roles(user.getRole().name())
+                                                .disabled(!user.isActive())
+                                                .build())
+                                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        }
+
     // =========================
     // CORS CONFIGURATION
     // =========================
@@ -46,12 +65,7 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://localhost:3001",
-                "http://127.0.0.1:3000",
-                "http://127.0.0.1:3001"
-        ));
+        configuration.setAllowedOrigins(List.of(allowedOrigins));
 
         configuration.setAllowedMethods(List.of(
                 "GET",
@@ -111,6 +125,9 @@ public class SecurityConfig {
 
                         // Allow browser CORS preflight requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**")
+                        .permitAll()
+
+                        .requestMatchers("/actuator/health", "/actuator/health/**")
                         .permitAll()
 
                         // Public authentication APIs

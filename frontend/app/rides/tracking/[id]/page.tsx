@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import SockJS from "sockjs-client";
 import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api";
 
 const RideMap = dynamic(() => import("../RideMap"), {
   ssr: false,
@@ -70,7 +71,7 @@ export default function PassengerTrackingPage() {
       }
 
       try {
-        const response = await fetch("http://localhost:8080/api/ride-requests/my-requests", {
+        const response = await fetch(apiUrl("/api/ride-requests/my-requests"), {
           headers: { Authorization: `Bearer ${storedToken}` },
         });
         if (!response.ok) {
@@ -118,7 +119,7 @@ export default function PassengerTrackingPage() {
     let isCurrent = true;
     const refreshRideStatus = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/ride-requests/my-requests", {
+        const response = await fetch(apiUrl("/api/ride-requests/my-requests"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
@@ -157,7 +158,7 @@ export default function PassengerTrackingPage() {
     }
 
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws") as unknown as WebSocket,
+      webSocketFactory: () => new SockJS(apiUrl("/ws")) as unknown as WebSocket,
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 3000,
       onConnect: () => {

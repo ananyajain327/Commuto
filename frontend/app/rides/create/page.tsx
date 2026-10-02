@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiUrl } from "@/lib/api";
+
+interface ApiErrorResponse {
+  message?: string;
+  error?: string;
+}
 
 export default function CreateRidePage() {
   const router = useRouter();
@@ -59,7 +65,7 @@ export default function CreateRidePage() {
     try {
       setLoading(true);
 
-      const response = await fetch("http://localhost:8080/api/rides", {
+      const response = await fetch(apiUrl("/api/rides"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,10 +85,10 @@ export default function CreateRidePage() {
         }),
       });
 
-      let data: any = null;
+      let data: ApiErrorResponse | null = null;
 
       try {
-        data = await response.json();
+        data = await response.json() as ApiErrorResponse;
       } catch {
         data = null;
       }
@@ -433,7 +439,7 @@ export default function CreateRidePage() {
               <h3 className="font-bold">Ride safety</h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Verified passengers, ratings and Commuto's safety features
+                Verified passengers, ratings and Commuto&apos;s safety features
                 help make every shared journey more trustworthy.
               </p>
 

@@ -15,7 +15,17 @@ public interface RideRequestRepository extends JpaRepository<RideRequest, Long> 
 
     List<RideRequest> findByPassengerOrderByCreatedAtDesc(User passenger);
 
+        List<RideRequest> findByPassengerAndStatusOrderByCreatedAtDesc(
+            User passenger,
+            RideRequest.RequestStatus status
+        );
+
     List<RideRequest> findByRideOrderByCreatedAtDesc(Ride ride);
+
+        List<RideRequest> findByRide_DriverAndStatusOrderByCreatedAtDesc(
+            User driver,
+            RideRequest.RequestStatus status
+        );
 
     boolean existsByRideAndPassengerAndStatus(
             Ride ride,

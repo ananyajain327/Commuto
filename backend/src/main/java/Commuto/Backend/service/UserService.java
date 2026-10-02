@@ -3,6 +3,8 @@ import Commuto.Backend.dto.LoginRequest;
 import Commuto.Backend.dto.RegisterRequest;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import Commuto.Backend.dto.UpdateProfileRequest;
@@ -19,6 +21,13 @@ public class UserService {
     }
 
     public User registerUser(RegisterRequest request) {
+
+        if (request.getRole() == User.Role.ADMIN) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Administrator accounts cannot be created through public registration"
+            );
+        }
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");

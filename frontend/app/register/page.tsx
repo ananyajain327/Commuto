@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiUrl } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function RegisterPage() {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost:8080/api/auth/register",
+        apiUrl("/api/auth/register"),
         {
           method: "POST",
           headers: {
@@ -138,7 +139,7 @@ export default function RegisterPage() {
               </h1>
 
               <p className="mt-7 max-w-lg text-base leading-7 text-slate-400">
-                Whether you're looking for a ride or offering one, Commuto
+                Whether you&apos;re looking for a ride or offering one, Commuto
                 helps you connect with people traveling your way.
               </p>
 
@@ -353,7 +354,7 @@ export default function RegisterPage() {
                   htmlFor="terms"
                   className="text-xs leading-5 text-slate-500"
                 >
-                  I agree to Commuto's Terms of Service and Privacy Policy.
+                  I agree to Commuto&apos;s Terms of Service and Privacy Policy.
                 </label>
               </div>
 

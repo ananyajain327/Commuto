@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { apiUrl } from "@/lib/api";
 
 interface Ride {
   id: number;
@@ -39,7 +40,7 @@ function RideRequestContent() {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:8080/api/rides/${rideIdParam}`, {
+        const res = await fetch(apiUrl(`/api/rides/${rideIdParam}`), {
           headers: {
             Authorization: token ? `Bearer ${token}` : "",
           },
@@ -54,8 +55,8 @@ function RideRequestContent() {
         if (data.startLocation) {
           setPickupPreference(data.startLocation);
         }
-      } catch (err: any) {
-        setErrorMessage(err.message || "Failed to load ride details");
+      } catch (err: unknown) {
+        setErrorMessage(err instanceof Error ? err.message : "Failed to load ride details");
       } finally {
         setLoading(false);
       }
@@ -85,7 +86,7 @@ function RideRequestContent() {
         return;
       }
 
-      const res = await fetch("http://localhost:8080/api/ride-requests", {
+      const res = await fetch(apiUrl("/api/ride-requests"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,8 +112,8 @@ function RideRequestContent() {
       }
 
       setRequested(true);
-    } catch (err: any) {
-      setErrorMessage(err.message || "Something went wrong");
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSubmitting(false);
     }
@@ -427,7 +428,7 @@ function RideRequestContent() {
                 </button>
 
                 <p className="mt-3 text-center text-xs text-slate-400">
-                  You won't be charged until the ride is confirmed.
+                  You won&apos;t be charged until the ride is confirmed.
                 </p>
               </div>
             </aside>

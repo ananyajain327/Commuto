@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiUrl } from "@/lib/api";
 
 type RequestStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
 
@@ -42,18 +43,17 @@ export default function DriverRequestsPage() {
 
   const fetchDriverRequests = async () => {
     try {
-      setLoading(true);
-      setErrorMessage("");
       const token = localStorage.getItem("token");
 
       if (!token) {
+        await Promise.resolve();
         setErrorMessage("Please login as a driver to view requests.");
         setLoading(false);
         return;
       }
 
       // Step 1: Fetch all rides published by this driver
-      const ridesRes = await fetch("http://localhost:8080/api/rides/my-rides", {
+      const ridesRes = await fetch(apiUrl("/api/rides/my-rides"), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -69,7 +69,7 @@ export default function DriverRequestsPage() {
       const allRequests: BackendRideRequest[] = [];
       for (const ride of ridesData) {
         const reqRes = await fetch(
-          `http://localhost:8080/api/ride-requests/ride/${ride.id}`,
+          apiUrl(`/api/ride-requests/ride/${ride.id}`),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -89,15 +89,15 @@ export default function DriverRequestsPage() {
       );
 
       setRequests(allRequests);
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to load requests");
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Failed to load requests");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDriverRequests();
+    queueMicrotask(() => void fetchDriverRequests());
   }, []);
 
   const handleAction = async (id: number, action: "accept" | "reject") => {
@@ -108,7 +108,7 @@ export default function DriverRequestsPage() {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `http://localhost:8080/api/ride-requests/${id}/${action}`,
+        apiUrl(`/api/ride-requests/${id}/${action}`),
         {
           method: "PUT",
           headers: {
@@ -137,8 +137,8 @@ export default function DriverRequestsPage() {
             : req
         )
       );
-    } catch (err: any) {
-      setErrorMessage(err.message || "Action failed");
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Action failed");
     } finally {
       setActionLoadingId(null);
     }
@@ -289,7 +289,7 @@ export default function DriverRequestsPage() {
 
               <p className="mt-1 text-sm leading-6 text-indigo-700">
                 Review passenger details before accepting a request. Never share
-                sensitive information and use Commuto's safety tools whenever
+                sensitive information and use Commuto&apos;s safety tools whenever
                 necessary.
               </p>
             </div>

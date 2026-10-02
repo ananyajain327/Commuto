@@ -4,6 +4,7 @@ import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api";
 
 interface Ride {
   id: number;
@@ -26,18 +27,6 @@ export default function DriverTrackingPage() {
   const [isStarting, setIsStarting] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
 
-  const refreshRide = async (token: string) => {
-    const response = await fetch(`http://localhost:8080/api/rides/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!response.ok) {
-      throw new Error("Unable to load this ride.");
-    }
-    const result: Ride = await response.json();
-    setRide(result);
-    setConnection(result.status === "ACTIVE" ? "connecting" : "offline");
-  };
-
   useEffect(() => {
     let isCurrent = true;
     const token = localStorage.getItem("token");
@@ -53,7 +42,7 @@ export default function DriverTrackingPage() {
 
     const loadRide = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/rides/${id}`, {
+        const response = await fetch(apiUrl(`/api/rides/${id}`), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
@@ -101,7 +90,7 @@ export default function DriverTrackingPage() {
 
     let lastPublishedAt = 0;
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws") as unknown as WebSocket,
+      webSocketFactory: () => new SockJS(apiUrl("/ws")) as unknown as WebSocket,
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 3000,
       onConnect: () => setConnection("connected"),
@@ -168,7 +157,7 @@ export default function DriverTrackingPage() {
       }
       setErrorMessage("");
 
-      const response = await fetch(`http://localhost:8080/api/rides/${ride.id}/${action}`, {
+      const response = await fetch(apiUrl(`/api/rides/${ride.id}/${action}`), {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -3,6 +3,17 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiUrl } from "@/lib/api";
+
+interface LoginResponse {
+  token: string;
+  userId: number;
+  fullName: string;
+  email: string;
+  role: "PASSENGER" | "DRIVER" | "ADMIN";
+  message?: string;
+  error?: string;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,7 +39,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,15 +50,15 @@ export default function LoginPage() {
         }),
       });
 
-      let data: any = null;
+      let data: LoginResponse | null = null;
 
       try {
-        data = await response.json();
+        data = await response.json() as LoginResponse;
       } catch {
         data = null;
       }
 
-      if (!response.ok) {
+      if (!response.ok || !data) {
         throw new Error(
           data?.message ||
             data?.error ||
@@ -330,7 +341,7 @@ export default function LoginPage() {
 
             {/* Register */}
             <p className="mt-8 text-center text-sm text-slate-500">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/register"
                 className="font-extrabold text-[#5b5ce2] hover:text-[#4546c7]"

@@ -3,6 +3,7 @@ package Commuto.Backend.security;
 import Commuto.Backend.entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -12,16 +13,18 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY =
-            "CommutoSuperSecretKeyForJwtAuthentication2026Secure";
+    private final SecretKey signingKey;
+    private final long expirationTime;
 
-    private static final long EXPIRATION_TIME =
-            1000 * 60 * 60 * 24; // 24 hours
-
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(
-                SECRET_KEY.getBytes(StandardCharsets.UTF_8)
-        );
+    public JwtService(
+        @Value("${app.jwt.secret}") String secret,
+        @Value("${app.jwt.expiration-ms}") long expirationTime) {
+    byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+    if (secretBytes.length < 32) {
+        throw new IllegalStateException("JWT_SECRET must contain at least 32 bytes");
+    }
+    this.signingKey = Keys.hmacShaKeyFor(secretBytes);
+    this.expirationTime = expirationTime;
     }
 
     public String generateToken(User user) {
@@ -32,16 +35,16 @@ public class JwtService {
                 .claim("userId", user.getId())
                 .issuedAt(new Date())
                 .expiration(
-                        new Date(System.currentTimeMillis() + EXPIRATION_TIME)
+                    new Date(System.currentTimeMillis() + expirationTime)
                 )
-                .signWith(getSigningKey())
+                .signWith(signingKey)
                 .compact();
     }
 
     public String extractEmail(String token) {
 
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+            .verifyWith(signingKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()

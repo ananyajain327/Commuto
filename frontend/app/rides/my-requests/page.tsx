@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api";
 
 type RequestStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
 
@@ -31,7 +32,7 @@ interface RideRequest {
   ride: Ride;
 }
 
-const requestsUrl = "http://localhost:8080/api/ride-requests/my-requests";
+const requestsUrl = apiUrl("/api/ride-requests/my-requests");
 
 export default function MyRequestsPage() {
   const [requests, setRequests] = useState<RideRequest[]>([]);
@@ -90,7 +91,7 @@ export default function MyRequestsPage() {
     try {
       setCancellingId(requestId);
       setActionError("");
-      const response = await fetch(`http://localhost:8080/api/ride-requests/${requestId}/cancel`, {
+      const response = await fetch(apiUrl(`/api/ride-requests/${requestId}/cancel`), {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });

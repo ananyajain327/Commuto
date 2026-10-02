@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { apiUrl } from "@/lib/api";
 
 interface BackendRide {
   id: number;
@@ -54,7 +55,7 @@ export default function FindRidePage() {
     setLoading(true);
 
     const response = await fetch(
-      "http://localhost:8080/api/rides/search",
+      apiUrl("/api/rides/search"),
       {
         method: "POST",
         headers: {
@@ -413,7 +414,7 @@ export default function FindRidePage() {
             </h3>
 
             <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
-              We couldn't find a ride matching your journey. Try another date,
+              We couldn&apos;t find a ride matching your journey. Try another date,
               route, or turn off the women-only filter.
             </p>
           </div>

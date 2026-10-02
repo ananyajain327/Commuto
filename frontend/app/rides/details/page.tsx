@@ -286,7 +286,7 @@ export default function RideDetailsPage() {
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-slate-400">
-                Send a ride request to the driver. You'll be
+                Send a ride request to the driver. You&apos;ll be
                 notified once they accept.
               </p>
 

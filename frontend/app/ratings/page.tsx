@@ -1,51 +1,140 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api";
 
-const reviews = [
-  {
-    name: "Rahul Sharma",
-    rating: 5,
-    date: "2 days ago",
-    comment:
-      "Excellent ride experience. The driver was punctual, polite and the journey was very comfortable.",
-    initials: "RS",
-  },
-  {
-    name: "Priya Mehta",
-    rating: 4,
-    date: "1 week ago",
-    comment:
-      "Smooth journey and good communication. Pickup was exactly on time.",
-    initials: "PM",
-  },
-  {
-    name: "Arjun Verma",
-    rating: 5,
-    date: "2 weeks ago",
-    comment:
-      "Very safe and comfortable ride. Would definitely book again.",
-    initials: "AV",
-  },
-];
+interface EligibleRating {
+  requestId: number;
+  rideId: number;
+  targetName: string;
+  startLocation: string;
+  destination: string;
+  rideDate: string;
+}
+
+interface ReceivedRating {
+  id: number;
+  raterName: string;
+  score: number;
+  comment: string;
+  createdAt: string;
+}
 
 export default function RatingsPage() {
   const [selectedRating, setSelectedRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [review, setReview] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [eligibleRatings, setEligibleRatings] = useState<EligibleRating[]>([]);
+  const [receivedRatings, setReceivedRatings] = useState<ReceivedRating[]>([]);
+  const [selectedRequestId, setSelectedRequestId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = () => {
-    if (selectedRating === 0 || review.trim() === "") return;
+  useEffect(() => {
+    let isCurrent = true;
+    const loadRatings = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        await Promise.resolve();
+        if (isCurrent) {
+          setErrorMessage("Please log in to view ratings.");
+          setLoading(false);
+        }
+        return;
+      }
 
-    setSubmitted(true);
-    setReview("");
-    setSelectedRating(0);
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const [eligibleResponse, receivedResponse] = await Promise.all([
+          fetch(apiUrl("/api/ratings/eligible"), { headers }),
+          fetch(apiUrl("/api/ratings/received"), { headers }),
+        ]);
+        if (!eligibleResponse.ok || !receivedResponse.ok) {
+          throw new Error("Unable to load ratings.");
+        }
 
-    setTimeout(() => {
-      setSubmitted(false);
-    }, 3000);
+        const eligible = await eligibleResponse.json() as EligibleRating[];
+        const received = await receivedResponse.json() as ReceivedRating[];
+        if (isCurrent) {
+          setEligibleRatings(eligible);
+          setReceivedRatings(received);
+          setSelectedRequestId(eligible[0] ? String(eligible[0].requestId) : "");
+        }
+      } catch (error) {
+        if (isCurrent) {
+          setErrorMessage(error instanceof Error ? error.message : "Unable to load ratings.");
+        }
+      } finally {
+        if (isCurrent) {
+          setLoading(false);
+        }
+      }
+    };
+
+    queueMicrotask(() => void loadRatings());
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!selectedRequestId || selectedRating === 0 || !review.trim()) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("Please log in before submitting a rating.");
+      return;
+    }
+
+    setSubmitting(true);
+    setErrorMessage("");
+    setSubmitted(false);
+    try {
+      const response = await fetch(apiUrl("/api/ratings"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          requestId: Number(selectedRequestId),
+          score: selectedRating,
+          comment: review.trim(),
+        }),
+      });
+      const responseData = await response.json().catch(() => null) as { message?: string } | null;
+      if (!response.ok) {
+        throw new Error(responseData?.message || "Unable to submit this rating.");
+      }
+
+      setEligibleRatings((current) => current.filter(
+        (item) => item.requestId !== Number(selectedRequestId)
+      ));
+      setSelectedRequestId("");
+      setReview("");
+      setSelectedRating(0);
+      setSubmitted(true);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unable to submit this rating.");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const selectedRide = eligibleRatings.find(
+    (item) => item.requestId === Number(selectedRequestId)
+  );
+  const averageRating = receivedRatings.length
+    ? (receivedRatings.reduce((sum, item) => sum + item.score, 0) / receivedRatings.length).toFixed(1)
+    : "--";
+  const distribution = [5, 4, 3, 2, 1].map((score) => ({
+    score,
+    percentage: receivedRatings.length
+      ? Math.round(receivedRatings.filter((item) => item.score === score).length / receivedRatings.length * 100)
+      : 0,
+  }));
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -59,12 +148,12 @@ export default function RatingsPage() {
             </p>
           </div>
 
-          <a
+          <Link
             href="/dashboard"
             className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-slate-50"
           >
             ← Dashboard
-          </a>
+          </Link>
         </div>
       </header>
 

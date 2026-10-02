@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { apiUrl } from "@/lib/api";
 
 type RequestStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
 
@@ -56,7 +57,7 @@ function ConfirmationContent() {
       }
 
       try {
-        const response = await fetch("http://localhost:8080/api/ride-requests/my-requests", {
+        const response = await fetch(apiUrl("/api/ride-requests/my-requests"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
@@ -106,7 +107,7 @@ function ConfirmationContent() {
       setCancelling(true);
       setActionError("");
       const response = await fetch(
-        `http://localhost:8080/api/ride-requests/${booking.id}/cancel`,
+        apiUrl(`/api/ride-requests/${booking.id}/cancel`),
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },

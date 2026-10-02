@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { apiUrl } from "@/lib/api";
 
 type RequestStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
 
@@ -45,7 +46,7 @@ function TripPassContent() {
       }
 
       try {
-        const response = await fetch("http://localhost:8080/api/ride-requests/my-requests", {
+        const response = await fetch(apiUrl("/api/ride-requests/my-requests"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {

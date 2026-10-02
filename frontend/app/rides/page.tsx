@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api";
 
 type RideStatus =
   | "Upcoming"
@@ -67,7 +68,7 @@ export default function MyRidesPage() {
         }
 
         const response = await fetch(
-          "http://localhost:8080/api/rides/my-rides",
+          apiUrl("/api/rides/my-rides"),
           {
             method: "GET",
             headers: {
