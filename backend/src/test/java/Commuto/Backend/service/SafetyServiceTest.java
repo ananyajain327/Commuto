@@ -206,7 +206,35 @@ class SafetyServiceTest {
         assertEquals("ACTIVE", response.status());
         assertEquals(26.9124, response.latitude());
         assertEquals(75.7873, response.longitude());
-        assertEquals("Driver took a suspicious detour", response.message());
+        assertTrue(response.message().contains("Driver took a suspicious detour"));
+    }
+
+    @Test
+    void triggerSos_notifiesConfiguredEmergencyContacts() {
+        EmergencyContact contact = new EmergencyContact();
+        contact.setName("Ramesh Patel");
+        contact.setRelationship("Father");
+        contact.setPhone("+919876543210");
+        contact.setPrimary(true);
+
+        when(emergencyContactRepository.findByUserOrderByCreatedAtDesc(testUser))
+                .thenReturn(List.of(contact));
+
+        when(sosAlertRepository.save(any(SosAlert.class))).thenAnswer(inv -> {
+            SosAlert a = inv.getArgument(0);
+            ReflectionTestUtils.setField(a, "id", 1001L);
+            return a;
+        });
+
+        SosTriggerRequest req = new SosTriggerRequest(null, 26.9, 75.8, "Need help immediately");
+        SosAlertResponse response = safetyService.triggerSos(testUser, req);
+
+        assertNotNull(response);
+        assertEquals(1001L, response.id());
+        assertFalse(response.notifiedContacts().isEmpty());
+        assertTrue(response.notifiedContacts().get(0).contains("Ramesh Patel"));
+        assertTrue(response.message().contains("SMS & GPS DISPATCHED TO"));
+        assertTrue(response.message().contains("+919876543210"));
     }
 
     @Test

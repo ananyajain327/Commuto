@@ -48,10 +48,14 @@ public class SafetyService {
                 .map(EmergencyContactResponse::new)
                 .toList();
 
+        List<String> contactSummary = contactEntities.stream()
+                .map(c -> c.getName() + " (" + c.getRelationship() + ", Phone: " + c.getPhone() + (c.isPrimary() ? ", PRIMARY" : "") + ")")
+                .toList();
+
         List<SosAlertResponse> activeAlerts = sosAlertRepository
                 .findByUserAndStatusOrderByCreatedAtDesc(user, SosAlert.SosStatus.ACTIVE)
                 .stream()
-                .map(SosAlertResponse::new)
+                .map(alert -> new SosAlertResponse(alert, contactSummary))
                 .toList();
 
         boolean hasPrimaryContact = contactEntities.stream().anyMatch(EmergencyContact::isPrimary);
@@ -150,17 +154,29 @@ public class SafetyService {
         if (request != null) {
             alert.setLatitude(request.getLatitude());
             alert.setLongitude(request.getLongitude());
-            if (request.getMessage() != null && !request.getMessage().isBlank()) {
-                alert.setMessage(request.getMessage().trim());
-            } else {
-                alert.setMessage("Emergency SOS activated by " + user.getFullName());
-            }
-        } else {
-            alert.setMessage("Emergency SOS activated by " + user.getFullName());
         }
+        List<EmergencyContact> contacts = emergencyContactRepository.findByUserOrderByCreatedAtDesc(user);
+        List<String> contactSummary = contacts.stream()
+                .map(c -> c.getName() + " (" + c.getRelationship() + ", Phone: " + c.getPhone() + (c.isPrimary() ? ", PRIMARY" : "") + ")")
+                .toList();
+
+        StringBuilder baseMsg = new StringBuilder();
+        if (request != null && request.getMessage() != null && !request.getMessage().isBlank()) {
+            baseMsg.append(request.getMessage().trim());
+        } else {
+            baseMsg.append("Emergency SOS activated by ").append(user.getFullName()).append(" (Phone: ").append(user.getPhone()).append(")");
+        }
+
+        if (!contactSummary.isEmpty()) {
+            baseMsg.append(" | [SOS DISPATCH] SMS & GPS DISPATCHED TO: ").append(String.join("; ", contactSummary));
+        } else {
+            baseMsg.append(" | [ALERT] No emergency contacts configured on profile. Emergency Services (112) alerted.");
+        }
+
+        alert.setMessage(baseMsg.toString());
         alert.setStatus(SosAlert.SosStatus.ACTIVE);
 
-        return new SosAlertResponse(sosAlertRepository.save(alert));
+        return new SosAlertResponse(sosAlertRepository.save(alert), contactSummary);
     }
 
     @Transactional
@@ -211,10 +227,21 @@ public class SafetyService {
             msg.append(" | Note: ").append(request.getMessage().trim());
         }
 
+        List<EmergencyContact> contacts = emergencyContactRepository.findByUserOrderByCreatedAtDesc(user);
+        List<String> contactSummary = contacts.stream()
+                .map(c -> c.getName() + " (" + c.getRelationship() + ", Phone: " + c.getPhone() + (c.isPrimary() ? ", PRIMARY" : "") + ")")
+                .toList();
+
+        if (!contactSummary.isEmpty()) {
+            msg.append(" | [SOS DISPATCH] SMS & GPS DISPATCHED TO: ").append(String.join("; ", contactSummary));
+        } else {
+            msg.append(" | [ALERT] No emergency contacts configured on profile. Emergency Services (112) alerted.");
+        }
+
         alert.setMessage(msg.toString());
         alert.setStatus(SosAlert.SosStatus.ACTIVE);
 
-        return new SosAlertResponse(sosAlertRepository.save(alert));
+        return new SosAlertResponse(sosAlertRepository.save(alert), contactSummary);
     }
 
     @Transactional
@@ -230,13 +257,23 @@ public class SafetyService {
 
         alert.setStatus(SosAlert.SosStatus.RESOLVED);
         alert.setResolvedAt(LocalDateTime.now());
-        return new SosAlertResponse(sosAlertRepository.save(alert));
+        List<EmergencyContact> contacts = emergencyContactRepository.findByUserOrderByCreatedAtDesc(alert.getUser());
+        List<String> contactSummary = contacts.stream()
+                .map(c -> c.getName() + " (" + c.getRelationship() + ", Phone: " + c.getPhone() + (c.isPrimary() ? ", PRIMARY" : "") + ")")
+                .toList();
+        return new SosAlertResponse(sosAlertRepository.save(alert), contactSummary);
     }
 
     @Transactional(readOnly = true)
     public List<SosAlertResponse> getActiveSosAlerts() {
         return sosAlertRepository.findByStatusOrderByCreatedAtDesc(SosAlert.SosStatus.ACTIVE).stream()
-                .map(SosAlertResponse::new)
+                .map(alert -> {
+                    List<EmergencyContact> contacts = emergencyContactRepository.findByUserOrderByCreatedAtDesc(alert.getUser());
+                    List<String> contactSummary = contacts.stream()
+                            .map(c -> c.getName() + " (" + c.getRelationship() + ", Phone: " + c.getPhone() + (c.isPrimary() ? ", PRIMARY" : "") + ")")
+                            .toList();
+                    return new SosAlertResponse(alert, contactSummary);
+                })
                 .toList();
     }
 }

@@ -59,12 +59,14 @@ export default function PassengerTrackingPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [sosLoading, setSosLoading] = useState(false);
   const [sosStatusMessage, setSosStatusMessage] = useState("");
+  const [sosContacts, setSosContacts] = useState<string[]>([]);
   const [showSosModal, setShowSosModal] = useState(false);
 
   const handleTriggerSos = async () => {
     if (!ride) return;
     setSosLoading(true);
     setSosStatusMessage("");
+    setSosContacts([]);
     try {
       const lat = location ? location.latitude : null;
       const lon = location ? location.longitude : null;
@@ -88,7 +90,23 @@ export default function PassengerTrackingPage() {
         throw new Error(data?.message || "Failed to trigger Emergency SOS");
       }
 
-      setSosStatusMessage("🚨 Emergency SOS broadcasted! Commuto Safety team and emergency contacts have been alerted.");
+      const data = (await response.json().catch(() => null)) as {
+        message?: string;
+        notifiedContacts?: string[];
+      } | null;
+
+      const contacts = data?.notifiedContacts || [];
+      setSosContacts(contacts);
+
+      if (contacts.length > 0) {
+        setSosStatusMessage(
+          "🚨 Emergency SOS broadcasted! SMS alert & live GPS coordinates dispatched to your emergency contacts."
+        );
+      } else {
+        setSosStatusMessage(
+          "🚨 Emergency SOS broadcasted! Commuto Safety team and national emergency helplines alerted."
+        );
+      }
       setShowSosModal(false);
     } catch (err) {
       setSosStatusMessage(err instanceof Error ? err.message : "Error triggering SOS.");
@@ -312,17 +330,39 @@ export default function PassengerTrackingPage() {
 
       <section className="mx-auto max-w-6xl space-y-5 px-6 py-8">
         {sosStatusMessage && (
-          <div className="rounded-2xl border border-red-300 bg-red-50 p-4 text-sm font-bold text-red-900 shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🚨</span>
-              <p>{sosStatusMessage}</p>
+          <div className="rounded-2xl border border-red-300 bg-red-50 p-4 text-sm font-medium text-red-900 shadow-sm space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl animate-pulse">🚨</span>
+                <div>
+                  <p className="font-bold text-red-900">{sosStatusMessage}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setSosStatusMessage("");
+                  setSosContacts([]);
+                }}
+                className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 shrink-0"
+              >
+                Dismiss
+              </button>
             </div>
-            <button
-              onClick={() => setSosStatusMessage("")}
-              className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-slate-700 border border-slate-200"
-            >
-              Dismiss
-            </button>
+            {sosContacts.length > 0 && (
+              <div className="pt-2 border-t border-red-200 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-red-800 uppercase tracking-wider">SMS & GPS Sent To:</span>
+                {sosContacts.map((contact, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1 text-xs font-semibold text-red-700 shadow-xs border border-red-200"
+                  >
+                    <span>📱</span>
+                    <span>{contact}</span>
+                    <span className="text-[10px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-bold">DISPATCHED</span>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

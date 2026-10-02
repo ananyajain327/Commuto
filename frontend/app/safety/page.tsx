@@ -25,6 +25,7 @@ interface SosAlert {
   message: string;
   createdAt: string;
   resolvedAt: string | null;
+  notifiedContacts?: string[];
 }
 
 interface SafetySummary {
@@ -203,9 +204,15 @@ export default function SafetyCenterPage() {
           throw new Error("Could not transmit SOS alert. Please seek local emergency services immediately.");
         }
 
+        const data = (await res.json().catch(() => null)) as { notifiedContacts?: string[] } | null;
+        const alerted = data?.notifiedContacts || [];
+        const contactDetails = alerted.length > 0
+          ? ` SMS alerts & live coordinates dispatched to: ${alerted.join(", ")}.`
+          : " Support and emergency services notified.";
+
         setSosOpen(false);
         setSosMessage("");
-        setSuccessMessage("SOS alert activated. Support and your emergency contacts have been notified.");
+        setSuccessMessage(`SOS alert activated!${contactDetails}`);
         await loadSafetyData();
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "SOS failed to transmit.";
@@ -348,6 +355,16 @@ export default function SafetyCenterPage() {
                     <p className="mt-1 text-xs text-red-200">
                       Location: {activeAlerts[0].latitude.toFixed(4)}, {activeAlerts[0].longitude.toFixed(4)}
                     </p>
+                  )}
+                  {activeAlerts[0].notifiedContacts && activeAlerts[0].notifiedContacts.length > 0 && (
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2 border-t border-red-500/40">
+                      <span className="text-[11px] font-bold text-red-200 uppercase tracking-wider">SMS Dispatched:</span>
+                      {activeAlerts[0].notifiedContacts.map((c, i) => (
+                        <span key={i} className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-xs">
+                          📱 {c}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>

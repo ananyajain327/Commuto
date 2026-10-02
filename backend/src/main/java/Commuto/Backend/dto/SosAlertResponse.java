@@ -3,6 +3,7 @@ package Commuto.Backend.dto;
 import Commuto.Backend.entity.SosAlert;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record SosAlertResponse(
         Long id,
@@ -15,9 +16,14 @@ public record SosAlertResponse(
         String status,
         String message,
         LocalDateTime createdAt,
-        LocalDateTime resolvedAt
+        LocalDateTime resolvedAt,
+        List<String> notifiedContacts
 ) {
     public SosAlertResponse(SosAlert alert) {
+        this(alert, List.of());
+    }
+
+    public SosAlertResponse(SosAlert alert, List<String> notifiedContacts) {
         this(
                 alert.getId(),
                 alert.getUser().getId(),
@@ -29,7 +35,8 @@ public record SosAlertResponse(
                 alert.getStatus().name(),
                 alert.getMessage(),
                 alert.getCreatedAt(),
-                alert.getResolvedAt()
+                alert.getResolvedAt(),
+                notifiedContacts != null ? notifiedContacts : List.of()
         );
     }
 }
