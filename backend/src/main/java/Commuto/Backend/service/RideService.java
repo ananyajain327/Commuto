@@ -54,6 +54,39 @@ public class RideService {
         return rideRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
     }
+
+    public Ride startRide(Long rideId, User driver) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        if (!ride.getDriver().getId().equals(driver.getId())) {
+            throw new RuntimeException("You are not the driver of this ride");
+        }
+
+        if (ride.getStatus() != Ride.RideStatus.UPCOMING) {
+            throw new RuntimeException("Ride can only be started from UPCOMING status");
+        }
+
+        ride.setStatus(Ride.RideStatus.ACTIVE);
+        return rideRepository.save(ride);
+    }
+
+    public Ride completeRide(Long rideId, User driver) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        if (!ride.getDriver().getId().equals(driver.getId())) {
+            throw new RuntimeException("You are not the driver of this ride");
+        }
+
+        if (ride.getStatus() != Ride.RideStatus.ACTIVE) {
+            throw new RuntimeException("Ride can only be completed from ACTIVE status");
+        }
+
+        ride.setStatus(Ride.RideStatus.COMPLETED);
+        return rideRepository.save(ride);
+    }
+
     public List<Ride> searchRides(SearchRideRequest request) {
 
         if (request.getRideDate() != null) {

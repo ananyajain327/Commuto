@@ -11,10 +11,12 @@ interface Driver {
 }
 
 interface Ride {
+  id: number;
   startLocation: string;
   destination: string;
   rideDate: string;
   departureTime: string;
+  status: "UPCOMING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
   vehicleModel?: string;
   vehicleNumber?: string;
   driver?: Driver;
@@ -184,6 +186,11 @@ export default function MyRequestsPage() {
                 <a href={`/booking/confirmation?requestId=${request.id}`} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50">
                   View Details
                 </a>
+                {request.status === "ACCEPTED" && request.ride.status === "ACTIVE" && (
+                  <a href={`/rides/tracking/${request.ride.id}`} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                    Track Ride
+                  </a>
+                )}
                 {canCancel && (
                   <button
                     type="button"

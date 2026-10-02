@@ -579,10 +579,10 @@ function RideCard({ ride }: { ride: Ride }) {
 
           {ride.status === "Active" && (
             <a
-              href="/rides/tracking"
+              href={`/driver/tracking/${ride.id}`}
               className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
             >
-              Track Ride
+              Share Live Location
             </a>
           )}
 

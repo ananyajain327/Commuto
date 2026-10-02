@@ -48,7 +48,9 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "http://localhost:3001"
+                "http://localhost:3001",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:3001"
         ));
 
         configuration.setAllowedMethods(List.of(
@@ -114,7 +116,8 @@ public class SecurityConfig {
                         // Public authentication APIs
                         .requestMatchers(
                                 "/api/auth/register",
-                                "/api/auth/login"
+                                "/api/auth/login",
+                                "/ws/**"
                         )
                         .permitAll()
 

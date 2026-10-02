@@ -17,7 +17,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/rides")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001"
+})
 public class RideController {
 
     private final RideService rideService;
@@ -91,6 +96,30 @@ public class RideController {
             @PathVariable Long id) {
 
         Ride ride = rideService.getRideById(id);
+
+        return ResponseEntity.ok(new RideResponse(ride));
+    }
+
+    @PutMapping("/{id}/start")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<RideResponse> startRide(
+            Authentication authentication,
+            @PathVariable Long id) {
+
+        User driver = (User) authentication.getPrincipal();
+        Ride ride = rideService.startRide(id, driver);
+
+        return ResponseEntity.ok(new RideResponse(ride));
+    }
+
+    @PutMapping("/{id}/complete")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<RideResponse> completeRide(
+            Authentication authentication,
+            @PathVariable Long id) {
+
+        User driver = (User) authentication.getPrincipal();
+        Ride ride = rideService.completeRide(id, driver);
 
         return ResponseEntity.ok(new RideResponse(ride));
     }
