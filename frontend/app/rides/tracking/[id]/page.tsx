@@ -85,7 +85,15 @@ export default function PassengerTrackingPage() {
         if (isCurrent) {
           setToken(storedToken);
           setRide(acceptedRequest.ride);
-          setConnection(acceptedRequest.ride.status === "ACTIVE" ? "connecting" : "waiting");
+          setConnection(
+            acceptedRequest.ride.status === "ACTIVE"
+              ? "connecting"
+              : acceptedRequest.ride.status === "COMPLETED"
+                ? "completed"
+                : acceptedRequest.ride.status === "CANCELLED"
+                  ? "cancelled"
+                : "waiting"
+          );
         }
       } catch (err) {
         if (isCurrent) {
@@ -100,6 +108,47 @@ export default function PassengerTrackingPage() {
       isCurrent = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (!token || !ride || (ride.status !== "UPCOMING" && ride.status !== "ACTIVE")) {
+      return;
+    }
+
+    let isCurrent = true;
+    const refreshRideStatus = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/ride-requests/my-requests", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          return;
+        }
+
+        const requests: RideRequest[] = await response.json();
+        const acceptedRequest = requests.find(
+          (request) => request.ride.id === Number(id) && request.status === "ACCEPTED"
+        );
+        if (isCurrent && acceptedRequest && acceptedRequest.ride.status !== ride.status) {
+          setRide(acceptedRequest.ride);
+          setConnection(
+            acceptedRequest.ride.status === "ACTIVE"
+              ? "connecting"
+              : acceptedRequest.ride.status === "COMPLETED"
+                ? "completed"
+                : "cancelled"
+          );
+        }
+      } catch {
+        // Keep the current ride state; the next refresh can recover from transient network errors.
+      }
+    };
+
+    const intervalId = window.setInterval(() => void refreshRideStatus(), 5000);
+    return () => {
+      isCurrent = false;
+      window.clearInterval(intervalId);
+    };
+  }, [id, ride, token]);
 
   useEffect(() => {
     if (!ride || ride.status !== "ACTIVE" || !token) {
@@ -207,7 +256,7 @@ export default function PassengerTrackingPage() {
         {ride && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200">
             <p className="text-sm font-semibold">{ride.driverName} · {ride.vehicleModel} · {ride.vehicleNumber}</p>
-            <p className="text-sm text-slate-500">{location ? `Updated ${new Date(location.timestamp).toLocaleTimeString()}` : ride.status === "ACTIVE" ? "Waiting for the driver's first location update" : "Tracking starts when the driver starts the ride"}</p>
+            <p className="text-sm text-slate-500">{ride.status === "COMPLETED" ? "This ride has been completed" : ride.status === "CANCELLED" ? "This ride has been cancelled" : location ? `Updated ${new Date(location.timestamp).toLocaleTimeString()}` : ride.status === "ACTIVE" ? "Waiting for the driver's first location update" : "Tracking starts when the driver starts the ride"}</p>
           </div>
         )}
 

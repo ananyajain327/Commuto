@@ -186,6 +186,11 @@ export default function MyRequestsPage() {
                 <a href={`/booking/confirmation?requestId=${request.id}`} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50">
                   View Details
                 </a>
+                {request.status === "ACCEPTED" && (
+                  <a href={`/booking/pass?requestId=${request.id}`} className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
+                    View Trip Pass
+                  </a>
+                )}
                 {request.status === "ACCEPTED" && request.ride.status === "ACTIVE" && (
                   <a href={`/rides/tracking/${request.ride.id}`} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
                     Track Ride

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -12,6 +13,7 @@ interface Driver {
 }
 
 interface Ride {
+  id: number;
   startLocation: string;
   destination: string;
   rideDate: string;
@@ -131,7 +133,7 @@ function ConfirmationContent() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
         <p role="alert" className="font-semibold text-rose-600">{errorMessage || "Booking not found"}</p>
-        <a href="/rides/search" className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white">Find Rides</a>
+        <Link href="/rides/search" className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white">Find Rides</Link>
       </div>
     );
   }
@@ -148,12 +150,12 @@ function ConfirmationContent() {
               </p>
             </div>
 
-            <a
+            <Link
               href="/dashboard"
               className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50"
             >
               ← Dashboard
-            </a>
+            </Link>
           </div>
         </header>
 
@@ -172,12 +174,12 @@ function ConfirmationContent() {
               successfully.
             </p>
 
-            <a
+            <Link
               href="/rides/my-requests"
               className="mt-7 inline-block rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
             >
               My Requests
-            </a>
+            </Link>
           </div>
         </main>
       </div>
@@ -208,12 +210,12 @@ function ConfirmationContent() {
             </p>
           </div>
 
-          <a
+          <Link
             href="/rides/my-requests"
             className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50"
           >
             My Requests
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -344,12 +346,12 @@ function ConfirmationContent() {
                     and safety reporting are available throughout your ride.
                   </p>
 
-                  <a
+                  <Link
                     href="/safety"
                     className="mt-3 inline-block text-sm font-semibold text-emerald-800 underline"
                   >
                     Open Safety Center
-                  </a>
+                  </Link>
                 </div>
               </div>
             </section>
@@ -411,16 +413,23 @@ function ConfirmationContent() {
               </h2>
 
               <div className="mt-5 space-y-3">
-                <a href={`/rides/my-requests`} className="block w-full rounded-xl bg-indigo-600 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-700">
+                {isAccepted && (
+                  <Link href={`/booking/pass?requestId=${booking.id}`} className="block w-full rounded-xl bg-emerald-700 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-emerald-800">
+                    View Trip Pass
+                  </Link>
+                )}
+                <Link href="/rides/my-requests" className="block w-full rounded-xl bg-indigo-600 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-700">
                   My Requests
-                </a>
+                </Link>
 
-                <a
-                  href="/rides/tracking"
-                  className="block w-full rounded-xl border border-indigo-200 px-5 py-3 text-center text-sm font-semibold text-indigo-700 hover:bg-indigo-50"
-                >
-                  📍 Track Ride
-                </a>
+                {booking.ride.id ? (
+                  <Link
+                    href={`/rides/tracking/${booking.ride.id}`}
+                    className="block w-full rounded-xl border border-indigo-200 px-5 py-3 text-center text-sm font-semibold text-indigo-700 hover:bg-indigo-50"
+                  >
+                    📍 Track Ride
+                  </Link>
+                ) : null}
 
                 <button
                   onClick={() => setShared(!shared)}

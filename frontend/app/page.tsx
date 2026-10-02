@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 export default function Home() {
@@ -35,13 +36,13 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="hidden px-4 py-2 text-sm font-semibold text-slate-700 sm:block">
+          <Link href="/login" className="px-2 py-2 text-sm font-semibold text-slate-700 sm:px-4">
             Log in
-          </button>
+          </Link>
 
-          <button className="rounded-full bg-[#172033] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-xl">
+          <Link href="/register" className="rounded-full bg-[#172033] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-xl">
             Get Started
-          </button>
+          </Link>
         </div>
       </nav>
 
@@ -427,7 +428,7 @@ export default function Home() {
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                     Safety Center
                   </p>
-                  <h4 className="mt-2 text-2xl font-black">You're protected</h4>
+                  <h4 className="mt-2 text-2xl font-black">You&apos;re protected</h4>
                 </div>
 
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-xl">
