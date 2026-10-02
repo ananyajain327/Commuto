@@ -12,6 +12,7 @@ public class RideResponse {
 
     private Long driverId;
     private String driverName;
+    private boolean driverVerified;
 
     private String startLocation;
     private String destination;
@@ -37,6 +38,7 @@ public class RideResponse {
 
         this.driverId = ride.getDriver().getId();
         this.driverName = ride.getDriver().getFullName();
+        this.driverVerified = ride.getDriver().isVerified();
 
         this.startLocation = ride.getStartLocation();
         this.destination = ride.getDestination();
@@ -67,6 +69,10 @@ public class RideResponse {
 
     public String getDriverName() {
         return driverName;
+    }
+
+    public boolean isDriverVerified() {
+        return driverVerified;
     }
 
     public String getStartLocation() {

@@ -3,10 +3,12 @@ package Commuto.Backend.service;
 import Commuto.Backend.dto.*;
 import Commuto.Backend.entity.EmergencyContact;
 import Commuto.Backend.entity.Ride;
+import Commuto.Backend.entity.RideRequest;
 import Commuto.Backend.entity.SosAlert;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.EmergencyContactRepository;
 import Commuto.Backend.repository.RideRepository;
+import Commuto.Backend.repository.RideRequestRepository;
 import Commuto.Backend.repository.SosAlertRepository;
 import Commuto.Backend.repository.UserPreferenceRepository;
 import org.springframework.http.HttpStatus;
@@ -23,16 +25,19 @@ public class SafetyService {
     private final EmergencyContactRepository emergencyContactRepository;
     private final SosAlertRepository sosAlertRepository;
     private final RideRepository rideRepository;
+    private final RideRequestRepository rideRequestRepository;
     private final UserPreferenceRepository userPreferenceRepository;
 
     public SafetyService(
             EmergencyContactRepository emergencyContactRepository,
             SosAlertRepository sosAlertRepository,
             RideRepository rideRepository,
+            RideRequestRepository rideRequestRepository,
             UserPreferenceRepository userPreferenceRepository) {
         this.emergencyContactRepository = emergencyContactRepository;
         this.sosAlertRepository = sosAlertRepository;
         this.rideRepository = rideRepository;
+        this.rideRequestRepository = rideRequestRepository;
         this.userPreferenceRepository = userPreferenceRepository;
     }
 
@@ -153,6 +158,60 @@ public class SafetyService {
         } else {
             alert.setMessage("Emergency SOS activated by " + user.getFullName());
         }
+        alert.setStatus(SosAlert.SosStatus.ACTIVE);
+
+        return new SosAlertResponse(sosAlertRepository.save(alert));
+    }
+
+    @Transactional
+    public SosAlertResponse triggerRideSos(User user, Long rideId, SosTriggerRequest request) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
+
+        boolean isDriver = ride.getDriver().getId().equals(user.getId());
+        boolean isPassenger = rideRequestRepository.existsByRideAndPassengerAndStatus(
+                ride,
+                user,
+                RideRequest.RequestStatus.ACCEPTED
+        );
+
+        if (!isDriver && !isPassenger && user.getRole() != User.Role.ADMIN) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only ride participants or administrators can trigger an SOS for this ride"
+            );
+        }
+
+        SosAlert alert = new SosAlert();
+        alert.setUser(user);
+        alert.setRide(ride);
+
+        if (request != null) {
+            alert.setLatitude(request.getLatitude());
+            alert.setLongitude(request.getLongitude());
+        }
+
+        StringBuilder msg = new StringBuilder();
+        msg.append("EMERGENCY SOS: Triggered by ")
+                .append(user.getFullName())
+                .append(" (").append(user.getRole()).append(", Phone: ").append(user.getPhone()).append(")")
+                .append(" on Ride #").append(ride.getId())
+                .append(" [").append(ride.getStartLocation()).append(" -> ").append(ride.getDestination()).append("]");
+
+        if (isPassenger) {
+            msg.append(" | Driver: ").append(ride.getDriver().getFullName())
+                    .append(" (Phone: ").append(ride.getDriver().getPhone()).append(")")
+                    .append(", Vehicle: ").append(ride.getVehicleModel()).append(" (").append(ride.getVehicleNumber()).append(")");
+        } else if (isDriver) {
+            msg.append(" | Driver in distress. Vehicle: ")
+                    .append(ride.getVehicleModel()).append(" (").append(ride.getVehicleNumber()).append(")");
+        }
+
+        if (request != null && request.getMessage() != null && !request.getMessage().isBlank()) {
+            msg.append(" | Note: ").append(request.getMessage().trim());
+        }
+
+        alert.setMessage(msg.toString());
         alert.setStatus(SosAlert.SosStatus.ACTIVE);
 
         return new SosAlertResponse(sosAlertRepository.save(alert));

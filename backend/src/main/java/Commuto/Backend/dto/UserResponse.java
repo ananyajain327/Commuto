@@ -12,6 +12,7 @@ public class UserResponse {
     private String phone;
     private User.Role role;
     private boolean active;
+    private boolean verified;
     private LocalDateTime createdAt;
 
     public UserResponse(User user) {
@@ -21,6 +22,7 @@ public class UserResponse {
         this.phone = user.getPhone();
         this.role = user.getRole();
         this.active = user.isActive();
+        this.verified = user.isVerified();
         this.createdAt = user.getCreatedAt();
     }
 
@@ -46,6 +48,10 @@ public class UserResponse {
 
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isVerified() {
+        return verified;
     }
 
     public LocalDateTime getCreatedAt() {

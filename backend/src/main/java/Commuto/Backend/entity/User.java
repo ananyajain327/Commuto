@@ -34,6 +34,9 @@ public class User {
     private boolean active = true;
 
     @Column(nullable = false)
+    private boolean verified = false;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     public enum Role {
@@ -104,6 +107,14 @@ public class User {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 
     public LocalDateTime getCreatedAt() {

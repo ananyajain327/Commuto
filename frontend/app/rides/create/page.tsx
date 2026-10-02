@@ -167,8 +167,21 @@ export default function CreateRidePage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
-            ⚠ {error}
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-700">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span>⚠</span>
+                <span>{error}</span>
+              </div>
+              {(error.toLowerCase().includes("verif") || error.toLowerCase().includes("documents")) && (
+                <a
+                  href="/driver/verification"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-700 transition"
+                >
+                  Complete Verification Now →
+                </a>
+              )}
+            </div>
           </div>
         )}
 

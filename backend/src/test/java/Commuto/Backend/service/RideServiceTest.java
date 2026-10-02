@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,10 +68,48 @@ class RideServiceTest {
         assertThrows(RuntimeException.class, () -> rideService.startRide(11L, otherDriver));
     }
 
+    @Test
+    void unverifiedDriverCannotCreateRide() {
+        User driver = driver(7L);
+        driver.setVerified(false);
+
+        Commuto.Backend.dto.CreateRideRequest request = new Commuto.Backend.dto.CreateRideRequest();
+        request.setStartLocation("Jaipur");
+        request.setDestination("Delhi");
+        request.setExpectedFare(500.0);
+
+        org.springframework.web.server.ResponseStatusException ex = assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> rideService.createRide(driver, request)
+        );
+        assertEquals(org.springframework.http.HttpStatus.FORBIDDEN, ex.getStatusCode());
+    }
+
+    @Test
+    void verifiedDriverCanCreateRide() {
+        User driver = driver(7L);
+        driver.setVerified(true);
+
+        Commuto.Backend.dto.CreateRideRequest request = new Commuto.Backend.dto.CreateRideRequest();
+        request.setStartLocation("Jaipur");
+        request.setDestination("Delhi");
+        request.setExpectedFare(500.0);
+        request.setAvailableSeats(3);
+
+        when(rideRepository.save(any(Ride.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Ride created = rideService.createRide(driver, request);
+        assertEquals(Ride.RideStatus.UPCOMING, created.getStatus());
+        assertEquals("Jaipur", created.getStartLocation());
+        assertEquals("Delhi", created.getDestination());
+        verify(rideRepository).save(any(Ride.class));
+    }
+
     private User driver(Long id) {
         User user = new User();
         user.setId(id);
         user.setRole(User.Role.DRIVER);
+        user.setActive(true);
         return user;
     }
 }

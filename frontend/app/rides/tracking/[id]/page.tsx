@@ -57,6 +57,45 @@ export default function PassengerTrackingPage() {
   const [route, setRoute] = useState<Point[]>([]);
   const [connection, setConnection] = useState("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [sosLoading, setSosLoading] = useState(false);
+  const [sosStatusMessage, setSosStatusMessage] = useState("");
+  const [showSosModal, setShowSosModal] = useState(false);
+
+  const handleTriggerSos = async () => {
+    if (!ride) return;
+    setSosLoading(true);
+    setSosStatusMessage("");
+    try {
+      const lat = location ? location.latitude : null;
+      const lon = location ? location.longitude : null;
+
+      const response = await fetch(apiUrl(`/api/rides/${ride.id}/sos`), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rideId: ride.id,
+          latitude: lat,
+          longitude: lon,
+          message: "Passenger triggered emergency SOS during live trip tracking",
+        }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(data?.message || "Failed to trigger Emergency SOS");
+      }
+
+      setSosStatusMessage("🚨 Emergency SOS broadcasted! Commuto Safety team and emergency contacts have been alerted.");
+      setShowSosModal(false);
+    } catch (err) {
+      setSosStatusMessage(err instanceof Error ? err.message : "Error triggering SOS.");
+    } finally {
+      setSosLoading(false);
+    }
+  };
 
   useEffect(() => {
     let isCurrent = true;
@@ -256,13 +295,37 @@ export default function PassengerTrackingPage() {
             <h1 className="text-2xl font-bold">Live Ride Tracking</h1>
             <p className="mt-1 text-sm text-slate-500">{ride ? `${ride.startLocation} → ${ride.destination}` : "Ride location"}</p>
           </div>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isLive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
-            {isLive ? "LIVE" : connectionLabel}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowSosModal(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95 animate-pulse"
+            >
+              <span>🚨</span> Emergency SOS
+            </button>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isLive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
+              {isLive ? "LIVE" : connectionLabel}
+            </span>
+          </div>
         </div>
       </header>
 
       <section className="mx-auto max-w-6xl space-y-5 px-6 py-8">
+        {sosStatusMessage && (
+          <div className="rounded-2xl border border-red-300 bg-red-50 p-4 text-sm font-bold text-red-900 shadow-sm flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🚨</span>
+              <p>{sosStatusMessage}</p>
+            </div>
+            <button
+              onClick={() => setSosStatusMessage("")}
+              className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-slate-700 border border-slate-200"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {ride && ride.status === "COMPLETED" && (
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-indigo-50 p-5 border border-indigo-200 sm:flex-row shadow-sm">
             <div>
@@ -291,6 +354,59 @@ export default function PassengerTrackingPage() {
           <RideMap pickup={pickup} destination={destination} driver={driverPoint} route={route} />
         </div>
       </section>
+
+      {/* SOS Modal */}
+      {showSosModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-red-600">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-2xl font-bold">🚨</span>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Trigger Emergency SOS</h3>
+                <p className="text-xs text-slate-500">Immediate response and emergency broadcast</p>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm text-slate-600 leading-relaxed">
+              This will immediately broadcast an urgent emergency alert to the <strong>Commuto Safety Response Team</strong> and your registered <strong>Emergency Contacts</strong> with your live GPS location and trip details.
+            </p>
+
+            <div className="mt-5 space-y-2 rounded-2xl bg-slate-50 p-4 text-xs font-semibold text-slate-700">
+              <p className="text-slate-400 uppercase tracking-wider text-[10px]">National Helplines (Toll-Free)</p>
+              <div className="flex justify-between items-center py-1">
+                <span>🚓 Police Control Room:</span>
+                <a href="tel:112" className="text-indigo-600 font-bold hover:underline">Dial 112</a>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span>👩 Women Safety Helpline:</span>
+                <a href="tel:1091" className="text-indigo-600 font-bold hover:underline">Dial 1091</a>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span>🚑 Ambulance / Medical:</span>
+                <a href="tel:108" className="text-indigo-600 font-bold hover:underline">Dial 108</a>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSosModal(false)}
+                className="flex-1 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={sosLoading}
+                onClick={() => void handleTriggerSos()}
+                className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-bold text-white shadow-lg shadow-red-200 hover:bg-red-700 disabled:opacity-60"
+              >
+                {sosLoading ? "Sending SOS..." : "Confirm SOS Alert"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

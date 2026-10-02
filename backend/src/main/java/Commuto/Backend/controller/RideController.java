@@ -5,7 +5,10 @@ import Commuto.Backend.dto.RideResponse;
 import Commuto.Backend.dto.SearchRideRequest;
 import Commuto.Backend.entity.Ride;
 import Commuto.Backend.entity.User;
+import Commuto.Backend.dto.SosAlertResponse;
+import Commuto.Backend.dto.SosTriggerRequest;
 import Commuto.Backend.service.RideService;
+import Commuto.Backend.service.SafetyService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +23,11 @@ import java.util.List;
 public class RideController {
 
     private final RideService rideService;
+    private final SafetyService safetyService;
 
-    public RideController(RideService rideService) {
+    public RideController(RideService rideService, SafetyService safetyService) {
         this.rideService = rideService;
+        this.safetyService = safetyService;
     }
 
     // =========================
@@ -116,5 +121,19 @@ public class RideController {
         Ride ride = rideService.completeRide(id, driver);
 
         return ResponseEntity.ok(new RideResponse(ride));
+    }
+
+    @PostMapping("/{id}/sos")
+    public ResponseEntity<SosAlertResponse> triggerRideSos(
+            Authentication authentication,
+            @PathVariable Long id,
+            @RequestBody(required = false) SosTriggerRequest request) {
+
+        User user = (User) authentication.getPrincipal();
+        SosAlertResponse response = safetyService.triggerRideSos(user, id, request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 }

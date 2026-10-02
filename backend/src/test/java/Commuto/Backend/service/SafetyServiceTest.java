@@ -10,6 +10,7 @@ import Commuto.Backend.entity.SosAlert;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.EmergencyContactRepository;
 import Commuto.Backend.repository.RideRepository;
+import Commuto.Backend.repository.RideRequestRepository;
 import Commuto.Backend.repository.SosAlertRepository;
 import Commuto.Backend.repository.UserPreferenceRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,9 @@ class SafetyServiceTest {
 
     @Mock
     private RideRepository rideRepository;
+
+    @Mock
+    private RideRequestRepository rideRequestRepository;
 
     @Mock
     private UserPreferenceRepository userPreferenceRepository;
@@ -220,5 +224,60 @@ class SafetyServiceTest {
         assertNotNull(response);
         assertEquals("RESOLVED", response.status());
         assertNotNull(activeAlert.getResolvedAt());
+    }
+
+    @Test
+    void triggerRideSos_createsAlertForAcceptedPassenger() {
+        User driver = new User();
+        driver.setId(99L);
+        driver.setFullName("Rahul Driver");
+        driver.setPhone("+919999988888");
+
+        Ride ride = new Ride();
+        ReflectionTestUtils.setField(ride, "id", 123L);
+        ride.setDriver(driver);
+        ride.setStartLocation("Jaipur");
+        ride.setDestination("Delhi");
+        ride.setVehicleModel("Swift");
+        ride.setVehicleNumber("RJ14-AB-1234");
+
+        when(rideRepository.findById(123L)).thenReturn(Optional.of(ride));
+        when(rideRequestRepository.existsByRideAndPassengerAndStatus(ride, testUser, Commuto.Backend.entity.RideRequest.RequestStatus.ACCEPTED))
+                .thenReturn(true);
+        when(sosAlertRepository.save(any(SosAlert.class))).thenAnswer(inv -> {
+            SosAlert a = inv.getArgument(0);
+            ReflectionTestUtils.setField(a, "id", 777L);
+            return a;
+        });
+
+        SosTriggerRequest req = new SosTriggerRequest(123L, 26.9, 75.8, "Help needed");
+        SosAlertResponse response = safetyService.triggerRideSos(testUser, 123L, req);
+
+        assertNotNull(response);
+        assertEquals(777L, response.id());
+        assertEquals(123L, response.rideId());
+        assertEquals("ACTIVE", response.status());
+        assertTrue(response.message().contains("Rahul Driver"));
+    }
+
+    @Test
+    void triggerRideSos_forbiddenForStranger() {
+        User driver = new User();
+        driver.setId(99L);
+
+        Ride ride = new Ride();
+        ReflectionTestUtils.setField(ride, "id", 123L);
+        ride.setDriver(driver);
+
+        when(rideRepository.findById(123L)).thenReturn(Optional.of(ride));
+        when(rideRequestRepository.existsByRideAndPassengerAndStatus(ride, testUser, Commuto.Backend.entity.RideRequest.RequestStatus.ACCEPTED))
+                .thenReturn(false);
+
+        SosTriggerRequest req = new SosTriggerRequest(123L, 26.9, 75.8, "Help");
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> safetyService.triggerRideSos(testUser, 123L, req)
+        );
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 }

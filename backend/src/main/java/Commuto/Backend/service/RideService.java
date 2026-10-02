@@ -4,7 +4,9 @@ import Commuto.Backend.dto.CreateRideRequest;
 import Commuto.Backend.entity.Ride;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.RideRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,11 +22,15 @@ public class RideService {
     public Ride createRide(User driver, CreateRideRequest request) {
 
         if (driver.getRole() != User.Role.DRIVER) {
-            throw new RuntimeException("Only drivers can create rides");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only drivers can create rides");
         }
 
         if (!driver.isActive()) {
-            throw new RuntimeException("Driver account is inactive");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Driver account is inactive");
+        }
+
+        if (!driver.isVerified()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Driver account is not verified. Please submit documents for verification first.");
         }
 
         Ride ride = new Ride();

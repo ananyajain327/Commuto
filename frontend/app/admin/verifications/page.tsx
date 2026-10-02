@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { apiUrl } from "@/lib/api";
 
 type Verification = {
   id: string;
@@ -78,6 +79,22 @@ const initialApplications: Verification[] = [
   },
 ];
 
+interface BackendVerification {
+  id: number;
+  driverId: number;
+  driverName: string;
+  driverEmail: string;
+  licenseNumber: string;
+  vehicleRc: string;
+  insuranceNumber: string;
+  vehicleModel: string;
+  vehicleNumber: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  rejectionReason: string | null;
+  submittedAt: string;
+  reviewedAt: string | null;
+}
+
 export default function AdminVerificationsPage() {
   const [applications, setApplications] =
     useState<Verification[]>(initialApplications);
@@ -88,6 +105,49 @@ export default function AdminVerificationsPage() {
   const [showDocuments, setShowDocuments] = useState(false);
   const [showRejectBox, setShowRejectBox] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+
+  useEffect(() => {
+    let isCurrent = true;
+    const fetchVerifications = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await fetch(apiUrl("/api/admin/verifications"), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok && isCurrent) {
+          const data = (await res.json()) as BackendVerification[];
+          if (data && data.length > 0) {
+            const mapped: Verification[] = data.map((b) => ({
+              id: String(b.id),
+              driverId: `DRV-${b.driverId}`,
+              name: b.driverName,
+              email: b.driverEmail,
+              phone: "+91 ••••• •••••",
+              vehicle: b.vehicleModel || "Vehicle",
+              vehicleNumber: b.vehicleNumber || "N/A",
+              applicationDate: new Date(b.submittedAt).toLocaleDateString(),
+              status: b.status === "APPROVED" ? "Approved" : b.status === "REJECTED" ? "Rejected" : "Pending",
+              identity: "Uploaded",
+              licence: b.licenseNumber ? "Uploaded" : "Missing",
+              rc: b.vehicleRc ? "Uploaded" : "Missing",
+              reason: b.rejectionReason || undefined,
+            }));
+            setApplications(mapped);
+          }
+        }
+      } catch {
+        // Fall back gracefully to mock list
+      }
+    };
+
+    void fetchVerifications();
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   const filteredApplications = useMemo(() => {
     return applications.filter((item) => {
@@ -138,6 +198,24 @@ export default function AdminVerificationsPage() {
           }
         : current
     );
+
+    // Sync to backend if id is numeric
+    if (!isNaN(Number(id))) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        void fetch(apiUrl(`/api/admin/verifications/${id}/review`), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            status: status === "Approved" ? "APPROVED" : "REJECTED",
+            rejectionReason: reason,
+          }),
+        });
+      }
+    }
   };
 
   const approveApplication = () => {
