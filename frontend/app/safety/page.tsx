@@ -49,8 +49,8 @@ export default function SafetyCenterPage() {
 
   const [sosOpen, setSosOpen] = useState(false);
   const [sosMessage, setSosMessage] = useState("");
-  const [sharing, setSharing] = useState(false);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -257,16 +257,52 @@ export default function SafetyCenterPage() {
     }
   };
 
-  const handleShareTrip = () => {
-    const url = typeof window !== "undefined" ? `${window.location.origin}/rides` : "https://commuto.app/rides";
-    if (navigator.clipboard) {
+  const getShareDetails = () => {
+    const url = typeof window !== "undefined"
+      ? `${window.location.origin}/rides`
+      : "http://localhost:3000/rides";
+    const text = `🛡️ I am travelling safely with Commuto. Track my journeys and live ride status here: ${url}`;
+    return { url, text };
+  };
+
+  const handleCopyLink = () => {
+    const { url } = getShareDetails();
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(url);
       setShareLinkCopied(true);
-      setSharing(true);
       setTimeout(() => setShareLinkCopied(false), 3000);
-    } else {
-      setSharing(!sharing);
     }
+  };
+
+  const handleNativeShare = async () => {
+    const { url, text } = getShareDetails();
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: "Commuto Journey & Safety Tracking",
+          text: text,
+          url: url,
+        });
+        return;
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") return;
+      }
+    }
+    handleCopyLink();
+  };
+
+  const handleWhatsAppShare = () => {
+    const { text } = getShareDetails();
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  const handleSmsShare = () => {
+    const { text } = getShareDetails();
+    window.location.href = `sms:?body=${encodeURIComponent(text)}`;
+  };
+
+  const handleShareTrip = () => {
+    setShareModalOpen(true);
   };
 
   const score = summary ? summary.safetyScore : 50;
@@ -490,7 +526,7 @@ export default function SafetyCenterPage() {
               icon="📍"
               title="Share Live Trip"
               description="Share trip link with trusted contacts to track your route in real time."
-              buttonText={shareLinkCopied ? "Link Copied! ✓" : sharing ? "Trip Shared ✓" : "Share Trip"}
+              buttonText={shareLinkCopied ? "Link Copied! ✓" : "Share Trip"}
               onClick={handleShareTrip}
             />
 
@@ -789,6 +825,77 @@ export default function SafetyCenterPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Share Trip Modal */}
+      {shareModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm px-5">
+          <div className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl animate-scale-up">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl font-bold">
+                  📤
+                </span>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Share Live Trip</h3>
+                  <p className="text-xs text-slate-500">Keep family and contacts updated</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShareModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="mt-4 text-xs text-slate-600 leading-relaxed">
+              Share your live journey status and safety tracking link directly with your emergency contacts or via messaging apps.
+            </p>
+
+            <div className="mt-5 space-y-2.5">
+              <button
+                type="button"
+                onClick={handleWhatsAppShare}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 transition"
+              >
+                <span>💬</span> Share via WhatsApp
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNativeShare}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#5b5ce2] py-3.5 text-sm font-bold text-white shadow-md shadow-indigo-200 hover:bg-[#4a4bcf] transition"
+              >
+                <span>📱</span> Device Share Options
+              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleSmsShare}
+                  className="flex-1 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  📨 SMS / Text
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="flex-1 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  {shareLinkCopied ? "✓ Link Copied!" : "📋 Copy Link"}
+                </button>
+              </div>
+            </div>
+
+            {shareLinkCopied && (
+              <p className="mt-3 text-center text-xs font-bold text-emerald-600">
+                ✓ Trip tracking link copied to clipboard!
+              </p>
+            )}
           </div>
         </div>
       )}

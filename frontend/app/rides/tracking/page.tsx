@@ -3,8 +3,53 @@
 import { useState } from "react";
 
 export default function RideTrackingPage() {
-  const [shared, setShared] = useState(false);
   const [sosOpen, setSosOpen] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const getShareDetails = () => {
+    const trackingUrl = typeof window !== "undefined"
+      ? `${window.location.origin}/rides/tracking/1`
+      : "http://localhost:3000/rides/tracking/1";
+    const text = `🚗 Track my live Commuto journey!\n• Route: Vaishali Nagar → Malviya Nagar\n• Driver: Rajesh Kumar (Honda City - RJ 14 AB 1234)\n• Live Tracking Link: ${trackingUrl}`;
+    return { trackingUrl, text };
+  };
+
+  const handleCopyLink = () => {
+    const { trackingUrl } = getShareDetails();
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(trackingUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 3000);
+    }
+  };
+
+  const handleNativeShare = async () => {
+    const { trackingUrl, text } = getShareDetails();
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: "Commuto Live Ride Tracking",
+          text: text,
+          url: trackingUrl,
+        });
+        return;
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") return;
+      }
+    }
+    handleCopyLink();
+  };
+
+  const handleWhatsAppShare = () => {
+    const { text } = getShareDetails();
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  const handleSmsShare = () => {
+    const { text } = getShareDetails();
+    window.location.href = `sms:?body=${encodeURIComponent(text)}`;
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -243,14 +288,11 @@ export default function RideTrackingPage() {
               <h2 className="font-semibold">Safety Actions</h2>
 
               <button
-                onClick={() => setShared(!shared)}
-                className={`mt-4 w-full rounded-xl border px-4 py-3 text-sm font-semibold ${
-                  shared
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 hover:bg-slate-50"
-                }`}
+                type="button"
+                onClick={() => setShowShareModal(true)}
+                className="mt-4 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
               >
-                {shared ? "✓ Live Trip Shared" : "📤 Share Live Trip"}
+                📤 Share Live Trip
               </button>
 
               <button
@@ -350,6 +392,84 @@ export default function RideTrackingPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-2xl font-bold">
+                  📤
+                </span>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Share Live Trip</h3>
+                  <p className="text-xs text-slate-500">Keep family and friends informed in real time</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowShareModal(false)}
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-slate-50 p-4 border border-slate-100 space-y-2">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Live Trip Details</p>
+              <p className="text-sm font-bold text-slate-900">
+                Vaishali Nagar → Malviya Nagar
+              </p>
+              <p className="text-xs text-slate-600">
+                🚗 Driver: Rajesh Kumar · Honda City (RJ 14 AB 1234)
+              </p>
+            </div>
+
+            <div className="mt-5 space-y-2.5">
+              <button
+                type="button"
+                onClick={handleWhatsAppShare}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 transition"
+              >
+                <span>💬</span> Share via WhatsApp
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNativeShare}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#5b5ce2] py-3.5 text-sm font-bold text-white shadow-md shadow-indigo-200 hover:bg-[#4a4bcf] transition"
+              >
+                <span>📱</span> Device Share Options
+              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleSmsShare}
+                  className="flex-1 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  📨 SMS / Text
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="flex-1 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  {shareCopied ? "✓ Link Copied!" : "📋 Copy Link"}
+                </button>
+              </div>
+            </div>
+
+            {shareCopied && (
+              <p className="mt-3 text-center text-xs font-bold text-emerald-600">
+                ✓ Live tracking URL copied to clipboard!
+              </p>
+            )}
           </div>
         </div>
       )}

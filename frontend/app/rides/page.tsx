@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
 
@@ -172,34 +173,54 @@ export default function MyRidesPage() {
             </p>
           </div>
 
-          <a
-            href="/dashboard"
-            className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-          >
-            ← Dashboard
-          </a>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/rides/search"
+              className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
+            >
+              🔍 Request a Ride
+            </Link>
+            <Link
+              href="/dashboard"
+              className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              ← Dashboard
+            </Link>
+          </div>
 
         </div>
       </header>
 
       <div className="mx-auto max-w-7xl px-6 py-10">
 
-        {/* Hero */}
         <section className="mb-8 rounded-3xl bg-slate-900 px-8 py-9 text-white shadow-xl">
-
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-blue-400">
-            Your Journeys
-          </p>
-
-          <h1 className="text-3xl font-bold md:text-4xl">
-            My Rides
-          </h1>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
-            Track your upcoming journeys, manage active rides and view your
-            complete ride history in one place.
-          </p>
-
+          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-blue-400">
+                Your Journeys
+              </p>
+              <h1 className="text-3xl font-bold md:text-4xl">
+                My Rides
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                Track your upcoming journeys, manage active rides and view your complete ride history.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              <Link
+                href="/rides/search"
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition"
+              >
+                <span>🔍</span> Request a Ride
+              </Link>
+              <Link
+                href="/rides/create"
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white hover:bg-white/20 transition"
+              >
+                <span>🚗</span> Offer a Ride
+              </Link>
+            </div>
+          </div>
         </section>
 
         {/* Error */}

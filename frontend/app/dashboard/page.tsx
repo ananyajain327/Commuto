@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 const quickActions = [
   {
     icon: "🔍",
-    title: "Find a ride",
-    description: "Find someone going your way",
+    title: "Request a Ride",
+    description: "Find routes and request a trip",
     href: "/rides/search",
   },
   {
@@ -63,6 +63,57 @@ export default function DashboardPage() {
   const [user, setUser] = useState<{ fullName?: string; email?: string; role?: string } | null>(null);
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
+  const [detectingLocation, setDetectingLocation] = useState(false);
+
+  const handleUseCurrentLocation = () => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const road = data.address?.road || "";
+            const area =
+              data.address?.suburb ||
+              data.address?.neighbourhood ||
+              data.address?.city ||
+              data.address?.town ||
+              "";
+            const locationStr =
+              road && area
+                ? `${road}, ${area}`
+                : data.display_name?.split(",").slice(0, 3).join(",") ||
+                  `Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+            setFromLocation(locationStr.trim());
+          } else {
+            setFromLocation(`Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+          }
+        } catch {
+          setFromLocation(`Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+        } finally {
+          setDetectingLocation(false);
+        }
+      },
+      (err) => {
+        setDetectingLocation(false);
+        alert(
+          err.code === 1
+            ? "Location permission was denied. Please enter your pickup point manually."
+            : "Could not retrieve your location. Please enter your pickup point manually."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -264,9 +315,26 @@ export default function DashboardPage() {
             <form onSubmit={handleSearchSubmit} className="mt-6 grid gap-3 lg:grid-cols-[1fr_1fr_160px]">
 
               <div className="rounded-2xl bg-white/10 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  From
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    From
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleUseCurrentLocation}
+                    disabled={detectingLocation}
+                    className="inline-flex items-center gap-1 rounded-md bg-white/15 px-2 py-0.5 text-[11px] font-bold text-indigo-200 hover:bg-white/25 transition active:scale-95 disabled:opacity-50"
+                  >
+                    {detectingLocation ? (
+                      <span>Detecting...</span>
+                    ) : (
+                      <>
+                        <span>📍</span>
+                        <span>Current Location</span>
+                      </>
+                    )}
+                  </button>
+                </div>
 
                 <div className="mt-2 flex items-center gap-3">
                   <span>📍</span>

@@ -32,6 +32,57 @@ export default function FindRidePage() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
+  const [detectingLocation, setDetectingLocation] = useState(false);
+
+  const handleUseCurrentLocation = () => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const road = data.address?.road || "";
+            const area =
+              data.address?.suburb ||
+              data.address?.neighbourhood ||
+              data.address?.city ||
+              data.address?.town ||
+              "";
+            const locationStr =
+              road && area
+                ? `${road}, ${area}`
+                : data.display_name?.split(",").slice(0, 3).join(",") ||
+                  `Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+            setFrom(locationStr.trim());
+          } else {
+            setFrom(`Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+          }
+        } catch {
+          setFrom(`Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+        } finally {
+          setDetectingLocation(false);
+        }
+      },
+      (err) => {
+        setDetectingLocation(false);
+        alert(
+          err.code === 1
+            ? "Location permission was denied. Please enter your pickup point manually."
+            : "Could not retrieve your location. Please enter your pickup point manually."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const handleSearch = async () => {
   setError("");
@@ -220,9 +271,29 @@ export default function FindRidePage() {
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {/* From */}
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                From
-              </label>
+              <div className="mb-2 flex items-center justify-between">
+                <label className="text-sm font-semibold text-slate-700">
+                  From
+                </label>
+                <button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  disabled={detectingLocation}
+                  className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700 hover:bg-blue-100 transition active:scale-95 disabled:opacity-50"
+                >
+                  {detectingLocation ? (
+                    <>
+                      <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                      <span>Detecting GPS...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>📍</span>
+                      <span>Current Location</span>
+                    </>
+                  )}
+                </button>
+              </div>
 
               <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 focus-within:border-blue-500 focus-within:bg-white">
                 <span className="mr-3 text-lg">📍</span>

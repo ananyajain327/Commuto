@@ -34,6 +34,62 @@ function RideRequestContent() {
   const [seats, setSeats] = useState(1);
   const [pickupPreference, setPickupPreference] = useState("Main Pickup Point");
   const [note, setNote] = useState("");
+  const [detectingLocation, setDetectingLocation] = useState(false);
+  const [locationSuccess, setLocationSuccess] = useState(false);
+
+  const handleUseCurrentLocation = () => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setDetectingLocation(true);
+    setLocationSuccess(false);
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const road = data.address?.road || "";
+            const area =
+              data.address?.suburb ||
+              data.address?.neighbourhood ||
+              data.address?.city ||
+              data.address?.town ||
+              "";
+            const locationStr =
+              road && area
+                ? `${road}, ${area}`
+                : data.display_name?.split(",").slice(0, 3).join(",") ||
+                  `Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+            setPickupPreference(locationStr.trim());
+          } else {
+            setPickupPreference(`Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+          }
+        } catch {
+          setPickupPreference(`Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+        } finally {
+          setDetectingLocation(false);
+          setLocationSuccess(true);
+          setTimeout(() => setLocationSuccess(false), 4000);
+        }
+      },
+      (err) => {
+        setDetectingLocation(false);
+        alert(
+          err.code === 1
+            ? "Location permission was denied. Please allow location access or type your pickup point manually."
+            : "Could not retrieve your location. Please type your pickup point manually."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   useEffect(() => {
     async function fetchRideDetails() {
@@ -331,17 +387,46 @@ function RideRequestContent() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium">
-                      Pickup Preference
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700">
+                        Pickup Preference
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleUseCurrentLocation}
+                        disabled={detectingLocation}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition active:scale-95 disabled:opacity-50"
+                      >
+                        {detectingLocation ? (
+                          <>
+                            <span className="h-3 w-3 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+                            <span>Detecting GPS...</span>
+                          </>
+                        ) : locationSuccess ? (
+                          <span className="text-emerald-700 font-bold">✓ Location Set</span>
+                        ) : (
+                          <>
+                            <span>📍</span>
+                            <span>Use Current Location</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
 
-                    <input
-                      type="text"
-                      value={pickupPreference}
-                      onChange={(e) => setPickupPreference(e.target.value)}
-                      placeholder="e.g. Near main gate, station, etc."
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                    />
+                    <div className="relative mt-2">
+                      <input
+                        type="text"
+                        value={pickupPreference}
+                        onChange={(e) => setPickupPreference(e.target.value)}
+                        placeholder="e.g. Near main gate, station, etc."
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      />
+                    </div>
+                    {locationSuccess && (
+                      <p className="mt-1 text-xs font-medium text-emerald-600">
+                        ✓ Current GPS location detected and filled.
+                      </p>
+                    )}
                   </div>
                 </div>
 
