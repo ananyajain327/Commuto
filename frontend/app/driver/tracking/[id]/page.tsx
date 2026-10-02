@@ -117,6 +117,10 @@ export default function DriverTrackingPage() {
       (position) => {
         const { latitude, longitude, heading, speed } = position.coords;
         setCoordinates({ latitude, longitude });
+        setErrorMessage("");
+        if (client.connected) {
+          setConnection("connected");
+        }
         if (!client.connected || Date.now() - lastPublishedAt < 5000) {
           return;
         }
