@@ -110,7 +110,7 @@ export default function DriverDashboard() {
 
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold">{driverName}</p>
+              <p className="text-sm font-semibold">{loading ? "Loading..." : driverName}</p>
               <p className="text-xs text-slate-500">
                 {analytics?.isVerified ? "✓ Verified Driver" : "Verification Pending"}
               </p>
@@ -578,7 +578,7 @@ function RequestCard({
           <span className="font-bold text-indigo-700">{fare}</span>
 
           <Link
-            href="/driver/requests"
+            href={`/driver/requests?requestId=${requestId}`}
             className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
           >
             Review Request
