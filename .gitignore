@@ -8,3 +8,7 @@ demo/
 .env
 .env.*
 !.env.example
+
+# Local database files
+*.mv.db
+*.trace.db

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { apiUrl } from "@/lib/api";
 
 interface DriverRequestSummary {
@@ -49,6 +50,7 @@ interface DriverAnalytics {
 }
 
 export default function DriverDashboard() {
+  const router = useRouter();
   const [online, setOnline] = useState(false);
   const [analytics, setAnalytics] = useState<DriverAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -119,6 +121,18 @@ export default function DriverDashboard() {
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700">
               {initials}
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                router.push("/login");
+              }}
+              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </header>

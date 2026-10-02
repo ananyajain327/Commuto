@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const quickActions = [
   {
@@ -57,6 +59,43 @@ const recentRides = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<{ fullName?: string; email?: string; role?: string } | null>(null);
+  const [fromLocation, setFromLocation] = useState("");
+  const [toLocation, setToLocation] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        const stored = localStorage.getItem("user");
+        if (stored) {
+          setUser(JSON.parse(stored));
+        }
+      } catch {
+        // Ignore
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const passengerName = user?.fullName || "Passenger";
+  const initial = passengerName[0]?.toUpperCase() || "P";
+  const roleDisplay = user?.role || "Passenger";
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (fromLocation.trim()) params.set("from", fromLocation.trim());
+    if (toLocation.trim()) params.set("to", toLocation.trim());
+    router.push(`/rides/search?${params.toString()}`);
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/login");
+  };
+
   return (
     <main className="min-h-screen bg-[#f7f9fc] text-[#172033]">
 
@@ -84,19 +123,19 @@ export default function DashboardPage() {
             Main menu
           </p>
 
-          <SidebarItem icon="⌂" label="Overview" active />
-          <SidebarItem icon="⌕" label="Find a Ride" />
-          <SidebarItem icon="🚗" label="Offer a Ride" />
-          <SidebarItem icon="▣" label="My Rides" />
+          <SidebarItem icon="⌂" label="Overview" href="/dashboard" active />
+          <SidebarItem icon="⌕" label="Find a Ride" href="/rides/search" />
+          <SidebarItem icon="🚗" label="Offer a Ride" href="/rides/create" />
+          <SidebarItem icon="▣" label="My Rides" href="/rides" />
 
           <p className="mt-8 px-4 pb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
             Personal
           </p>
 
-          <SidebarItem icon="💳" label="Wallet" />
-          <SidebarItem icon="🛡️" label="Safety Center" />
-          <SidebarItem icon="★" label="Ratings" />
-          <SidebarItem icon="⚙" label="Settings" />
+          <SidebarItem icon="💳" label="Wallet" href="/wallet" />
+          <SidebarItem icon="🛡️" label="Safety Center" href="/safety" />
+          <SidebarItem icon="★" label="Ratings" href="/ratings" />
+          <SidebarItem icon="⚙" label="Settings" href="/settings" />
         </nav>
 
         {/* Safety card */}
@@ -133,34 +172,42 @@ export default function DashboardPage() {
               </p>
 
               <p className="mt-1 text-sm font-bold text-slate-700">
-                Wednesday, 9 September 2026
+                {new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
               </p>
             </div>
 
             <div className="flex items-center gap-3">
 
-              {/* Notification */}
-              <button className="relative flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg transition hover:bg-slate-50">
+              {/* Notification Link */}
+              <Link
+                href="/notifications"
+                className="relative flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg transition hover:bg-slate-50"
+              >
                 🔔
-
                 <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#5b5ce2] ring-2 ring-white" />
-              </button>
+              </Link>
 
               {/* Profile */}
-              <button className="flex items-center gap-3 rounded-full border border-slate-200 bg-white py-1.5 pl-2 pr-4 transition hover:bg-slate-50">
-
+              <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white py-1.5 pl-2 pr-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 font-bold text-[#5b5ce2]">
-                  A
+                  {initial}
                 </div>
 
                 <div className="hidden text-left sm:block">
-                  <p className="text-xs font-extrabold">Ananya Jain</p>
-                  <p className="text-[10px] text-slate-400">
-                    Passenger
+                  <p className="text-xs font-extrabold">{passengerName}</p>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                    {roleDisplay}
                   </p>
                 </div>
+              </div>
 
-                <span className="text-xs text-slate-400">⌄</span>
+              {/* Sign Out */}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
+              >
+                Sign out
               </button>
             </div>
           </div>
@@ -173,11 +220,11 @@ export default function DashboardPage() {
 
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#5b5ce2]">
-                Good evening
+                Welcome back
               </p>
 
               <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">
-                Where are you going?
+                Where are you going, {passengerName.split(" ")[0]}?
               </h1>
 
               <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500">
@@ -190,7 +237,7 @@ export default function DashboardPage() {
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
 
               <span className="text-xs font-bold text-emerald-700">
-                Account verified
+                Account Active
               </span>
             </div>
           </section>
@@ -214,7 +261,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_1fr_160px]">
+            <form onSubmit={handleSearchSubmit} className="mt-6 grid gap-3 lg:grid-cols-[1fr_1fr_160px]">
 
               <div className="rounded-2xl bg-white/10 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -226,6 +273,8 @@ export default function DashboardPage() {
 
                   <input
                     type="text"
+                    value={fromLocation}
+                    onChange={(e) => setFromLocation(e.target.value)}
                     placeholder="Pickup location"
                     className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-slate-500"
                   />
@@ -242,16 +291,21 @@ export default function DashboardPage() {
 
                   <input
                     type="text"
+                    value={toLocation}
+                    onChange={(e) => setToLocation(e.target.value)}
                     placeholder="Destination"
                     className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-slate-500"
                   />
                 </div>
               </div>
 
-              <button className="rounded-2xl bg-[#5b5ce2] px-5 py-4 text-sm font-extrabold text-white transition hover:bg-[#4d4ecf]">
+              <button
+                type="submit"
+                className="rounded-2xl bg-[#5b5ce2] px-5 py-4 text-sm font-extrabold text-white transition hover:bg-[#4d4ecf]"
+              >
                 Find rides →
               </button>
-            </div>
+            </form>
 
             <div className="mt-4 flex flex-wrap gap-3">
 
@@ -500,14 +554,17 @@ export default function DashboardPage() {
 function SidebarItem({
   icon,
   label,
+  href = "/dashboard",
   active = false,
 }: {
   icon: string;
   label: string;
+  href?: string;
   active?: boolean;
 }) {
   return (
-    <button
+    <Link
+      href={href}
       className={`mb-1 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition ${
         active
           ? "bg-indigo-50 text-[#5b5ce2]"
@@ -519,7 +576,7 @@ function SidebarItem({
       </span>
 
       {label}
-    </button>
+    </Link>
   );
 }
 
