@@ -1,33 +1,8 @@
 "use client";
+import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api";
 
-import { useState } from "react";
 
-const stats = [
-  {
-    title: "Total Users",
-    value: "12,480",
-    change: "+8.4%",
-    icon: "👥",
-  },
-  {
-    title: "Active Drivers",
-    value: "2,184",
-    change: "+5.2%",
-    icon: "🚗",
-  },
-  {
-    title: "Total Rides",
-    value: "38,642",
-    change: "+12.8%",
-    icon: "🛣️",
-  },
-  {
-    title: "Revenue",
-    value: "₹18.6L",
-    change: "+14.6%",
-    icon: "💰",
-  },
-];
 
 const recentRides = [
   {
@@ -106,8 +81,91 @@ const verificationRequests = [
   },
 ];
 
+interface AdminOverview {
+  totalUsers: number;
+  totalDrivers: number;
+  verifiedDrivers: number;
+  activeRides: number;
+  completedRides: number;
+  totalRides: number;
+  pendingVerifications: number;
+  activeSosAlerts: number;
+  platformGrossFare: number;
+}
+
+interface AdminRide {
+  id: number;
+  driverId: number;
+  driverName: string;
+  startLocation: string;
+  destination: string;
+  expectedFare: number;
+  status: string;
+}
+
 export default function AdminDashboard() {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const [overview, setOverview] = useState<AdminOverview | null>(null);
+  const [liveRides, setLiveRides] = useState<AdminRide[]>([]);
+
+  useEffect(() => {
+    let isCurrent = true;
+    const loadAdminData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const [overviewRes, ridesRes] = await Promise.all([
+          fetch(apiUrl("/api/admin/overview"), { headers }),
+          fetch(apiUrl("/api/admin/rides"), { headers }),
+        ]);
+
+        if (overviewRes.ok && isCurrent) {
+          const ov = (await overviewRes.json()) as AdminOverview;
+          setOverview(ov);
+        }
+        if (ridesRes.ok && isCurrent) {
+          const rList = (await ridesRes.json()) as AdminRide[];
+          setLiveRides(rList);
+        }
+      } catch {
+        // Fall back gracefully to mock stats if not logged in as admin
+      }
+    };
+
+    void loadAdminData();
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  const dynamicStats = [
+    {
+      title: "Total Users",
+      value: overview ? String(overview.totalUsers) : "12,480",
+      change: "+8.4%",
+      icon: "👥",
+    },
+    {
+      title: "Verified Drivers",
+      value: overview ? `${overview.verifiedDrivers} / ${overview.totalDrivers}` : "2,184",
+      change: "+5.2%",
+      icon: "🚗",
+    },
+    {
+      title: "Total Rides",
+      value: overview ? String(overview.totalRides) : "38,642",
+      change: overview ? `${overview.activeRides} active` : "+12.8%",
+      icon: "🛣️",
+    },
+    {
+      title: "Platform Revenue",
+      value: overview ? `₹${overview.platformGrossFare.toFixed(0)}` : "₹18.6L",
+      change: "+14.6%",
+      icon: "💰",
+    },
+  ];
 
   const menuItems = [
     { name: "Dashboard", icon: "📊" },
@@ -218,7 +276,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-              {stats.map((stat) => (
+              {dynamicStats.map((stat) => (
                 <div
                   key={stat.title}
                   className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
@@ -395,42 +453,53 @@ export default function AdminDashboard() {
                 </thead>
 
                 <tbody>
-                  {recentRides.map((ride) => (
-                    <tr
-                      key={ride.id}
-                      className="border-b border-slate-50 last:border-0 hover:bg-slate-50"
-                    >
-                      <td className="px-6 py-5 text-sm font-semibold">
-                        {ride.id}
-                      </td>
+                  {(liveRides.length > 0 ? liveRides : recentRides).map((item) => {
+                    const isLive = "startLocation" in item;
+                    const ride = item as unknown as Record<string, string | number>;
+                    const idText = isLive ? `RID-${ride.id}` : String(ride.id);
+                    const passengerText = isLive ? "Platform Rider" : String(ride.passenger);
+                    const driverText = isLive ? String(ride.driverName) : String(ride.driver);
+                    const routeText = isLive ? `${ride.startLocation} → ${ride.destination}` : String(ride.route);
+                    const fareText = isLive ? `₹${ride.expectedFare}` : String(ride.fare);
+                    const statusText = String(ride.status);
 
-                      <td className="px-6 py-5 text-sm">{ride.passenger}</td>
+                    return (
+                      <tr
+                        key={String(ride.id)}
+                        className="border-b border-slate-50 last:border-0 hover:bg-slate-50"
+                      >
+                        <td className="px-6 py-5 text-sm font-semibold">
+                          {idText}
+                        </td>
 
-                      <td className="px-6 py-5 text-sm">{ride.driver}</td>
+                        <td className="px-6 py-5 text-sm">{passengerText}</td>
 
-                      <td className="px-6 py-5 text-sm text-slate-500">
-                        {ride.route}
-                      </td>
+                        <td className="px-6 py-5 text-sm">{driverText}</td>
 
-                      <td className="px-6 py-5 text-sm font-semibold">
-                        {ride.fare}
-                      </td>
+                        <td className="px-6 py-5 text-sm text-slate-500">
+                          {routeText}
+                        </td>
 
-                      <td className="px-6 py-5">
-                        <span
-                          className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-                            ride.status === "Completed"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : ride.status === "Active"
-                              ? "bg-blue-50 text-blue-700"
-                              : "bg-red-50 text-red-700"
-                          }`}
-                        >
-                          {ride.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                        <td className="px-6 py-5 text-sm font-semibold">
+                          {fareText}
+                        </td>
+
+                        <td className="px-6 py-5">
+                          <span
+                            className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                              statusText.toLowerCase() === "completed"
+                                ? "bg-emerald-50 text-emerald-700"
+                                : statusText.toLowerCase() === "active"
+                                ? "bg-blue-50 text-blue-700"
+                                : "bg-red-50 text-red-700"
+                            }`}
+                          >
+                            {statusText}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

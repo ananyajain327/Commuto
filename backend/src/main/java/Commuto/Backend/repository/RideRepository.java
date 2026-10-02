@@ -25,4 +25,14 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             String destination,
             LocalDate rideDate
     );
+
+    long countByStatus(Ride.RideStatus status);
+
+    List<Ride> findAllByOrderByCreatedAtDesc();
+
+    List<Ride> findByDriverOrderByCreatedAtDesc(User driver);
+
+    long countByDriver(User driver);
+
+    long countByDriverAndStatus(User driver, Ride.RideStatus status);
 }
