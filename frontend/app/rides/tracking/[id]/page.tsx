@@ -237,6 +237,12 @@ export default function PassengerTrackingPage() {
   }, [ride]);
 
   const driverPoint: Point | null = location ? [location.latitude, location.longitude] : null;
+  const isLive = ride?.status === "ACTIVE" && connection === "live";
+  const connectionLabel = ride?.status === "COMPLETED"
+    ? "COMPLETED"
+    : ride?.status === "CANCELLED"
+      ? "CANCELLED"
+      : connection.toUpperCase();
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -246,8 +252,8 @@ export default function PassengerTrackingPage() {
             <h1 className="text-2xl font-bold">Live Ride Tracking</h1>
             <p className="mt-1 text-sm text-slate-500">{ride ? `${ride.startLocation} → ${ride.destination}` : "Ride location"}</p>
           </div>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${connection === "live" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
-            {connection === "live" ? "LIVE" : connection.toUpperCase()}
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isLive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
+            {isLive ? "LIVE" : connectionLabel}
           </span>
         </div>
       </header>
