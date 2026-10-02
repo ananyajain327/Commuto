@@ -120,14 +120,24 @@ export default function DashboardPage() {
       try {
         const stored = localStorage.getItem("user");
         if (stored) {
-          setUser(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          // Redirect drivers and admins to their correct dashboards
+          if (parsed?.role === "DRIVER") {
+            router.replace("/driver/dashboard");
+            return;
+          }
+          if (parsed?.role === "ADMIN") {
+            router.replace("/admin");
+            return;
+          }
+          setUser(parsed);
         }
       } catch {
         // Ignore
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   const passengerName = user?.fullName || "Passenger";
   const initial = passengerName[0]?.toUpperCase() || "P";

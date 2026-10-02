@@ -488,6 +488,28 @@ export default function FindRidePage() {
               We couldn&apos;t find a ride matching your journey. Try another date,
               route, or turn off the women-only filter.
             </p>
+
+            <div className="mx-auto mt-6 flex max-w-sm flex-col gap-3 sm:flex-row sm:justify-center">
+              <a
+                href={`/rides/create?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${encodeURIComponent(date)}`}
+                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-blue-700"
+              >
+                <span>🚗</span>
+                <span>Offer This Ride</span>
+              </a>
+
+              <a
+                href="/rides/my-requests"
+                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              >
+                <span>📋</span>
+                <span>My Requests</span>
+              </a>
+            </div>
+
+            <p className="mx-auto mt-4 max-w-sm text-xs text-slate-400">
+              Can&apos;t find what you need? Create your own ride and let other passengers join, or check your existing requests.
+            </p>
           </div>
         )}
 
