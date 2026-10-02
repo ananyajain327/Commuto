@@ -81,7 +81,12 @@ public class RatingService {
         rating.setRatee(ratee);
         rating.setScore(score);
         rating.setComment(comment.trim());
-        return new RatingResponse(ratingRepository.save(rating));
+        Rating savedRating = ratingRepository.save(rating);
+
+        Double averageScore = ratingRepository.findAverageScoreByRatee(ratee);
+        double roundedAverage = averageScore != null ? Math.round(averageScore * 10.0) / 10.0 : (double) score;
+
+        return new RatingResponse(savedRating, roundedAverage);
     }
 
     @Transactional(readOnly = true)
@@ -89,6 +94,17 @@ public class RatingService {
         return ratingRepository.findByRateeOrderByCreatedAtDesc(ratee).stream()
                 .map(RatingResponse::new)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Double getAverageRating(User user) {
+        Double avg = ratingRepository.findAverageScoreByRatee(user);
+        return avg != null ? Math.round(avg * 10.0) / 10.0 : 5.0;
+    }
+
+    @Transactional(readOnly = true)
+    public long getRatingCount(User user) {
+        return ratingRepository.countByRatee(user);
     }
 
     private User getRatee(RideRequest request, User rater) {

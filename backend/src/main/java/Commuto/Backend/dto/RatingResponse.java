@@ -12,9 +12,14 @@ public record RatingResponse(
         String rateeName,
         int score,
         String comment,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Double updatedAverageScore
 ) {
     public RatingResponse(Rating rating) {
+        this(rating, null);
+    }
+
+    public RatingResponse(Rating rating, Double updatedAverageScore) {
         this(
                 rating.getId(),
                 rating.getRequest().getId(),
@@ -23,7 +28,8 @@ public record RatingResponse(
                 rating.getRatee().getFullName(),
                 rating.getScore(),
                 rating.getComment(),
-                rating.getCreatedAt()
+                rating.getCreatedAt(),
+                updatedAverageScore
         );
     }
 }

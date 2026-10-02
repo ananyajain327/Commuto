@@ -2,6 +2,7 @@
 
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
@@ -228,6 +229,19 @@ export default function DriverTrackingPage() {
               {isCompleting ? "Completing ride..." : "Complete ride"}
             </button>
           </article>
+        ) : ride && ride.status === "COMPLETED" ? (
+          <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-indigo-50 p-6 border border-indigo-200 sm:flex-row shadow-sm">
+            <div>
+              <h2 className="text-base font-bold text-indigo-900">Trip Completed Successfully!</h2>
+              <p className="mt-0.5 text-xs text-indigo-700">Check passenger feedback, rate passengers, and track your overall rating score.</p>
+            </div>
+            <Link
+              href="/ratings"
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition"
+            >
+              ★ View Ratings Center
+            </Link>
+          </div>
         ) : ride && ride.status !== "UPCOMING" ? (
           <p className="rounded-xl bg-slate-100 p-4 text-sm text-slate-700">This ride is no longer active for live tracking.</p>
         ) : null}

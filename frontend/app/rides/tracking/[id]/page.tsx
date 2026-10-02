@@ -2,6 +2,7 @@
 
 import { Client } from "@stomp/stompjs";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import SockJS from "sockjs-client";
 import { useEffect, useState } from "react";
@@ -262,6 +263,21 @@ export default function PassengerTrackingPage() {
       </header>
 
       <section className="mx-auto max-w-6xl space-y-5 px-6 py-8">
+        {ride && ride.status === "COMPLETED" && (
+          <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-indigo-50 p-5 border border-indigo-200 sm:flex-row shadow-sm">
+            <div>
+              <h2 className="text-base font-bold text-indigo-900">Trip Completed! How was your ride with {ride.driverName}?</h2>
+              <p className="mt-0.5 text-xs text-indigo-700">Submit your rating and feedback to help keep the Commuto community reliable and safe.</p>
+            </div>
+            <Link
+              href="/ratings"
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition"
+            >
+              ★ Rate Driver Now
+            </Link>
+          </div>
+        )}
+
         {ride && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200">
             <p className="text-sm font-semibold">{ride.driverName} · {ride.vehicleModel} · {ride.vehicleNumber}</p>

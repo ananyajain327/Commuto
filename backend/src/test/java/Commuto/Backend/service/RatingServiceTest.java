@@ -43,6 +43,7 @@ class RatingServiceTest {
         when(rideRequestRepository.findById(9L)).thenReturn(Optional.of(request));
         when(ratingRepository.existsByRequestAndRaterAndRatee(request, passenger, driver)).thenReturn(false);
         when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(ratingRepository.findAverageScoreByRatee(driver)).thenReturn(4.8);
 
         var response = ratingService.submitRating(passenger, 9L, 5, "Great trip");
 
@@ -51,7 +52,19 @@ class RatingServiceTest {
         assertEquals("Driver", response.rateeName());
         assertEquals(1L, response.rideId());
         assertEquals(9L, response.requestId());
+        assertEquals(4.8, response.updatedAverageScore());
         verify(ratingRepository).save(any(Rating.class));
+        verify(ratingRepository).findAverageScoreByRatee(driver);
+    }
+
+    @Test
+    void getAverageRatingReturnsRoundedAverageOrFallback() {
+        User driver = user(2L, User.Role.DRIVER, "Driver");
+        when(ratingRepository.findAverageScoreByRatee(driver)).thenReturn(4.666);
+        assertEquals(4.7, ratingService.getAverageRating(driver));
+
+        when(ratingRepository.findAverageScoreByRatee(driver)).thenReturn(null);
+        assertEquals(5.0, ratingService.getAverageRating(driver));
     }
 
     @Test
