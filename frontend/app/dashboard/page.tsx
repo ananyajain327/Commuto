@@ -469,9 +469,12 @@ export default function DashboardPage() {
                     </div>
 
                     <div>
-                      <p className="text-lg font-black">
+                      <Link
+                        href="/rides/details"
+                        className="text-lg font-black text-slate-900 transition hover:text-[#5b5ce2]"
+                      >
                         Jaipur → Ajmer
-                      </p>
+                      </Link>
 
                       <p className="mt-1 text-xs font-semibold text-slate-400">
                         Tomorrow · 8:30 AM
@@ -505,9 +508,12 @@ export default function DashboardPage() {
                   </span>
                 </div>
 
-                <button className="mt-5 w-full rounded-2xl bg-[#172033] py-3.5 text-xs font-extrabold text-white transition hover:bg-slate-800">
+                <Link
+                  href="/rides/details"
+                  className="mt-5 block text-center w-full rounded-2xl bg-[#172033] py-3.5 text-xs font-extrabold text-white transition hover:bg-slate-800"
+                >
                   View ride details →
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -548,9 +554,12 @@ export default function DashboardPage() {
                 </h2>
               </div>
 
-              <button className="text-xs font-extrabold text-[#5b5ce2]">
+              <Link
+                href="/rides"
+                className="text-xs font-extrabold text-[#5b5ce2] hover:underline"
+              >
                 View all →
-              </button>
+              </Link>
             </div>
 
             <div className="mt-6 overflow-x-auto">
@@ -598,9 +607,18 @@ export default function DashboardPage() {
                       {ride.status}
                     </span>
 
-                    <p className="text-sm font-black">
-                      {ride.fare}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm font-black">
+                        {ride.fare}
+                      </p>
+
+                      <Link
+                        href={`/rides/details?route=${encodeURIComponent(ride.route)}&driver=${encodeURIComponent(ride.driver)}&fare=${encodeURIComponent(ride.fare)}&date=${encodeURIComponent(ride.date)}&status=${encodeURIComponent(ride.status)}`}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-100 hover:border-slate-300"
+                      >
+                        Details →
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>
