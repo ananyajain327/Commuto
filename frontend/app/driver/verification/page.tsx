@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type UploadBoxProps = {
   title: string;
@@ -141,25 +142,28 @@ export default function DriverVerificationPage() {
   const isRejected = status === "REJECTED";
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+      <header className="border-b border-slate-200 bg-white/90 sticky top-0 z-20 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <Link href="/" className="text-2xl font-bold tracking-tight">
-              Commuto<span className="text-blue-600">.</span>
+            <Link href="/" className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+              Commuto<span className="text-emerald-500">.</span>
             </Link>
-            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300">
               Driver Portal
             </span>
           </div>
 
-          <Link
-            href="/driver/dashboard"
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50 transition"
-          >
-            ← Driver Dashboard
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/driver/dashboard"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              ← Driver Dashboard
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

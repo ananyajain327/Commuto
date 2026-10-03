@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import SockJS from "sockjs-client";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import ThemeToggle from "@/components/ThemeToggle";
 
 import RideChatDrawer from "@/components/RideChatDrawer";
 
@@ -355,38 +356,39 @@ export default function PassengerTrackingPage() {
       : connection.toUpperCase();
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
+      <header className="border-b border-slate-200 bg-white/90 sticky top-0 z-20 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <div>
-            <h1 className="text-2xl font-bold">Live Ride Tracking</h1>
-            <p className="mt-1 text-sm text-slate-500">{ride ? `${ride.startLocation} → ${ride.destination}` : "Ride location"}</p>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Live Ride Tracking</h1>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{ride ? `${ride.startLocation} → ${ride.destination}` : "Ride location"}</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setShowChat(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-bold text-[#5b5ce2] shadow-sm transition hover:bg-indigo-100 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 active:scale-95 cursor-pointer"
             >
               <span>💬</span> Chat
             </button>
             <button
               type="button"
               onClick={() => setShowShareModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 active:scale-95 cursor-pointer"
             >
               <span>📤</span> Share Trip
             </button>
             <button
               type="button"
               onClick={() => setShowSosModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95 animate-pulse"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95 animate-pulse cursor-pointer"
             >
               <span>🚨</span> Emergency SOS
             </button>
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isLive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
+            <span className={`rounded-full px-3 py-1 text-xs font-bold ${isLive ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}`}>
               {isLive ? "LIVE" : connectionLabel}
             </span>
+            <ThemeToggle />
           </div>
         </div>
       </header>

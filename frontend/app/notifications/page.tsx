@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // ── types ──────────────────────────────────────────────────────────────────────
 
@@ -23,15 +24,15 @@ interface AppNotification {
 function categoryMeta(cat: NotifCategory) {
   switch (cat) {
     case "RIDE_REQUEST":
-      return { icon: "🚗", label: "Ride Request", bg: "bg-indigo-50", text: "text-[#5b5ce2]" };
+      return { icon: "🚗", label: "Ride Request", bg: "bg-emerald-50 dark:bg-emerald-950/50", text: "text-emerald-700 dark:text-emerald-300" };
     case "RIDE_UPDATE":
-      return { icon: "📍", label: "Ride Update", bg: "bg-sky-50", text: "text-sky-600" };
+      return { icon: "📍", label: "Ride Update", bg: "bg-sky-50 dark:bg-sky-950/50", text: "text-sky-600 dark:text-sky-300" };
     case "SAFETY":
-      return { icon: "🛡️", label: "Safety", bg: "bg-red-50", text: "text-red-600" };
+      return { icon: "🛡️", label: "Safety", bg: "bg-rose-50 dark:bg-rose-950/50", text: "text-rose-600 dark:text-rose-300" };
     case "RATING":
-      return { icon: "⭐", label: "Rating", bg: "bg-amber-50", text: "text-amber-600" };
+      return { icon: "⭐", label: "Rating", bg: "bg-amber-50 dark:bg-amber-950/50", text: "text-amber-600 dark:text-amber-300" };
     default:
-      return { icon: "🔔", label: "System", bg: "bg-slate-100", text: "text-slate-600" };
+      return { icon: "🔔", label: "System", bg: "bg-slate-100 dark:bg-slate-800", text: "text-slate-600 dark:text-slate-300" };
   }
 }
 
@@ -170,35 +171,38 @@ export default function NotificationsPage() {
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-[#f7f9fc] text-[#172033]">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
 
       {/* HEADER */}
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 px-6 py-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/90">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/dashboard"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
             >
               ←
             </Link>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                 Notifications
               </p>
-              <h1 className="mt-0.5 text-lg font-black">Your alerts</h1>
+              <h1 className="mt-0.5 text-lg font-black text-slate-900 dark:text-slate-100">Your alerts</h1>
             </div>
           </div>
 
-          {unreadCount > 0 && (
-            <button
-              type="button"
-              onClick={markAllRead}
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
-            >
-              Mark all as read
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {unreadCount > 0 && (
+              <button
+                type="button"
+                onClick={markAllRead}
+                className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
+              >
+                Mark all as read
+              </button>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -206,12 +210,12 @@ export default function NotificationsPage() {
 
         {/* SUMMARY CHIPS */}
         <div className="mb-6 flex flex-wrap gap-3">
-          <div className="flex items-center gap-2 rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-2.5">
-            <span className="h-2 w-2 rounded-full bg-[#5b5ce2]" />
-            <span className="text-xs font-bold text-[#5b5ce2]">{unreadCount} unread</span>
+          <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 dark:border-emerald-900/50 dark:bg-emerald-950/30">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">{unreadCount} unread</span>
           </div>
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5">
-            <span className="text-xs font-bold text-slate-500">{notifs.length} total</span>
+          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 dark:border-slate-800 dark:bg-slate-900">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{notifs.length} total</span>
           </div>
         </div>
 
@@ -222,10 +226,10 @@ export default function NotificationsPage() {
               key={tab}
               type="button"
               onClick={() => setFilter(tab)}
-              className={`shrink-0 rounded-2xl px-4 py-2 text-xs font-bold transition ${
+              className={`shrink-0 rounded-2xl px-4 py-2 text-xs font-bold transition cursor-pointer ${
                 filter === tab
-                  ? "bg-[#172033] text-white"
-                  : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                  ? "bg-slate-900 text-white dark:bg-emerald-600 dark:text-white"
+                  : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
               }`}
             >
               {tab}
@@ -235,8 +239,8 @@ export default function NotificationsPage() {
 
         {/* LOADING */}
         {loading && (
-          <div className="flex flex-col items-center py-20 text-slate-400">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#5b5ce2]" />
+          <div className="flex flex-col items-center py-20 text-slate-400 dark:text-slate-500">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 dark:border-slate-800 border-t-emerald-500" />
             <p className="mt-4 text-sm font-semibold">Loading notifications…</p>
           </div>
         )}
@@ -244,18 +248,18 @@ export default function NotificationsPage() {
         {/* EMPTY */}
         {!loading && filtered.length === 0 && (
           <div className="flex flex-col items-center py-20 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-4xl">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-4xl">
               🔔
             </div>
-            <h2 className="mt-5 text-xl font-black">No notifications</h2>
-            <p className="mt-2 max-w-xs text-sm leading-6 text-slate-400">
+            <h2 className="mt-5 text-xl font-black text-slate-900 dark:text-slate-100">No notifications</h2>
+            <p className="mt-2 max-w-xs text-sm leading-6 text-slate-400 dark:text-slate-500">
               {filter === "Unread"
                 ? "You're all caught up. No unread notifications."
                 : "Updates about your rides, requests and safety will appear here."}
             </p>
             <Link
               href="/dashboard"
-              className="mt-6 rounded-2xl bg-[#172033] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-slate-800"
+              className="mt-6 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-500 shadow-md"
             >
               Go to Dashboard →
             </Link>
@@ -303,10 +307,10 @@ function NotifCard({
     // @ts-expect-error – dynamic tag props
     <Wrapper
       {...wrapperProps}
-      className={`group flex items-start gap-4 rounded-3xl border bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
+      className={`group flex items-start gap-4 rounded-3xl border bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:bg-slate-900 ${
         notif.read
-          ? "border-slate-200"
-          : "border-indigo-200 ring-1 ring-indigo-100"
+          ? "border-slate-200 dark:border-slate-800"
+          : "border-emerald-300 ring-1 ring-emerald-200/50 dark:border-emerald-800 dark:ring-emerald-900/50"
       }`}
     >
       {/* Icon */}
@@ -322,13 +326,13 @@ function NotifCard({
           <div>
             <div className="flex items-center gap-2">
               {!notif.read && (
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[#5b5ce2]" />
+                <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
               )}
-              <p className="text-sm font-extrabold leading-tight">
+              <p className="text-sm font-extrabold leading-tight text-slate-900 dark:text-slate-100">
                 {notif.title}
               </p>
             </div>
-            <p className="mt-1 text-xs leading-5 text-slate-500 line-clamp-2">
+            <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400 line-clamp-2">
               {notif.body}
             </p>
           </div>
@@ -339,7 +343,7 @@ function NotifCard({
             >
               {meta.label}
             </span>
-            <p className="mt-1.5 text-[10px] font-semibold text-slate-400">
+            <p className="mt-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500">
               {relativeTime(notif.timestamp)}
             </p>
           </div>
@@ -347,7 +351,7 @@ function NotifCard({
 
         {/* CTA arrow */}
         {notif.actionUrl && (
-          <p className="mt-3 text-xs font-bold text-[#5b5ce2] transition group-hover:underline">
+          <p className="mt-3 text-xs font-bold text-emerald-600 dark:text-emerald-400 transition group-hover:underline">
             View details →
           </p>
         )}

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+@variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
   --color-slate-50: #f8fafc;
@@ -68,7 +69,9 @@
 
 .dark,
 [data-theme="dark"],
-html.dark {
+html.dark,
+html[data-theme="dark"],
+body.dark {
   --background: #09090b;
   --foreground: #f4f4f5;
   --card: #121215;
@@ -92,6 +95,42 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
+}
+
+/* Comprehensive Dark Mode Universal Fallback Overrides for 100% Page Coverage */
+html.dark,
+.dark,
+[data-theme="dark"] {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark body,
+.dark body,
+[data-theme="dark"] body {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+/* Fallback: override hardcoded light elements across legacy or un-migrated pages */
+.dark main,
+[data-theme="dark"] main {
+  background-color: inherit;
+  color: inherit;
+}
+
+.dark .bg-\[\#f7f9fc\],
+[data-theme="dark"] .bg-\[\#f7f9fc\],
+.dark .bg-slate-50,
+[data-theme="dark"] .bg-slate-50,
+.dark .bg-zinc-50,
+[data-theme="dark"] .bg-zinc-50 {
+  background-color: #09090b !important;
+}
+
+.dark .text-\[\#172033\],
+[data-theme="dark"] .text-\[\#172033\] {
+  color: #f4f4f5 !important;
 }
 
 /* Custom smooth scrollbar */

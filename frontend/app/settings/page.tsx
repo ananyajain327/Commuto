@@ -274,10 +274,10 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#f7f9fc]">
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-[#5b5ce2]" />
-          <p className="text-sm font-semibold text-slate-500">Loading settings…</p>
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 dark:border-slate-800 border-t-emerald-500" />
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Loading settings…</p>
         </div>
       </main>
     );
@@ -285,27 +285,27 @@ export default function SettingsPage() {
 
   // ── render ───────────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-[#f7f9fc] text-[#172033]">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
 
       {/* HEADER */}
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 px-6 py-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/90">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href={dashboardHref}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
             >
               ←
             </Link>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Account</p>
-              <h1 className="mt-0.5 text-lg font-black">Settings</h1>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Account</p>
+              <h1 className="mt-0.5 text-lg font-black text-slate-900 dark:text-slate-100">Settings</h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {prefsSuccess && (
-              <span className="hidden text-xs font-bold text-emerald-600 sm:block">
+              <span className="hidden text-xs font-bold text-emerald-600 dark:text-emerald-400 sm:block">
                 ✅ {prefsSuccess}
               </span>
             )}
@@ -314,6 +314,7 @@ export default function SettingsPage() {
                 Saving…
               </span>
             )}
+            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -321,21 +322,21 @@ export default function SettingsPage() {
       <div className="mx-auto max-w-4xl space-y-6 px-6 py-8">
 
         {/* ── PROFILE CARD ───────────────────────────────────────────────── */}
-        <section className="overflow-hidden rounded-[32px] bg-[#172033] p-7 text-white shadow-[0_20px_50px_rgba(23,32,51,0.15)]">
+        <section className="overflow-hidden rounded-[32px] bg-slate-900 p-7 text-white shadow-[0_20px_50px_rgba(0,0,0,0.25)] border border-slate-800 dark:bg-zinc-900/90 dark:border-zinc-800">
           <div className="flex items-center gap-5">
             <div className="relative">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white/20 bg-white/10 text-2xl font-black">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white/20 bg-white/10 text-2xl font-black text-emerald-400">
                 {profile ? initials(profile.fullName) : "?"}
               </div>
               {profile?.verified && (
-                <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#172033] bg-emerald-500 text-[10px]">
+                <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-slate-900 bg-emerald-500 text-[10px]">
                   ✓
                 </span>
               )}
             </div>
             <div className="flex-1">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-300">{roleLabel}</p>
-              <h2 className="mt-0.5 text-xl font-black">{profile?.fullName}</h2>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">{roleLabel}</p>
+              <h2 className="mt-0.5 text-xl font-black text-white">{profile?.fullName}</h2>
               <p className="mt-0.5 text-sm text-slate-400">{profile?.email}</p>
             </div>
             <Link
@@ -348,17 +349,17 @@ export default function SettingsPage() {
         </section>
 
         {/* ── PERSONAL INFORMATION ──────────────────────────────────────── */}
-        <section className="rounded-[28px] border border-slate-200 bg-white p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Personal Info</p>
-          <h2 className="mt-1 text-xl font-black">Update your details</h2>
+        <section className="rounded-[28px] border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Personal Info</p>
+          <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-slate-100">Update your details</h2>
 
           {profileSuccess && (
-            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
               ✅ {profileSuccess}
             </div>
           )}
           {profileError && (
-            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
               {profileError}
             </div>
           )}
@@ -366,20 +367,20 @@ export default function SettingsPage() {
           <form onSubmit={handleSaveProfile} className="mt-6 grid gap-4 sm:grid-cols-2">
             {/* Full Name */}
             <div>
-              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 Full Name
               </label>
               <input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-[#5b5ce2] focus:bg-white"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500"
               />
             </div>
 
             {/* Phone */}
             <div>
-              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 Phone Number
               </label>
               <input
@@ -387,29 +388,29 @@ export default function SettingsPage() {
                 value={editPhone}
                 onChange={(e) => setEditPhone(e.target.value)}
                 placeholder="+91 XXXXX XXXXX"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-[#5b5ce2] focus:bg-white"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-emerald-500"
               />
             </div>
 
             {/* Email (read-only) */}
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 Email Address
               </label>
               <input
                 type="email"
                 value={profile?.email ?? ""}
                 disabled
-                className="w-full cursor-not-allowed rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-400 outline-none"
+                className="w-full cursor-not-allowed rounded-2xl border border-slate-100 bg-slate-100 px-4 py-3.5 text-sm font-semibold text-slate-400 outline-none dark:border-slate-800 dark:bg-slate-800 dark:text-slate-500"
               />
-              <p className="mt-1 text-xs text-slate-400">Email cannot be changed.</p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Email cannot be changed.</p>
             </div>
 
             <div className="sm:col-span-2">
               <button
                 type="submit"
                 disabled={profileSaving}
-                className="w-full rounded-2xl bg-[#5b5ce2] py-3.5 text-sm font-extrabold text-white transition hover:bg-[#4d4ecf] disabled:opacity-60 sm:w-auto sm:px-10"
+                className="w-full rounded-2xl bg-emerald-600 py-3.5 text-sm font-extrabold text-white transition hover:bg-emerald-500 disabled:opacity-60 sm:w-auto sm:px-10 cursor-pointer shadow-md"
               >
                 {profileSaving ? "Saving…" : "Save Profile"}
               </button>
@@ -418,17 +419,17 @@ export default function SettingsPage() {
         </section>
 
         {/* ── SECURITY & PASSWORD ─────────────────────────────────────────── */}
-        <section className="rounded-[28px] border border-slate-200 bg-white p-6">
+        <section className="rounded-[28px] border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Security</p>
-              <h2 className="mt-1 text-xl font-black">Password & Authentication</h2>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Security</p>
+              <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-slate-100">Password & Authentication</h2>
             </div>
             {!showPasswordSection && (
               <button
                 type="button"
                 onClick={() => setShowPasswordSection(true)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
               >
                 🔒 Change Password
               </button>
@@ -436,12 +437,12 @@ export default function SettingsPage() {
           </div>
 
           {passwordSuccess && (
-            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
               ✅ {passwordSuccess}
             </div>
           )}
           {passwordError && (
-            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
               {passwordError}
             </div>
           )}
@@ -449,7 +450,7 @@ export default function SettingsPage() {
           {showPasswordSection ? (
             <form onSubmit={handleChangePassword} className="mt-6 space-y-4">
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Current Password
                 </label>
                 <input
@@ -457,13 +458,13 @@ export default function SettingsPage() {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter current password"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-[#5b5ce2] focus:bg-white"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     New Password
                   </label>
                   <input
@@ -471,12 +472,12 @@ export default function SettingsPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-[#5b5ce2] focus:bg-white"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     Confirm New Password
                   </label>
                   <input
@@ -484,7 +485,7 @@ export default function SettingsPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repeat new password"
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-[#5b5ce2] focus:bg-white"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -493,7 +494,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={passwordSaving}
-                  className="rounded-2xl bg-[#5b5ce2] px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-[#4d4ecf] disabled:opacity-60"
+                  className="rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-emerald-500 disabled:opacity-60 cursor-pointer shadow-md"
                 >
                   {passwordSaving ? "Updating…" : "Update Password"}
                 </button>
@@ -507,46 +508,46 @@ export default function SettingsPage() {
                     setConfirmPassword("");
                   }}
                   disabled={passwordSaving}
-                  className="rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
                 >
                   Cancel
                 </button>
               </div>
             </form>
           ) : (
-            <p className="mt-3 text-sm text-slate-500">
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
               Manage your password and protect your account against unauthorized access.
             </p>
           )}
         </section>
 
         {/* ── RIDE PREFERENCES ─────────────────────────────────────────────── */}
-        <section className="rounded-[28px] border border-slate-200 bg-white p-6">
+        <section className="rounded-[28px] border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Preferences</p>
-              <h2 className="mt-1 text-xl font-black">Ride Preferences</h2>
-              <p className="mt-1 text-xs text-slate-500">Changes save automatically.</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Preferences</p>
+              <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-slate-100">Ride Preferences</h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Changes save automatically.</p>
             </div>
             {prefsSaving && (
-              <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold text-slate-400">
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold text-slate-400 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400">
                 Saving…
               </span>
             )}
             {prefsSuccess && !prefsSaving && (
-              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-600">
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-600 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">
                 ✅ Saved
               </span>
             )}
           </div>
 
           {prefsError && (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
               {prefsError}
             </div>
           )}
 
-          <div className="mt-6 divide-y divide-slate-100">
+          <div className="mt-6 divide-y divide-slate-100 dark:divide-slate-800">
             <ToggleRow
               icon="👩"
               title="Women-only rides"
@@ -579,13 +580,13 @@ export default function SettingsPage() {
         </section>
 
         {/* ── APPEARANCE & THEME ───────────────────────────────────────────── */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#5b5ce2]">Appearance</p>
-              <h2 className="mt-1 text-xl font-black">Theme & Display</h2>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-400">Appearance</p>
+              <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-slate-100">Theme & Display</h2>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Choose between Light mode, Dark mode, or follow your system default.
+                Switch instantly between Light Mode and Dark Mode with custom Obsidian styling.
               </p>
             </div>
             <div>
@@ -603,23 +604,23 @@ export default function SettingsPage() {
         </section>
 
         {/* ── ACCOUNT ACTIONS ──────────────────────────────────────────────── */}
-        <section className="rounded-[28px] border border-red-100 bg-white p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-400">Danger Zone</p>
-          <h2 className="mt-1 text-xl font-black">Account Actions</h2>
-          <p className="mt-2 text-sm text-slate-500">
+        <section className="rounded-[28px] border border-red-100 bg-white p-6 dark:border-red-950/40 dark:bg-slate-900">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-500">Danger Zone</p>
+          <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-slate-100">Account Actions</h2>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             Signing out will remove your session from this device.
           </p>
           <button
             type="button"
             onClick={handleSignOut}
-            className="mt-5 w-full rounded-2xl border border-red-200 bg-red-50 py-3.5 text-sm font-extrabold text-red-600 transition hover:bg-red-100"
+            className="mt-5 w-full rounded-2xl border border-red-200 bg-red-50 py-3.5 text-sm font-extrabold text-red-600 transition hover:bg-red-100 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-950/50 cursor-pointer"
           >
             Sign out of Commuto
           </button>
         </section>
 
         <footer className="pb-8 text-center">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-400 dark:text-slate-600">
             Commuto · Share the Ride. Split the Fare. Travel Smarter.
           </p>
         </footer>
@@ -645,20 +646,20 @@ function ToggleRow({
 }) {
   return (
     <div className="flex items-center gap-4 py-5">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-xl">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-xl dark:bg-slate-800">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-extrabold">{title}</p>
-        <p className="mt-0.5 text-xs leading-5 text-slate-500">{description}</p>
+        <p className="text-sm font-extrabold text-slate-900 dark:text-slate-100">{title}</p>
+        <p className="mt-0.5 text-xs leading-5 text-slate-500 dark:text-slate-400">{description}</p>
       </div>
       <button
         type="button"
         role="switch"
         aria-checked={enabled}
         onClick={onChange}
-        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ${
-          enabled ? "bg-[#5b5ce2]" : "bg-slate-200"
+        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 cursor-pointer ${
+          enabled ? "bg-emerald-600" : "bg-slate-200 dark:bg-slate-700"
         }`}
       >
         <span
@@ -685,16 +686,16 @@ function QuickLink({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-3xl border border-slate-200 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg"
+      className="group flex items-center gap-4 rounded-3xl border border-slate-200 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-600"
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-xl transition group-hover:bg-indigo-50">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-xl transition group-hover:bg-emerald-50 dark:bg-slate-800 dark:group-hover:bg-emerald-950/40">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-extrabold">{title}</p>
-        <p className="mt-0.5 text-xs leading-5 text-slate-400">{description}</p>
+        <p className="text-sm font-extrabold text-slate-900 dark:text-slate-100">{title}</p>
+        <p className="mt-0.5 text-xs leading-5 text-slate-400 dark:text-slate-500">{description}</p>
       </div>
-      <span className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#5b5ce2]">→</span>
+      <span className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-500 dark:text-slate-600">→</span>
     </Link>
   );
 }

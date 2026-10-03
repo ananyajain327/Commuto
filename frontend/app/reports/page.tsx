@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type ComplaintStatus = "Open" | "Under Review" | "Resolved";
 
@@ -73,34 +75,37 @@ export default function ReportsPage() {
 
   const statusStyle = (status: ComplaintStatus) => {
     if (status === "Resolved") {
-      return "bg-emerald-50 text-emerald-700";
+      return "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
     }
 
     if (status === "Under Review") {
-      return "bg-amber-50 text-amber-700";
+      return "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
     }
 
-    return "bg-red-50 text-red-700";
+    return "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300";
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
       {/* Header */}
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+      <header className="border-b border-slate-200 bg-white/90 sticky top-0 z-20 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div>
-            <h1 className="text-2xl font-bold">Reports & Complaints</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Reports & Complaints</h1>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               Report an issue and track your support requests
             </p>
           </div>
 
-          <a
-            href="/dashboard"
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
-          >
-            ← Dashboard
-          </a>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              ← Dashboard
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -184,19 +189,19 @@ export default function ReportsPage() {
                   setCategory(item.title);
                   setShowForm(true);
                 }}
-                className="group rounded-3xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+                className="group rounded-3xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-emerald-400 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-600 cursor-pointer"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl transition group-hover:bg-slate-900 group-hover:text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl transition group-hover:bg-emerald-600 group-hover:text-white dark:bg-slate-800">
                   {item.icon}
                 </div>
 
-                <h3 className="mt-5 font-bold">{item.title}</h3>
+                <h3 className="mt-5 font-black text-slate-900 dark:text-slate-100">{item.title}</h3>
 
-                <p className="mt-2 text-sm leading-6 text-slate-500">
+                <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
                   {item.text}
                 </p>
 
-                <p className="mt-5 text-sm font-semibold">
+                <p className="mt-5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                   Report issue →
                 </p>
               </button>
@@ -205,44 +210,44 @@ export default function ReportsPage() {
         </section>
 
         {/* My Complaints */}
-        <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col justify-between gap-4 border-b border-slate-100 p-6 md:flex-row md:items-center">
+        <section className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col justify-between gap-4 border-b border-slate-100 dark:border-slate-800 p-6 md:flex-row md:items-center">
             <div>
-              <h2 className="text-xl font-bold">My Complaints</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">My Complaints</h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Track the status of your submitted reports.
               </p>
             </div>
 
             <button
               onClick={() => setShowForm(true)}
-              className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+              className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-extrabold text-white hover:bg-emerald-500 cursor-pointer shadow-md"
             >
               + New Complaint
             </button>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {complaints.map((complaint) => (
               <div
                 key={complaint.id}
                 className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between"
               >
                 <div className="flex gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-xl">
                     📋
                   </div>
 
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-semibold">{complaint.subject}</h3>
+                      <h3 className="font-extrabold text-slate-900 dark:text-slate-100">{complaint.subject}</h3>
 
-                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                      <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-bold text-slate-600 dark:text-slate-400">
                         {complaint.category}
                       </span>
                     </div>
 
-                    <p className="mt-2 text-xs text-slate-400">
+                    <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
                       {complaint.id} • Submitted {complaint.date}
                     </p>
                   </div>
@@ -262,26 +267,26 @@ export default function ReportsPage() {
 
         {/* Support Information */}
         <section className="grid gap-5 md:grid-cols-3">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
             <div className="text-2xl">⏱️</div>
-            <h3 className="mt-4 font-bold">Quick Response</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+            <h3 className="mt-4 font-black text-slate-900 dark:text-slate-100">Quick Response</h3>
+            <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
               Most complaints are reviewed within 24 hours.
             </p>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
             <div className="text-2xl">🔍</div>
-            <h3 className="mt-4 font-bold">Transparent Tracking</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+            <h3 className="mt-4 font-black text-slate-900 dark:text-slate-100">Transparent Tracking</h3>
+            <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
               Track every complaint from submission to resolution.
             </p>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
             <div className="text-2xl">🤝</div>
-            <h3 className="mt-4 font-bold">Fair Resolution</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+            <h3 className="mt-4 font-black text-slate-900 dark:text-slate-100">Fair Resolution</h3>
+            <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
               Our team reviews reports fairly using ride and payment data.
             </p>
           </div>
@@ -290,19 +295,19 @@ export default function ReportsPage() {
 
       {/* Complaint Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5 py-8">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-7 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-5 py-8">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-7 shadow-2xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-2xl font-bold">Submit a Complaint</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">Submit a Complaint</h2>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Tell us what happened and we&apos;ll look into it.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowForm(false)}
-                className="text-2xl text-slate-400 hover:text-slate-700"
+                className="text-2xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
               >
                 ×
               </button>
@@ -311,14 +316,14 @@ export default function ReportsPage() {
             <form onSubmit={handleSubmit} className="mt-7 space-y-5">
               {/* Category */}
               <div>
-                <label className="text-sm font-semibold">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Complaint Category
                 </label>
 
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 outline-none focus:border-slate-900"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 >
                   <option>Ride Issue</option>
                   <option>Driver / Passenger</option>
@@ -330,7 +335,7 @@ export default function ReportsPage() {
 
               {/* Ride ID */}
               <div>
-                <label className="text-sm font-semibold">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Ride / Booking ID
                 </label>
 
@@ -338,13 +343,13 @@ export default function ReportsPage() {
                   value={rideId}
                   onChange={(e) => setRideId(e.target.value)}
                   placeholder="e.g. RID-28491"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3.5 outline-none focus:border-slate-900"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 />
               </div>
 
               {/* Subject */}
               <div>
-                <label className="text-sm font-semibold">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Complaint Subject
                 </label>
 
@@ -353,13 +358,13 @@ export default function ReportsPage() {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Briefly describe the issue"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3.5 outline-none focus:border-slate-900"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="text-sm font-semibold">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   What happened?
                 </label>
 
@@ -369,30 +374,30 @@ export default function ReportsPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={5}
                   placeholder="Please provide as much detail as possible..."
-                  className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3.5 outline-none focus:border-slate-900"
+                  className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 />
               </div>
 
               {/* Evidence */}
               <div>
-                <label className="text-sm font-semibold">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Evidence / Attachment
                 </label>
 
-                <div className="mt-2 rounded-2xl border-2 border-dashed border-slate-200 p-6 text-center hover:border-slate-400">
+                <div className="mt-2 rounded-2xl border-2 border-dashed border-slate-200 p-6 text-center hover:border-emerald-400 dark:border-slate-800 dark:hover:border-emerald-600">
                   <div className="text-2xl">📎</div>
 
-                  <p className="mt-2 text-sm font-semibold">
+                  <p className="mt-2 text-sm font-bold text-slate-800 dark:text-slate-200">
                     Upload supporting evidence
                   </p>
 
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
                     Images, receipts or screenshots
                   </p>
 
                   <input
                     type="file"
-                    className="mx-auto mt-4 block max-w-full text-xs"
+                    className="mx-auto mt-4 block max-w-full text-xs text-slate-500 dark:text-slate-400"
                   />
                 </div>
               </div>
@@ -402,14 +407,14 @@ export default function ReportsPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold hover:bg-slate-50"
+                  className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+                  className="rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-extrabold text-white hover:bg-emerald-500 cursor-pointer shadow-md"
                 >
                   Submit Complaint
                 </button>

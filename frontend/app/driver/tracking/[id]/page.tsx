@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import RideChatDrawer from "@/components/RideChatDrawer";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface Ride {
   id: number;
@@ -299,36 +300,39 @@ export default function DriverTrackingPage() {
   const isTooEarly = isBeforeScheduledTime();
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-5">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
+      <header className="border-b border-slate-200 bg-white/90 sticky top-0 z-20 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-4">
           <div>
-            <h1 className="text-2xl font-bold">Share Live Location</h1>
-            <p className="mt-1 text-sm text-slate-500">Location sharing is available only while your ride is active.</p>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Share Live Location</h1>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Location sharing is available only while your ride is active.</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setShowChat(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-bold text-[#5b5ce2] shadow-sm transition hover:bg-indigo-100 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 active:scale-95 cursor-pointer"
             >
               <span>💬</span> Chat
             </button>
             <button
               type="button"
               onClick={() => setShowShareModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 active:scale-95 cursor-pointer"
             >
               <span>📤</span> Share Trip
             </button>
             <button
               type="button"
               onClick={() => setShowSosModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95 animate-pulse"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95 animate-pulse cursor-pointer"
             >
               <span>🚨</span> Emergency SOS
             </button>
-            <a href="/rides" className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50">My Rides</a>
+            <Link href="/rides" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
+              My Rides
+            </Link>
+            <ThemeToggle />
           </div>
         </div>
       </header>

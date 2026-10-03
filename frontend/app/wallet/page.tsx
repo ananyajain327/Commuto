@@ -1,6 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import ThemeToggle from "@/components/ThemeToggle";
+
+interface RazorpayConstructor {
+  new (options: Record<string, unknown>): { open: () => void };
+}
 
 export default function WalletPage() {
   const [showAddMoney, setShowAddMoney] = useState(false);
@@ -48,11 +54,9 @@ export default function WalletPage() {
       return;
     }
 
-    // Check if Razorpay is loaded
     if (typeof window !== "undefined" && window.Razorpay) {
       initiateRazorpayPayment(numAmount);
     } else {
-      // Fallback: simulate payment for demo
       simulatePayment(numAmount);
     }
   };
@@ -60,51 +64,47 @@ export default function WalletPage() {
   const initiateRazorpayPayment = (numAmount: number) => {
     setPaymentProcessing(true);
     const user = getUserDetails();
+    const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag";
 
     const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag",
-      amount: numAmount * 100, // Razorpay expects amount in paise
+      key: razorpayKey,
+      amount: numAmount * 100,
       currency: "INR",
       name: "Commuto",
-      description: `Wallet Recharge - ₹${numAmount}`,
-      handler: (response: { razorpay_payment_id: string }) => {
-        // Payment successful
+      description: "Wallet Recharge",
+      image: "https://your-domain.com/logo.png",
+      handler: function () {
         setBalance((prev) => prev + numAmount);
-        setMessage(
-          `✅ ₹${numAmount} added to wallet successfully! Payment ID: ${response.razorpay_payment_id}`
-        );
-        setAmount("");
         setShowAddMoney(false);
+        setAmount("");
+        setMessage(`Successfully added ₹${numAmount} to your wallet!`);
         setPaymentProcessing(false);
         setTimeout(() => setMessage(""), 5000);
       },
       prefill: {
         name: user.name,
         email: user.email,
-        contact: "",
+        contact: "9876543210",
       },
       theme: {
-        color: "#5b5ce2",
+        color: "#059669",
       },
       modal: {
-        ondismiss: () => {
+        ondismiss: function () {
           setPaymentProcessing(false);
-          setMessage("Payment cancelled.");
-          setTimeout(() => setMessage(""), 3000);
         },
       },
     };
 
     try {
-      const rzp = new window.Razorpay(options);
-      rzp.on("payment.failed", () => {
-        setPaymentProcessing(false);
-        setMessage("❌ Payment failed. Please try again or use a different method.");
-        setTimeout(() => setMessage(""), 5000);
-      });
-      rzp.open();
+      const RazorpayClass = (window as unknown as { Razorpay?: RazorpayConstructor }).Razorpay;
+      if (RazorpayClass) {
+        const rzp = new RazorpayClass(options);
+        rzp.open();
+      } else {
+        simulatePayment(numAmount);
+      }
     } catch {
-      setPaymentProcessing(false);
       simulatePayment(numAmount);
     }
   };
@@ -113,9 +113,9 @@ export default function WalletPage() {
     setPaymentProcessing(true);
     setTimeout(() => {
       setBalance((prev) => prev + numAmount);
-      setMessage(`✅ ₹${numAmount} added to wallet successfully! (Demo Mode)`);
-      setAmount("");
       setShowAddMoney(false);
+      setAmount("");
+      setMessage(`Demo payment successful! Added ₹${numAmount} to your wallet.`);
       setPaymentProcessing(false);
       setTimeout(() => setMessage(""), 5000);
     }, 1500);
@@ -123,28 +123,28 @@ export default function WalletPage() {
 
   const transactions = [
     {
-      title: "Ride Fare Payment",
-      subtitle: "Jaipur → Ajmer",
+      title: "Ride to Vaishali Nagar",
+      subtitle: "Shared Ride · Honda City",
       amount: "- ₹180",
-      date: "Today, 10:42 AM",
+      date: "Today, 08:15 PM",
       type: "debit",
-      icon: "🚕",
+      icon: "🚗",
     },
     {
-      title: "Wallet Recharge",
-      subtitle: "UPI •••• 4582",
+      title: "Wallet Recharge (UPI)",
+      subtitle: "Added via PhonePe",
       amount: "+ ₹500",
-      date: "Yesterday, 6:20 PM",
+      date: "Yesterday, 02:40 PM",
       type: "credit",
-      icon: "💳",
+      icon: "⚡",
     },
     {
-      title: "Ride Fare Payment",
-      subtitle: "Malviya Nagar → C-Scheme",
-      amount: "- ₹95",
-      date: "08 Sep, 4:15 PM",
+      title: "Ride to Mansarovar",
+      subtitle: "Shared Ride · Maruti Swift",
+      amount: "- ₹140",
+      date: "12 Sep, 09:30 AM",
       type: "debit",
-      icon: "🚕",
+      icon: "🚗",
     },
     {
       title: "Refund Received",
@@ -157,256 +157,130 @@ export default function WalletPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       {/* Header */}
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/90">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Wallet</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Manage your Commuto payments and fare splits
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Wallet & Payments</h1>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              Manage your Commuto balances and fare splits
             </p>
           </div>
 
-          <a
-            href="/dashboard"
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50"
-          >
-            ← Dashboard
-          </a>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Link
+              href="/dashboard"
+              className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 transition shadow-2xs"
+            >
+              ← Dashboard
+            </Link>
+          </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-7xl space-y-8 px-6 py-8">
-        {/* Success Message */}
         {message && (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
             ✓ {message}
           </div>
         )}
 
         {/* Wallet Balance */}
         <section className="grid gap-6 lg:grid-cols-3">
-          <div className="relative overflow-hidden rounded-3xl bg-slate-900 p-7 text-white shadow-xl lg:col-span-2">
-            <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10" />
-            <div className="absolute -bottom-20 right-20 h-40 w-40 rounded-full bg-white/5" />
+          <div className="relative overflow-hidden rounded-3xl bg-slate-950 p-7 text-white shadow-xl lg:col-span-2 border border-slate-800">
+            <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/10" />
+            <div className="absolute -bottom-20 right-20 h-40 w-40 rounded-full bg-emerald-500/5" />
 
             <div className="relative">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-300">Available Balance</p>
-                  <h2 className="mt-3 text-4xl font-bold">
+                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">Available Balance</p>
+                  <h2 className="mt-2 text-4xl font-black">
                     ₹{balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </h2>
                 </div>
 
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-2xl">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/20 text-2xl text-emerald-400">
                   💰
                 </div>
               </div>
 
-              <div className="mt-10 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-wrap gap-3">
                 <button
+                  type="button"
                   onClick={() => setShowAddMoney(true)}
-                  className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+                  className="rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-900/20 transition hover:bg-emerald-700 dark:bg-emerald-500 cursor-pointer"
                 >
                   + Add Money
                 </button>
-
-                <button className="rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
-                  Send Money
-                </button>
               </div>
 
-              <div className="mt-8 flex items-center gap-2 text-xs text-slate-300">
+              <div className="mt-6 flex items-center gap-2 text-xs text-slate-400">
                 <span>🔒</span>
-                <span>Your payments are protected with secure encryption.</span>
+                <span>Your payments are protected with 256-bit bank grade encryption.</span>
               </div>
             </div>
           </div>
 
           {/* Monthly Spending */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-500">September Spending</p>
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Monthly Spending</p>
+            <h3 className="mt-2 text-3xl font-black text-slate-900 dark:text-white">₹1,280</h3>
 
-            <h3 className="mt-3 text-3xl font-bold">₹1,280</h3>
-
-            <div className="mt-6 h-3 overflow-hidden rounded-full bg-slate-100">
-              <div className="h-full w-[64%] rounded-full bg-slate-900" />
+            <div className="mt-6 h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+              <div className="h-full w-[64%] rounded-full bg-emerald-600" />
             </div>
 
-            <div className="mt-3 flex justify-between text-xs text-slate-500">
+            <div className="mt-3 flex justify-between text-xs text-slate-500 dark:text-slate-400">
               <span>₹1,280 spent</span>
               <span>₹2,000 budget</span>
             </div>
 
-            <div className="mt-7 rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs text-slate-500">Average per ride</p>
-              <p className="mt-1 text-lg font-bold">₹142</p>
+            <div className="mt-6 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+              <p className="text-xs text-slate-500 dark:text-slate-400">Average per ride</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 dark:text-white">₹142</p>
             </div>
-          </div>
-        </section>
-
-        {/* Fare Split */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-            <div>
-              <h2 className="text-xl font-bold">Latest Fare Split</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                See how your last shared ride fare was divided.
-              </p>
-            </div>
-
-            <span className="w-fit rounded-full bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
-              ✓ Completed
-            </span>
-          </div>
-
-          <div className="mt-7 grid gap-6 lg:grid-cols-2">
-            {/* Route */}
-            <div className="rounded-2xl bg-slate-50 p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Journey
-              </p>
-
-              <div className="mt-5 flex items-center gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="h-3 w-3 rounded-full bg-slate-900" />
-                  <div className="h-12 border-l border-dashed border-slate-300" />
-                  <div className="h-3 w-3 rounded-full border-2 border-slate-900 bg-white" />
-                </div>
-
-                <div className="space-y-7">
-                  <div>
-                    <p className="font-semibold">Jaipur</p>
-                    <p className="text-xs text-slate-500">6:30 PM</p>
-                  </div>
-
-                  <div>
-                    <p className="font-semibold">Ajmer</p>
-                    <p className="text-xs text-slate-500">8:15 PM</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Split */}
-            <div className="rounded-2xl border border-slate-100 p-5">
-              <div className="flex justify-between">
-                <span className="text-sm text-slate-500">Total Ride Fare</span>
-                <span className="font-semibold">₹540</span>
-              </div>
-
-              <div className="mt-4 flex justify-between">
-                <span className="text-sm text-slate-500">Passengers</span>
-                <span className="font-semibold">3</span>
-              </div>
-
-              <div className="my-5 border-t border-dashed" />
-
-              <div className="flex justify-between">
-                <span className="font-semibold">Your Share</span>
-                <span className="text-xl font-bold">₹180</span>
-              </div>
-
-              <div className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
-                🎉 You saved approximately ₹160 compared to travelling alone.
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Payment Methods */}
-        <section>
-          <div className="mb-5">
-            <h2 className="text-xl font-bold">Payment Methods</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Your saved payment options
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-                  📱
-                </div>
-
-                <div>
-                  <p className="font-semibold">UPI</p>
-                  <p className="text-xs text-slate-500">ananya@upi</p>
-                </div>
-              </div>
-
-              <span className="text-xs font-semibold text-emerald-600">
-                Default
-              </span>
-            </div>
-
-            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-                💳
-              </div>
-
-              <div>
-                <p className="font-semibold">Debit Card</p>
-                <p className="text-xs text-slate-500">•••• 4582</p>
-              </div>
-            </div>
-
-            <button className="rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-left hover:bg-slate-50">
-              <p className="font-semibold">+ Add Payment Method</p>
-              <p className="mt-1 text-xs text-slate-500">
-                Add UPI, card or other methods
-              </p>
-            </button>
           </div>
         </section>
 
         {/* Transactions */}
-        <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold">Transaction History</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Recent wallet activity
-                </p>
-              </div>
-
-              <button className="text-sm font-semibold text-slate-700 hover:underline">
-                View All
-              </button>
-            </div>
+        <section className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="border-b border-slate-100 p-6 dark:border-slate-800">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Transaction History</h2>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              Recent wallet activity & ride payments
+            </p>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {transactions.map((transaction, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between gap-4 p-5"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-lg dark:bg-slate-800">
                     {transaction.icon}
                   </div>
 
                   <div>
-                    <p className="font-semibold">{transaction.title}</p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">{transaction.title}</p>
+                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                       {transaction.subtitle}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="text-[10px] text-slate-400">
                       {transaction.date}
                     </p>
                   </div>
                 </div>
 
                 <p
-                  className={`font-bold ${
+                  className={`font-black text-sm ${
                     transaction.type === "credit"
-                      ? "text-emerald-600"
-                      : "text-slate-900"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-900 dark:text-white"
                   }`}
                 >
                   {transaction.amount}
@@ -415,68 +289,50 @@ export default function WalletPage() {
             ))}
           </div>
         </section>
-
-        {/* Security */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-6">
-          <div className="flex gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-xl">
-              🔐
-            </div>
-
-            <div>
-              <h3 className="font-bold">Your money is secure</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-500">
-                Commuto uses secure payment processing and encrypted
-                transactions. Your financial information is never shared
-                publicly with other riders or drivers.
-              </p>
-            </div>
-          </div>
-        </section>
       </div>
 
       {/* Add Money Modal */}
       {showAddMoney && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5">
-          <div className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold">Add Money</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Add Money</h2>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   Add funds to your Commuto wallet
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={() => setShowAddMoney(false)}
-                className="text-xl text-slate-400 hover:text-slate-700"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
               >
-                ×
+                ✕
               </button>
             </div>
 
-            <div className="mt-7">
-              <label className="text-sm font-semibold">Amount</label>
-
-              <div className="mt-2 flex items-center rounded-2xl border border-slate-200 px-4 focus-within:border-slate-900">
-                <span className="text-lg font-semibold">₹</span>
-
+            <div className="mt-6">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Amount (INR)</label>
+              <div className="mt-1.5 flex items-center rounded-2xl border border-slate-200 px-4 dark:border-slate-700 dark:bg-slate-800">
+                <span className="text-base font-bold text-slate-400">₹</span>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Enter amount"
-                  className="w-full bg-transparent px-3 py-4 outline-none"
+                  className="w-full bg-transparent px-3 py-3 text-sm font-semibold outline-none text-slate-900 dark:text-white"
                 />
               </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-3 gap-3">
-              {[500, 1000, 2000].map((value) => (
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {[200, 500, 1000].map((value) => (
                 <button
                   key={value}
+                  type="button"
                   onClick={() => setAmount(String(value))}
-                  className="rounded-xl border border-slate-200 py-3 text-sm font-semibold hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
                 >
                   ₹{value}
                 </button>
@@ -484,9 +340,10 @@ export default function WalletPage() {
             </div>
 
             <button
+              type="button"
               onClick={handleAddMoney}
               disabled={paymentProcessing}
-              className="mt-7 w-full rounded-2xl bg-slate-900 py-4 font-semibold text-white hover:bg-slate-800 disabled:opacity-60 transition"
+              className="mt-6 w-full rounded-2xl bg-emerald-600 py-3 text-xs font-bold text-white hover:bg-emerald-700 dark:bg-emerald-500 disabled:opacity-60 transition cursor-pointer shadow-md"
             >
               {paymentProcessing ? "Processing Payment…" : "Continue to Payment"}
             </button>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type RideStatus =
   | "Upcoming"
@@ -157,35 +158,36 @@ export default function MyRidesPage() {
   ).length;
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
 
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+      <header className="border-b border-slate-200 bg-white/90 sticky top-0 z-20 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
 
           <div>
-            <div className="text-2xl font-bold tracking-tight">
-              Commuto<span className="text-blue-600">.</span>
+            <div className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+              Commuto<span className="text-emerald-500">.</span>
             </div>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               Manage all your shared journeys
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Link
               href="/rides/search"
-              className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
+              className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-500 transition cursor-pointer"
             >
               🔍 Request a Ride
             </Link>
             <Link
               href="/dashboard"
-              className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               ← Dashboard
             </Link>
+            <ThemeToggle />
           </div>
 
         </div>
@@ -193,29 +195,29 @@ export default function MyRidesPage() {
 
       <div className="mx-auto max-w-7xl px-6 py-10">
 
-        <section className="mb-8 rounded-3xl bg-slate-900 px-8 py-9 text-white shadow-xl">
+        <section className="mb-8 rounded-3xl bg-slate-900 px-8 py-9 text-white shadow-xl border border-slate-800 dark:bg-zinc-900/90 dark:border-zinc-800">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-blue-400">
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-emerald-400">
                 Your Journeys
               </p>
-              <h1 className="text-3xl font-bold md:text-4xl">
+              <h1 className="text-3xl font-black md:text-4xl text-white">
                 My Rides
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+              <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300 dark:text-slate-400">
                 Track your upcoming journeys, manage active rides and view your complete ride history.
               </p>
             </div>
             <div className="flex flex-wrap gap-2.5">
               <Link
                 href="/rides/search"
-                className="inline-flex items-center gap-1.5 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition"
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-500 transition cursor-pointer"
               >
                 <span>🔍</span> Request a Ride
               </Link>
               <Link
                 href="/rides/create"
-                className="inline-flex items-center gap-1.5 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white hover:bg-white/20 transition"
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white hover:bg-white/20 transition cursor-pointer"
               >
                 <span>🚗</span> Offer a Ride
               </Link>
