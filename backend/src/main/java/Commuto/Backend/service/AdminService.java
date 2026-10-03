@@ -80,4 +80,29 @@ public class AdminService {
                 .map(RideResponse::new)
                 .toList();
     }
+
+    @Transactional
+    public UserResponse toggleUserStatus(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        user.setActive(!user.isActive());
+        return new UserResponse(userRepository.save(user));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Commuto.Backend.dto.SosAlertResponse> getSosAlerts() {
+        return sosAlertRepository.findAll().stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .map(Commuto.Backend.dto.SosAlertResponse::new)
+                .toList();
+    }
+
+    @Transactional
+    public Commuto.Backend.dto.SosAlertResponse resolveSosAlert(Long alertId) {
+        SosAlert alert = sosAlertRepository.findById(alertId)
+                .orElseThrow(() -> new IllegalArgumentException("Alert not found with id: " + alertId));
+        alert.setStatus(SosAlert.SosStatus.RESOLVED);
+        alert.setResolvedAt(java.time.LocalDateTime.now());
+        return new Commuto.Backend.dto.SosAlertResponse(sosAlertRepository.save(alert));
+    }
 }

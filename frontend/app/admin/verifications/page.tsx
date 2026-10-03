@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import AdminSidebar from "@/components/AdminSidebar";
+import AdminHeader from "@/components/AdminHeader";
 import { apiUrl } from "@/lib/api";
 
 type Verification = {
   id: string;
+  rawId?: number;
   driverId: string;
   name: string;
   email: string;
@@ -22,6 +25,7 @@ type Verification = {
 const initialApplications: Verification[] = [
   {
     id: "VER-2001",
+    rawId: 2001,
     driverId: "DRV-1002",
     name: "Aman Verma",
     email: "aman.verma@gmail.com",
@@ -36,6 +40,7 @@ const initialApplications: Verification[] = [
   },
   {
     id: "VER-2002",
+    rawId: 2002,
     driverId: "DRV-1005",
     name: "Arjun Gupta",
     email: "arjun.gupta@gmail.com",
@@ -50,6 +55,7 @@ const initialApplications: Verification[] = [
   },
   {
     id: "VER-2003",
+    rawId: 2003,
     driverId: "DRV-1001",
     name: "Rahul Sharma",
     email: "rahul.sharma@gmail.com",
@@ -64,6 +70,7 @@ const initialApplications: Verification[] = [
   },
   {
     id: "VER-2004",
+    rawId: 2004,
     driverId: "DRV-1004",
     name: "Rohit Meena",
     email: "rohit.meena@gmail.com",
@@ -75,7 +82,7 @@ const initialApplications: Verification[] = [
     identity: "Uploaded",
     licence: "Missing",
     rc: "Uploaded",
-    reason: "Driving licence could not be verified.",
+    reason: "Driving licence could not be verified with regional transport authority.",
   },
 ];
 
@@ -96,9 +103,8 @@ interface BackendVerification {
 }
 
 export default function AdminVerificationsPage() {
-  const [applications, setApplications] =
-    useState<Verification[]>(initialApplications);
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [applications, setApplications] = useState<Verification[]>(initialApplications);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selected, setSelected] = useState<Verification | null>(null);
@@ -121,7 +127,8 @@ export default function AdminVerificationsPage() {
           const data = (await res.json()) as BackendVerification[];
           if (data && data.length > 0) {
             const mapped: Verification[] = data.map((b) => ({
-              id: String(b.id),
+              id: `VER-${b.id}`,
+              rawId: b.id,
               driverId: `DRV-${b.driverId}`,
               name: b.driverName,
               email: b.driverEmail,
@@ -139,7 +146,7 @@ export default function AdminVerificationsPage() {
           }
         }
       } catch {
-        // Fall back gracefully to mock list
+        // Fall back gracefully
       }
     };
 
@@ -172,682 +179,338 @@ export default function AdminVerificationsPage() {
     rejected: applications.filter((x) => x.status === "Rejected").length,
   };
 
-  const updateStatus = (
+  const updateStatus = async (
     id: string,
     status: Verification["status"],
-    reason?: string
+    reason?: string,
+    rawId?: number
   ) => {
     setApplications((current) =>
       current.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status,
-              reason,
-            }
-          : item
+        item.id === id ? { ...item, status, reason } : item
       )
     );
 
     setSelected((current) =>
-      current?.id === id
-        ? {
-            ...current,
-            status,
-            reason,
-          }
-        : current
+      current?.id === id ? { ...current, status, reason } : current
     );
 
-    // Sync to backend if id is numeric
-    if (!isNaN(Number(id))) {
+    const targetRawId = rawId || (id.startsWith("VER-") ? Number(id.replace("VER-", "")) : null);
+    if (targetRawId && !isNaN(targetRawId)) {
       const token = localStorage.getItem("token");
       if (token) {
-        void fetch(apiUrl(`/api/admin/verifications/${id}/review`), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            status: status === "Approved" ? "APPROVED" : "REJECTED",
-            rejectionReason: reason,
-          }),
-        });
+        try {
+          await fetch(apiUrl(`/api/admin/verifications/${targetRawId}/review`), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              status: status === "Approved" ? "APPROVED" : "REJECTED",
+              rejectionReason: reason,
+            }),
+          });
+        } catch {
+          // Keep optimistic
+        }
       }
     }
   };
 
   const approveApplication = () => {
     if (!selected) return;
-
-    updateStatus(selected.id, "Approved");
+    updateStatus(selected.id, "Approved", undefined, selected.rawId);
     setShowRejectBox(false);
   };
 
   const rejectApplication = () => {
     if (!selected) return;
-
-    const reason =
-      rejectReason.trim() ||
-      "Documents could not be verified.";
-
-    updateStatus(selected.id, "Rejected", reason);
+    const reason = rejectReason.trim() || "Documents could not be verified.";
+    updateStatus(selected.id, "Rejected", reason, selected.rawId);
     setRejectReason("");
     setShowRejectBox(false);
   };
 
-  const statusStyle = (status: Verification["status"]) => {
-    if (status === "Approved") {
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
-    }
-
-    if (status === "Pending") {
-      return "border-amber-200 bg-amber-50 text-amber-700";
-    }
-
-    return "border-red-200 bg-red-50 text-red-700";
-  };
-
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-slate-200 bg-white lg:block">
-        <div className="flex h-full flex-col">
-          <div className="border-b border-slate-100 px-6 py-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-lg font-bold text-white">
-                C
-              </div>
+      <AdminSidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-              <div>
-                <h1 className="text-lg font-bold">Commuto</h1>
-                <p className="text-xs text-slate-500">
-                  Admin Console
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <nav className="flex-1 space-y-1 px-4 py-5">
-            <a
-              href="/admin"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              📊 Dashboard
-            </a>
-
-            <a
-              href="/admin/users"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              👥 Users
-            </a>
-
-            <a
-              href="/admin/drivers"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              🚗 Drivers
-            </a>
-
-            <a
-              href="/admin/verifications"
-              className="flex items-center gap-3 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white"
-            >
-              ✓ Verifications
-            </a>
-
-            <a
-              href="/admin/rides"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              🛣️ Rides
-            </a>
-
-            <a
-              href="/admin/complaints"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              ⚠️ Complaints
-            </a>
-
-            <a
-              href="/admin/analytics"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              📈 Analytics
-            </a>
-          </nav>
-
-          <div className="border-t border-slate-100 p-4">
-            <a
-              href="/dashboard"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              ← User Dashboard
-            </a>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <section className="lg:ml-64">
+      {/* Main Content */}
+      <div className="lg:ml-64">
         {/* Header */}
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-          <div className="flex items-center justify-between px-5 py-4 sm:px-8">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                Administration
-              </p>
+        <AdminHeader
+          title="Driver Verifications & KYC"
+          subtitle="Inspect driver licenses, vehicle RC documents, and approve captain accounts"
+          onOpenMobileMenu={() => setMobileMenuOpen(true)}
+          breadcrumbs={[{ label: "Admin", href: "/admin" }, { label: "Verifications" }]}
+        />
 
-              <h2 className="text-xl font-bold sm:text-2xl">
-                Driver Verifications
-              </h2>
+        {/* Content */}
+        <div className="space-y-8 px-6 py-8">
+          {/* Stats Cards */}
+          <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Applications</p>
+              <h3 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">{stats.total}</h3>
+              <p className="mt-2 text-xs text-slate-400">All submitted KYC requests</p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold">
-                  Ananya Jain
-                </p>
-
-                <p className="text-xs text-slate-500">
-                  Administrator
-                </p>
-              </div>
-
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
-                AJ
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="space-y-6 p-5 sm:p-8">
-          {/* Intro */}
-          <div>
-            <h3 className="text-2xl font-bold tracking-tight">
-              Verification Center
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Review driver documents and approve or reject
-              verification applications.
-            </p>
-          </div>
-
-          {/* Stats */}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">
-                Total Applications
-              </p>
-
-              <p className="mt-2 text-3xl font-bold">
-                {stats.total}
-              </p>
-
-              <p className="mt-2 text-xs text-slate-400">
-                All verification requests
-              </p>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Pending Review</p>
+              <h3 className="mt-3 text-3xl font-bold text-amber-600 dark:text-amber-400">{stats.pending}</h3>
+              <p className="mt-2 text-xs text-amber-600">Action required</p>
             </div>
 
-            <div className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">
-                Pending Review
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-amber-600">
-                {stats.pending}
-              </p>
-
-              <p className="mt-2 text-xs text-amber-600">
-                Require admin action
-              </p>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Approved Captains</p>
+              <h3 className="mt-3 text-3xl font-bold text-emerald-600 dark:text-emerald-400">{stats.approved}</h3>
+              <p className="mt-2 text-xs text-emerald-600">Verified drivers</p>
             </div>
 
-            <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">
-                Approved
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-emerald-600">
-                {stats.approved}
-              </p>
-
-              <p className="mt-2 text-xs text-emerald-600">
-                Verified drivers
-              </p>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Rejected</p>
+              <h3 className="mt-3 text-3xl font-bold text-red-600 dark:text-red-400">{stats.rejected}</h3>
+              <p className="mt-2 text-xs text-red-500">Failed verification</p>
             </div>
+          </section>
 
-            <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">
-                Rejected
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-red-600">
-                {stats.rejected}
-              </p>
-
-              <p className="mt-2 text-xs text-red-600">
-                Failed verification
-              </p>
-            </div>
-          </div>
-
-          {/* Search / Filters */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex flex-col gap-3 lg:flex-row">
-              <div className="relative flex-1">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                  🔍
-                </span>
-
+          {/* Table Card */}
+          <section className="rounded-3xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            {/* Filters */}
+            <div className="flex flex-col gap-4 border-b border-slate-100 p-6 lg:flex-row lg:items-center lg:justify-between dark:border-slate-800">
+              <div className="flex-1">
                 <input
+                  type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by driver, email, ID or vehicle number..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm outline-none focus:border-slate-400 focus:bg-white"
+                  className="w-full max-w-md rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-emerald-500"
                 />
               </div>
 
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
-              >
-                <option value="All">All Applications</option>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-
-              <button
-                onClick={() => {
-                  setSearch("");
-                  setStatusFilter("All");
-                }}
-                className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold hover:bg-slate-50"
-              >
-                Clear
-              </button>
-            </div>
-          </div>
-
-          {/* Applications */}
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-              <div>
-                <h4 className="font-bold">
-                  Verification Applications
-                </h4>
-
-                <p className="text-xs text-slate-500">
-                  Showing {filteredApplications.length} applications
-                </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
               </div>
-
-              <span className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
-                {stats.pending} Pending
-              </span>
             </div>
 
+            {/* Applications Table */}
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1000px] text-left">
-                <thead className="bg-slate-50">
-                  <tr className="text-xs uppercase tracking-wide text-slate-500">
-                    <th className="px-5 py-4">Driver</th>
-                    <th className="px-5 py-4">Vehicle</th>
-                    <th className="px-5 py-4">Documents</th>
-                    <th className="px-5 py-4">Applied</th>
-                    <th className="px-5 py-4">Status</th>
-                    <th className="px-5 py-4">Action</th>
+              <table className="w-full min-w-[900px]">
+                <thead>
+                  <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800">
+                    <th className="px-6 py-4">Application</th>
+                    <th className="px-6 py-4">Driver</th>
+                    <th className="px-6 py-4">Vehicle</th>
+                    <th className="px-6 py-4">Documents</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100">
-                  {filteredApplications.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-slate-50/70"
-                    >
-                      <td className="px-5 py-5">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 font-bold text-slate-700">
-                            {item.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </div>
-
-                          <div>
-                            <p className="font-semibold">
-                              {item.name}
-                            </p>
-
-                            <p className="text-xs text-slate-500">
-                              {item.driverId}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-5 py-5">
-                        <p className="text-sm font-medium">
-                          {item.vehicle}
-                        </p>
-
-                        <p className="text-xs text-slate-500">
-                          {item.vehicleNumber}
-                        </p>
-                      </td>
-
-                      <td className="px-5 py-5">
-                        <div className="flex gap-1.5">
-                          <span
-                            title="Identity Proof"
-                            className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs ${
-                              item.identity === "Uploaded"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-red-50 text-red-700"
-                            }`}
-                          >
-                            🪪
-                          </span>
-
-                          <span
-                            title="Driving Licence"
-                            className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs ${
-                              item.licence === "Uploaded"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-red-50 text-red-700"
-                            }`}
-                          >
-                            📄
-                          </span>
-
-                          <span
-                            title="Vehicle RC"
-                            className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs ${
-                              item.rc === "Uploaded"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-red-50 text-red-700"
-                            }`}
-                          >
-                            🚘
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="px-5 py-5 text-sm text-slate-600">
-                        {item.applicationDate}
-                      </td>
-
-                      <td className="px-5 py-5">
-                        <span
-                          className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${statusStyle(
-                            item.status
-                          )}`}
-                        >
-                          {item.status}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-5">
-                        <button
-                          onClick={() => {
-                            setSelected(item);
-                            setShowDocuments(false);
-                            setShowRejectBox(false);
-                          }}
-                          className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-                        >
-                          Review
-                        </button>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {filteredApplications.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-400">
+                        No verification applications found.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredApplications.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50">
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-slate-900 dark:text-white">{item.id}</p>
+                          <p className="text-xs text-slate-400">{item.applicationDate}</p>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{item.name}</p>
+                          <p className="text-xs text-slate-400">{item.email} • {item.driverId}</p>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">{item.vehicle}</p>
+                          <p className="text-xs text-slate-400">{item.vehicleNumber}</p>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <span className="rounded-md bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
+                              DL: {item.licence}
+                            </span>
+                            <span className="rounded-md bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
+                              RC: {item.rc}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                              item.status === "Approved"
+                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                                : item.status === "Pending"
+                                ? "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400"
+                                : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                            }`}
+                          >
+                            {item.status}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => {
+                              setSelected(item);
+                              setShowDocuments(false);
+                              setShowRejectBox(false);
+                            }}
+                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                          >
+                            Review
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
-
-              {filteredApplications.length === 0 && (
-                <div className="p-12 text-center">
-                  <div className="text-4xl">📋</div>
-
-                  <p className="mt-3 font-semibold">
-                    No applications found
-                  </p>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    Try changing your search or filter.
-                  </p>
-                </div>
-              )}
             </div>
-          </div>
+          </section>
         </div>
-      </section>
+      </div>
 
       {/* Review Modal */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                  Verification Application
-                </p>
-
-                <h3 className="text-xl font-bold">
-                  {selected.name}
-                </h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">KYC Review • {selected.id}</h3>
+                <p className="text-xs text-slate-400">{selected.name} • {selected.driverId}</p>
               </div>
 
               <button
                 onClick={() => setSelected(null)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-6 p-6">
-              {/* Profile */}
-              <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 font-bold text-white">
-                    {selected.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </div>
-
-                  <div>
-                    <h4 className="font-bold">
-                      {selected.name}
-                    </h4>
-
-                    <p className="text-sm text-slate-500">
-                      {selected.email}
-                    </p>
-
-                    <p className="text-sm text-slate-500">
-                      {selected.phone}
-                    </p>
-                  </div>
+            <div className="mt-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                  <p className="text-xs text-slate-400">Driver Contact</p>
+                  <p className="mt-1 truncate text-sm font-semibold text-slate-900 dark:text-white">{selected.email}</p>
+                  <p className="text-xs text-slate-500">{selected.phone}</p>
                 </div>
 
-                <span
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${statusStyle(
-                    selected.status
-                  )}`}
-                >
-                  {selected.status}
-                </span>
-              </div>
-
-              {/* Driver / Vehicle info */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">
-                    Driver ID
-                  </p>
-
-                  <p className="mt-1 font-semibold">
-                    {selected.driverId}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">
-                    Application ID
-                  </p>
-
-                  <p className="mt-1 font-semibold">
-                    {selected.id}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">
-                    Vehicle
-                  </p>
-
-                  <p className="mt-1 font-semibold">
-                    {selected.vehicle}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">
-                    Vehicle Number
-                  </p>
-
-                  <p className="mt-1 font-semibold">
-                    {selected.vehicleNumber}
-                  </p>
+                <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                  <p className="text-xs text-slate-400">Vehicle Registered</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{selected.vehicle}</p>
+                  <p className="text-xs text-slate-500">{selected.vehicleNumber}</p>
                 </div>
               </div>
 
               {/* Documents */}
-              <div className="rounded-2xl border border-slate-200 p-5">
+              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-bold">
-                      Submitted Documents
-                    </h4>
-
-                    <p className="mt-1 text-xs text-slate-500">
-                      Review all required documents
-                    </p>
-                  </div>
-
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">Submitted Documents</p>
                   <button
-                    onClick={() =>
-                      setShowDocuments(!showDocuments)
-                    }
-                    className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
+                    onClick={() => setShowDocuments(!showDocuments)}
+                    className="text-xs font-bold text-emerald-600 hover:underline dark:text-emerald-400"
                   >
-                    {showDocuments ? "Hide" : "View Documents"}
+                    {showDocuments ? "Hide List" : "Inspect Documents"}
                   </button>
                 </div>
 
                 {showDocuments && (
-                  <div className="mt-5 space-y-3">
-                    <DocumentRow
-                      title="Identity Proof"
-                      value={selected.identity}
-                    />
-
-                    <DocumentRow
-                      title="Driving Licence"
-                      value={selected.licence}
-                    />
-
-                    <DocumentRow
-                      title="Vehicle Registration Certificate"
-                      value={selected.rc}
-                    />
+                  <div className="mt-3 space-y-2 text-xs">
+                    <div className="flex justify-between rounded-xl bg-white p-2.5 dark:bg-slate-900">
+                      <span>Identity Proof (Aadhaar/PAN)</span>
+                      <span className="font-bold text-emerald-600">✓ {selected.identity}</span>
+                    </div>
+                    <div className="flex justify-between rounded-xl bg-white p-2.5 dark:bg-slate-900">
+                      <span>Driving Licence</span>
+                      <span className="font-bold text-emerald-600">✓ {selected.licence}</span>
+                    </div>
+                    <div className="flex justify-between rounded-xl bg-white p-2.5 dark:bg-slate-900">
+                      <span>Vehicle Registration Certificate (RC)</span>
+                      <span className="font-bold text-emerald-600">✓ {selected.rc}</span>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Previous rejection */}
-              {selected.status === "Rejected" &&
-                selected.reason && (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
-                    <p className="text-sm font-bold text-red-700">
-                      Rejection Reason
-                    </p>
-
-                    <p className="mt-1 text-sm text-red-600">
-                      {selected.reason}
-                    </p>
-                  </div>
-                )}
-
-              {/* Reject Box */}
+              {/* Rejection box if open */}
               {showRejectBox && (
-                <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
-                  <label className="text-sm font-bold text-red-800">
-                    Reason for rejection
-                  </label>
-
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/40">
+                  <label className="text-xs font-bold text-red-800 dark:text-red-300">Reason for rejection</label>
                   <textarea
                     value={rejectReason}
-                    onChange={(e) =>
-                      setRejectReason(e.target.value)
-                    }
-                    rows={4}
-                    placeholder="Enter the reason for rejecting this application..."
-                    className="mt-3 w-full rounded-xl border border-red-200 bg-white p-3 text-sm outline-none focus:border-red-400"
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    placeholder="Enter rejection reason for driver..."
+                    className="mt-2 w-full rounded-xl border border-red-200 bg-white p-2.5 text-xs outline-none focus:border-red-400 dark:border-red-800 dark:bg-slate-900 dark:text-white"
+                    rows={2}
                   />
-
-                  <div className="mt-3 flex gap-3">
+                  <div className="mt-3 flex justify-end gap-2">
                     <button
                       onClick={() => setShowRejectBox(false)}
-                      className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-300"
                     >
                       Cancel
                     </button>
-
                     <button
                       onClick={rejectApplication}
-                      className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
+                      className="rounded-xl bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
                     >
                       Confirm Rejection
                     </button>
                   </div>
                 </div>
               )}
+            </div>
 
-              {/* Actions */}
+            <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+              <span className="text-xs font-bold text-slate-500">
+                Status: {selected.status}
+              </span>
+
               {!showRejectBox && (
-                <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-5">
-                  {selected.status === "Pending" ? (
+                <div className="flex gap-2">
+                  {selected.status === "Pending" && (
                     <>
                       <button
                         onClick={approveApplication}
-                        className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-700"
+                        className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700"
                       >
-                        ✓ Approve Verification
+                        Approve
                       </button>
-
                       <button
                         onClick={() => setShowRejectBox(true)}
-                        className="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white hover:bg-red-700"
+                        className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700"
                       >
-                        ✕ Reject Application
+                        Reject
                       </button>
                     </>
-                  ) : (
-                    <div className="w-full rounded-xl bg-slate-50 p-4 text-center text-sm text-slate-500">
-                      This application has already been{" "}
-                      <strong>{selected.status.toLowerCase()}</strong>.
-                    </div>
                   )}
+                  <button
+                    onClick={() => setSelected(null)}
+                    className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    Close
+                  </button>
                 </div>
               )}
             </div>
@@ -855,43 +518,5 @@ export default function AdminVerificationsPage() {
         </div>
       )}
     </main>
-  );
-}
-
-function DocumentRow({
-  title,
-  value,
-}: {
-  title: string;
-  value: "Uploaded" | "Missing";
-}) {
-  const uploaded = value === "Uploaded";
-
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white">
-          📄
-        </div>
-
-        <div>
-          <p className="text-sm font-semibold">{title}</p>
-
-          <p className="text-xs text-slate-500">
-            Driver submitted document
-          </p>
-        </div>
-      </div>
-
-      <span
-        className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-          uploaded
-            ? "bg-emerald-50 text-emerald-700"
-            : "bg-red-50 text-red-700"
-        }`}
-      >
-        {uploaded ? "✓ Uploaded" : "✕ Missing"}
-      </span>
-    </div>
   );
 }

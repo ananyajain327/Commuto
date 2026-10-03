@@ -61,4 +61,19 @@ public class AdminController {
     public List<RideResponse> getAllRides() {
         return adminService.getAllRides();
     }
+
+    @PostMapping("/users/{id}/toggle-status")
+    public UserResponse toggleUserStatus(@PathVariable Long id) {
+        return adminService.toggleUserStatus(id);
+    }
+
+    @GetMapping("/reports")
+    public List<Commuto.Backend.dto.SosAlertResponse> getSosAlerts() {
+        return adminService.getSosAlerts();
+    }
+
+    @PostMapping("/reports/{id}/resolve")
+    public Commuto.Backend.dto.SosAlertResponse resolveSosAlert(@PathVariable Long id) {
+        return adminService.resolveSosAlert(id);
+    }
 }

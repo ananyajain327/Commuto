@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { apiUrl } from "@/lib/api";
-
-
+import AdminSidebar from "@/components/AdminSidebar";
+import AdminHeader from "@/components/AdminHeader";
 
 const recentRides = [
   {
@@ -104,7 +105,7 @@ interface AdminRide {
 }
 
 export default function AdminDashboard() {
-  const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [overview, setOverview] = useState<AdminOverview | null>(null);
   const [liveRides, setLiveRides] = useState<AdminRide[]>([]);
 
@@ -146,188 +147,144 @@ export default function AdminDashboard() {
       value: overview ? String(overview.totalUsers) : "12,480",
       change: "+8.4%",
       icon: "👥",
+      link: "/admin/users",
     },
     {
       title: "Verified Drivers",
       value: overview ? `${overview.verifiedDrivers} / ${overview.totalDrivers}` : "2,184",
       change: "+5.2%",
       icon: "🚗",
+      link: "/admin/drivers",
     },
     {
       title: "Total Rides",
       value: overview ? String(overview.totalRides) : "38,642",
       change: overview ? `${overview.activeRides} active` : "+12.8%",
       icon: "🛣️",
+      link: "/admin/rides",
     },
     {
-      title: "Platform Revenue",
+      title: "Platform Gross Volume",
       value: overview ? `₹${overview.platformGrossFare.toFixed(0)}` : "₹18.6L",
       change: "+14.6%",
       icon: "💰",
+      link: "/admin/analytics",
     },
   ];
 
-  const menuItems = [
-    { name: "Dashboard", icon: "📊" },
-    { name: "Users", icon: "👥" },
-    { name: "Drivers", icon: "🚗" },
-    { name: "Rides", icon: "🛣️" },
-    { name: "Complaints", icon: "📋" },
-    { name: "Verifications", icon: "✅" },
-    { name: "Analytics", icon: "📈" },
-    { name: "Reports", icon: "🚨" },
-  ];
-
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-slate-200 bg-white lg:block">
-        <div className="flex h-full flex-col">
-          {/* Logo */}
-          <div className="border-b border-slate-100 px-6 py-6">
-            <a href="/dashboard" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-lg font-bold text-white">
-                C
-              </div>
-
-              <div>
-                <p className="text-lg font-bold">Commuto</p>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                  Admin Panel
-                </p>
-              </div>
-            </a>
-          </div>
-
-          {/* Menu */}
-          <nav className="flex-1 space-y-1 px-4 py-6">
-            {menuItems.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => setActiveMenu(item.name)}
-                className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
-                  activeMenu === item.name
-                    ? "bg-slate-900 text-white"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                <span>{item.icon}</span>
-                {item.name}
-              </button>
-            ))}
-          </nav>
-
-          {/* Admin Profile */}
-          <div className="border-t border-slate-100 p-4">
-            <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
-                A
-              </div>
-
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">
-                  Commuto Admin
-                </p>
-                <p className="truncate text-xs text-slate-400">
-                  Administrator
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <AdminSidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       {/* Main Content */}
       <div className="lg:ml-64">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-          <div className="flex items-center justify-between px-6 py-5">
-            <div>
-              <p className="text-sm text-slate-500">Admin Control Center</p>
-              <h1 className="mt-1 text-2xl font-bold">
-                Good evening, Admin 👋
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50">
-                🔔
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
-              </button>
-
-              <a
-                href="/dashboard"
-                className="hidden rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 sm:block"
-              >
-                User Dashboard
-              </a>
-            </div>
-          </div>
-        </header>
+        <AdminHeader
+          title="Good evening, Admin 👋"
+          subtitle="Admin Control Center • Commuto Smart Mobility"
+          onOpenMobileMenu={() => setMobileMenuOpen(true)}
+          breadcrumbs={[{ label: "Admin", href: "/admin" }, { label: "Overview" }]}
+        />
 
         <div className="space-y-8 px-6 py-8">
           {/* Overview */}
           <section>
             <div className="mb-5">
               <h2 className="text-xl font-bold">Platform Overview</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Monitor Commuto&apos;s overall performance.
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Monitor Commuto&apos;s overall performance and key platform metrics.
               </p>
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
               {dynamicStats.map((stat) => (
-                <div
+                <Link
                   key={stat.title}
-                  className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+                  href={stat.link}
+                  className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-xs transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm text-slate-500">{stat.title}</p>
-                      <h3 className="mt-3 text-3xl font-bold">
+                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.title}</p>
+                      <h3 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                         {stat.value}
                       </h3>
                     </div>
 
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-xl">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-xl group-hover:scale-110 transition dark:bg-slate-800">
                       {stat.icon}
                     </div>
                   </div>
 
                   <div className="mt-5 flex items-center gap-2">
-                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
                       ↑ {stat.change}
                     </span>
 
                     <span className="text-xs text-slate-400">
-                      vs last month
+                      vs last period
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </section>
 
-          {/* Analytics */}
+          {/* Quick Actions */}
+          <section>
+            <h2 className="mb-5 text-xl font-bold">Quick Actions</h2>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { icon: "👥", title: "Manage Users", text: "View, filter and manage platform riders", href: "/admin/users" },
+                { icon: "🚗", title: "Verify Drivers", text: "Review pending driver applications", href: "/admin/verifications" },
+                { icon: "📋", title: "Review Complaints", text: "Handle reported rider/driver issues", href: "/admin/complaints" },
+                { icon: "📈", title: "View Analytics", text: "Explore revenue and demand insights", href: "/admin/analytics" },
+              ].map((action) => (
+                <Link
+                  key={action.title}
+                  href={action.href}
+                  className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-xs transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-xl group-hover:scale-110 transition dark:bg-slate-800">
+                    {action.icon}
+                  </div>
+
+                  <h3 className="mt-4 font-bold text-slate-900 dark:text-white">{action.title}</h3>
+
+                  <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                    {action.text}
+                  </p>
+
+                  <p className="mt-4 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    Open Module →
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Analytics Chart & Health */}
           <section className="grid gap-6 xl:grid-cols-3">
             {/* Chart */}
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm xl:col-span-2">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 xl:col-span-2">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-bold">Ride Activity</h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     Ride volume over the past 7 days
                   </p>
                 </div>
 
-                <select className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium outline-none">
+                <select className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                   <option>Last 7 days</option>
                   <option>Last 30 days</option>
                   <option>Last 6 months</option>
                 </select>
               </div>
 
-              <div className="mt-8 flex h-64 items-end gap-3 border-b border-l border-slate-100 px-4 pb-0">
+              <div className="mt-8 flex h-64 items-end gap-3 border-b border-l border-slate-100 px-4 pb-0 dark:border-slate-800">
                 {[42, 58, 48, 75, 62, 88, 96].map((height, index) => (
                   <div
                     key={index}
@@ -335,9 +292,9 @@ export default function AdminDashboard() {
                   >
                     <div
                       style={{ height: `${height}%` }}
-                      className="relative rounded-t-xl bg-slate-900 transition group-hover:bg-slate-700"
+                      className="relative rounded-t-xl bg-slate-900 transition group-hover:bg-slate-700 dark:bg-emerald-600 dark:group-hover:bg-emerald-500"
                     >
-                      <span className="absolute -top-7 left-1/2 hidden -translate-x-1/2 rounded-lg bg-slate-900 px-2 py-1 text-[10px] text-white group-hover:block">
+                      <span className="absolute -top-7 left-1/2 hidden -translate-x-1/2 rounded-lg bg-slate-900 px-2 py-1 text-[10px] text-white group-hover:block dark:bg-slate-800">
                         {Math.round(height * 12.5)}
                       </span>
                     </div>
@@ -351,98 +308,65 @@ export default function AdminDashboard() {
             </div>
 
             {/* Platform Health */}
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
               <h2 className="text-lg font-bold">Platform Health</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Current system status
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Live microservice status
               </p>
 
               <div className="mt-7 space-y-5">
                 {[
                   ["API Services", "Operational"],
-                  ["Database", "Operational"],
-                  ["Maps Service", "Operational"],
-                  ["Notifications", "Operational"],
-                  ["Payment Gateway", "Operational"],
+                  ["PostgreSQL Database", "Operational"],
+                  ["WebSocket Gateway", "Operational"],
+                  ["Razorpay Payments", "Operational"],
+                  ["SOS Alert Dispatcher", "Operational"],
                 ].map(([service, status]) => (
                   <div
                     key={service}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-sm font-medium">{service}</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{service}</span>
 
-                    <span className="flex items-center gap-2 text-xs font-semibold text-emerald-600">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                       {status}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-7 rounded-2xl bg-emerald-50 p-4">
-                <p className="text-sm font-bold text-emerald-700">
+              <div className="mt-7 rounded-2xl bg-emerald-50 p-4 dark:bg-emerald-950/40">
+                <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
                   ✓ All systems operational
                 </p>
 
-                <p className="mt-1 text-xs text-emerald-600">
-                  Last checked a few seconds ago
+                <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
+                  Connected to Spring Boot Backend (Port 8080)
                 </p>
               </div>
-            </div>
-          </section>
-
-          {/* Quick Actions */}
-          <section>
-            <h2 className="mb-5 text-xl font-bold">Quick Actions</h2>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                ["👥", "Manage Users", "View and manage platform users"],
-                ["🚗", "Verify Drivers", "Review pending verifications"],
-                ["📋", "Review Complaints", "Handle reported issues"],
-                ["📈", "View Analytics", "Explore platform insights"],
-              ].map(([icon, title, text]) => (
-                <button
-                  key={title}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-xl">
-                    {icon}
-                  </div>
-
-                  <h3 className="mt-4 font-bold">{title}</h3>
-
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    {text}
-                  </p>
-
-                  <p className="mt-4 text-xs font-bold">
-                    Open →
-                  </p>
-                </button>
-              ))}
             </div>
           </section>
 
           {/* Recent Rides */}
-          <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 p-6">
+          <section className="rounded-3xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 p-6 dark:border-slate-800">
               <div>
                 <h2 className="text-lg font-bold">Recent Rides</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Latest platform activity
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  Latest platform activity and trips
                 </p>
               </div>
 
-              <button className="text-sm font-semibold hover:underline">
-                View All
-              </button>
+              <Link href="/admin/rides" className="text-sm font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
+                View All Rides →
+              </Link>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px]">
                 <thead>
-                  <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400">
+                  <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800">
                     <th className="px-6 py-4">Ride ID</th>
                     <th className="px-6 py-4">Passenger</th>
                     <th className="px-6 py-4">Driver</th>
@@ -452,7 +376,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
 
-                <tbody>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {(liveRides.length > 0 ? liveRides : recentRides).map((item) => {
                     const isLive = "startLocation" in item;
                     const ride = item as unknown as Record<string, string | number>;
@@ -466,21 +390,21 @@ export default function AdminDashboard() {
                     return (
                       <tr
                         key={String(ride.id)}
-                        className="border-b border-slate-50 last:border-0 hover:bg-slate-50"
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50"
                       >
-                        <td className="px-6 py-5 text-sm font-semibold">
+                        <td className="px-6 py-5 text-sm font-bold text-slate-900 dark:text-white">
                           {idText}
                         </td>
 
                         <td className="px-6 py-5 text-sm">{passengerText}</td>
 
-                        <td className="px-6 py-5 text-sm">{driverText}</td>
+                        <td className="px-6 py-5 text-sm font-medium">{driverText}</td>
 
-                        <td className="px-6 py-5 text-sm text-slate-500">
+                        <td className="px-6 py-5 text-sm text-slate-500 dark:text-slate-400">
                           {routeText}
                         </td>
 
-                        <td className="px-6 py-5 text-sm font-semibold">
+                        <td className="px-6 py-5 text-sm font-bold text-slate-900 dark:text-white">
                           {fareText}
                         </td>
 
@@ -488,10 +412,10 @@ export default function AdminDashboard() {
                           <span
                             className={`rounded-full px-3 py-1.5 text-xs font-bold ${
                               statusText.toLowerCase() === "completed"
-                                ? "bg-emerald-50 text-emerald-700"
+                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
                                 : statusText.toLowerCase() === "active"
-                                ? "bg-blue-50 text-blue-700"
-                                : "bg-red-50 text-red-700"
+                                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400"
+                                : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
                             }`}
                           >
                             {statusText}
@@ -508,21 +432,24 @@ export default function AdminDashboard() {
           {/* Bottom Grid */}
           <section className="grid gap-6 xl:grid-cols-2">
             {/* Complaints */}
-            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-100 p-6">
+            <div className="rounded-3xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex items-center justify-between border-b border-slate-100 p-6 dark:border-slate-800">
                 <div>
                   <h2 className="font-bold">Recent Complaints</h2>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     Issues requiring admin attention
                   </p>
                 </div>
 
-                <span className="rounded-full bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600">
-                  8 Pending
-                </span>
+                <Link
+                  href="/admin/complaints"
+                  className="rounded-full bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-400"
+                >
+                  Manage Complaints →
+                </Link>
               </div>
 
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {complaints.map((complaint) => (
                   <div key={complaint.id} className="p-5">
                     <div className="flex items-start justify-between gap-4">
@@ -539,8 +466,8 @@ export default function AdminDashboard() {
                       <span
                         className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${
                           complaint.priority === "High"
-                            ? "bg-red-50 text-red-600"
-                            : "bg-amber-50 text-amber-600"
+                            ? "bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-400"
+                            : "bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
                         }`}
                       >
                         {complaint.priority}
@@ -548,13 +475,13 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="mt-3 flex items-center justify-between">
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
                         {complaint.category}
                       </span>
 
-                      <button className="text-xs font-bold hover:underline">
+                      <Link href="/admin/complaints" className="text-xs font-bold text-emerald-600 hover:underline dark:text-emerald-400">
                         Review →
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -562,28 +489,31 @@ export default function AdminDashboard() {
             </div>
 
             {/* Verification */}
-            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-100 p-6">
+            <div className="rounded-3xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex items-center justify-between border-b border-slate-100 p-6 dark:border-slate-800">
                 <div>
                   <h2 className="font-bold">Pending Driver Verification</h2>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     Drivers waiting for document review
                   </p>
                 </div>
 
-                <span className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700">
-                  14 Pending
-                </span>
+                <Link
+                  href="/admin/verifications"
+                  className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 hover:bg-amber-100 dark:bg-amber-950/50 dark:text-amber-400"
+                >
+                  View Queue →
+                </Link>
               </div>
 
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {verificationRequests.map((driver) => (
                   <div
                     key={driver.name}
                     className="flex items-center justify-between gap-4 p-5"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 font-bold">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 font-bold dark:bg-slate-800">
                         {driver.name.charAt(0)}
                       </div>
 
@@ -595,9 +525,12 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    <button className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800">
+                    <Link
+                      href="/admin/verifications"
+                      className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                    >
                       Review
-                    </button>
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -605,29 +538,32 @@ export default function AdminDashboard() {
           </section>
 
           {/* Safety Alert */}
-          <section className="rounded-3xl border border-red-100 bg-white p-6 shadow-sm">
+          <section className="rounded-3xl border border-red-200 bg-white p-6 shadow-xs dark:border-red-900/50 dark:bg-slate-900">
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <div className="flex gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-xl">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-xl dark:bg-red-950/60">
                   🚨
                 </div>
 
                 <div>
-                  <h2 className="font-bold">Safety Monitoring</h2>
-                  <p className="mt-1 text-sm text-slate-500">
-                    2 safety reports require immediate review.
+                  <h2 className="font-bold text-red-600 dark:text-red-400">Emergency & SOS Monitoring</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Live SOS alerts, security triggers, and safety reports.
                   </p>
                 </div>
               </div>
 
-              <button className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white hover:bg-red-700">
-                Review Safety Reports
-              </button>
+              <Link
+                href="/admin/fraud"
+                className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 text-center"
+              >
+                Review Safety Reports →
+              </Link>
             </div>
           </section>
 
           {/* Footer */}
-          <footer className="border-t border-slate-200 py-6 text-center">
+          <footer className="border-t border-slate-200 py-6 text-center dark:border-slate-800">
             <p className="text-xs text-slate-400">
               Commuto Admin Panel • Smart Mobility Management System
             </p>

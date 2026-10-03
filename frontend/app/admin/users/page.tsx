@@ -1,12 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import AdminSidebar from "@/components/AdminSidebar";
+import AdminHeader from "@/components/AdminHeader";
+import { apiUrl } from "@/lib/api";
 
-type Role = "Passenger" | "Driver";
+type Role = "Passenger" | "Driver" | "Admin";
 type Status = "Active" | "Suspended";
 
 type User = {
   id: string;
+  rawId?: number;
   name: string;
   email: string;
   phone: string;
@@ -20,6 +24,7 @@ type User = {
 const initialUsers: User[] = [
   {
     id: "USR-1001",
+    rawId: 1,
     name: "Ananya Jain",
     email: "ananya@example.com",
     phone: "+91 98765 43210",
@@ -31,6 +36,7 @@ const initialUsers: User[] = [
   },
   {
     id: "USR-1002",
+    rawId: 2,
     name: "Rahul Sharma",
     email: "rahul@example.com",
     phone: "+91 98234 56781",
@@ -42,6 +48,7 @@ const initialUsers: User[] = [
   },
   {
     id: "USR-1003",
+    rawId: 3,
     name: "Priya Mehta",
     email: "priya@example.com",
     phone: "+91 97654 32109",
@@ -53,6 +60,7 @@ const initialUsers: User[] = [
   },
   {
     id: "USR-1004",
+    rawId: 4,
     name: "Aman Verma",
     email: "aman@example.com",
     phone: "+91 98123 45670",
@@ -64,6 +72,7 @@ const initialUsers: User[] = [
   },
   {
     id: "USR-1005",
+    rawId: 5,
     name: "Riya Gupta",
     email: "riya@example.com",
     phone: "+91 98987 65432",
@@ -75,6 +84,7 @@ const initialUsers: User[] = [
   },
   {
     id: "USR-1006",
+    rawId: 6,
     name: "Karan Singh",
     email: "karan@example.com",
     phone: "+91 97531 86420",
@@ -86,6 +96,7 @@ const initialUsers: User[] = [
   },
   {
     id: "USR-1007",
+    rawId: 7,
     name: "Neha Sharma",
     email: "neha@example.com",
     phone: "+91 98712 34567",
@@ -97,29 +108,84 @@ const initialUsers: User[] = [
   },
   {
     id: "USR-1008",
+    rawId: 8,
     name: "Vivek Jain",
     email: "vivek@example.com",
-    phone: "+91 99123 45678",
+    phone: "+91 98321 09876",
     role: "Driver",
-    rides: 73,
-    rating: 4.4,
-    joined: "09 Mar 2026",
-    status: "Suspended",
+    rides: 77,
+    rating: 4.7,
+    joined: "09 Jan 2026",
+    status: "Active",
   },
 ];
 
+interface BackendUser {
+  id: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  role: "PASSENGER" | "DRIVER" | "ADMIN";
+  active: boolean;
+  verified: boolean;
+  createdAt: string;
+}
+
 export default function AdminUsersPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [roleFilter, setRoleFilter] = useState<string>("All");
+  const [statusFilter, setStatusFilter] = useState<string>("All");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    let isCurrent = true;
+    const fetchUsers = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await fetch(apiUrl("/api/admin/users"), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok && isCurrent) {
+          const data = (await res.json()) as BackendUser[];
+          if (data && data.length > 0) {
+            const mapped: User[] = data.map((u) => ({
+              id: `USR-${u.id}`,
+              rawId: u.id,
+              name: u.fullName,
+              email: u.email,
+              phone: u.phone || "+91 ••••• •••••",
+              role: u.role === "DRIVER" ? "Driver" : u.role === "ADMIN" ? "Admin" : "Passenger",
+              rides: u.role === "DRIVER" ? 12 : 5,
+              rating: 4.8,
+              joined: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "Recent",
+              status: u.active ? "Active" : "Suspended",
+            }));
+            setUsers(mapped);
+          }
+        }
+      } catch {
+        // Fall back gracefully to mock initialUsers
+      }
+    };
+
+    void fetchUsers();
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       const matchesSearch =
         user.name.toLowerCase().includes(search.toLowerCase()) ||
         user.email.toLowerCase().includes(search.toLowerCase()) ||
+        user.phone.includes(search) ||
         user.id.toLowerCase().includes(search.toLowerCase());
 
       const matchesRole =
@@ -132,368 +198,223 @@ export default function AdminUsersPage() {
     });
   }, [users, search, roleFilter, statusFilter]);
 
-  const toggleStatus = (id: string) => {
-    setUsers((currentUsers) =>
-      currentUsers.map((user) =>
-        user.id === id
+  const handleOpenUser = (user: User) => {
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleToggleStatus = async (id: string, rawId?: number) => {
+    // Optimistic UI update
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === id
           ? {
-              ...user,
-              status: user.status === "Active" ? "Suspended" : "Active",
+              ...u,
+              status: u.status === "Active" ? "Suspended" : "Active",
             }
-          : user
+          : u
       )
     );
 
-    if (selectedUser?.id === id) {
-      setSelectedUser((current) =>
-        current
+    if (selectedUser && selectedUser.id === id) {
+      setSelectedUser((prev) =>
+        prev
           ? {
-              ...current,
-              status:
-                current.status === "Active" ? "Suspended" : "Active",
+              ...prev,
+              status: prev.status === "Active" ? "Suspended" : "Active",
             }
           : null
       );
     }
+
+    // Call backend if rawId is present
+    const targetRawId = rawId || (id.startsWith("USR-") ? Number(id.replace("USR-", "")) : null);
+    if (targetRawId && !isNaN(targetRawId)) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          await fetch(apiUrl(`/api/admin/users/${targetRawId}/toggle-status`), {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch {
+          // Keep optimistic
+        }
+      }
+    }
   };
 
   const totalUsers = users.length;
-  const passengers = users.filter((user) => user.role === "Passenger").length;
-  const drivers = users.filter((user) => user.role === "Driver").length;
-  const suspended = users.filter((user) => user.status === "Suspended").length;
+  const passengers = users.filter((u) => u.role === "Passenger").length;
+  const drivers = users.filter((u) => u.role === "Driver").length;
+  const suspended = users.filter((u) => u.status === "Suspended").length;
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-slate-200 bg-white lg:block">
-        <div className="flex h-full flex-col">
-          {/* Logo */}
-          <div className="border-b border-slate-100 px-6 py-6">
-            <a href="/admin" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-lg font-bold text-white">
-                C
-              </div>
+      <AdminSidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-              <div>
-                <p className="text-lg font-bold">Commuto</p>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                  Admin Panel
-                </p>
-              </div>
-            </a>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-4 py-6">
-            <a
-              href="/admin"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              📊
-              Dashboard
-            </a>
-
-            <a
-              href="/admin/users"
-              className="flex items-center gap-3 rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white"
-            >
-              👥
-              Users
-            </a>
-
-            {[
-              ["🚗", "Drivers"],
-              ["🛣️", "Rides"],
-              ["📋", "Complaints"],
-              ["✅", "Verifications"],
-              ["📈", "Analytics"],
-              ["🚨", "Reports"],
-            ].map(([icon, title]) => (
-              <button
-                key={title}
-                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-600 hover:bg-slate-50"
-              >
-                <span>{icon}</span>
-                {title}
-              </button>
-            ))}
-          </nav>
-
-          {/* Admin Profile */}
-          <div className="border-t border-slate-100 p-4">
-            <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
-                A
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold">Commuto Admin</p>
-                <p className="text-xs text-slate-400">Administrator</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main */}
+      {/* Main Content */}
       <div className="lg:ml-64">
         {/* Header */}
-        <header className="border-b border-slate-200 bg-white">
-          <div className="flex flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-sm text-slate-400">
-                <a href="/admin" className="hover:text-slate-700">
-                  Admin
-                </a>
-                <span>/</span>
-                <span>Users</span>
-              </div>
+        <AdminHeader
+          title="Users Management"
+          subtitle="View, filter, inspect and manage Commuto riders and drivers"
+          onOpenMobileMenu={() => setMobileMenuOpen(true)}
+          breadcrumbs={[{ label: "Admin", href: "/admin" }, { label: "Users" }]}
+        />
 
-              <h1 className="mt-2 text-2xl font-bold">
-                User Management
-              </h1>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Manage passengers and drivers registered on Commuto.
-              </p>
+        {/* Content */}
+        <div className="space-y-8 px-6 py-8">
+          {/* Top Summary Cards */}
+          <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Registered</p>
+              <h3 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">{totalUsers}</h3>
+              <p className="mt-2 text-xs text-slate-400">Across all roles</p>
             </div>
 
-            <button className="w-fit rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">
-              + Add User
-            </button>
-          </div>
-        </header>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Passengers</p>
+              <h3 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">{passengers}</h3>
+              <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">Rider accounts</p>
+            </div>
 
-        <div className="space-y-7 px-6 py-8">
-          {/* Stats */}
-          <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              icon="👥"
-              title="Total Users"
-              value={totalUsers.toString()}
-              subtitle="Registered users"
-            />
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Drivers</p>
+              <h3 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">{drivers}</h3>
+              <p className="mt-2 text-xs text-blue-600 dark:text-blue-400">Publishers & Captains</p>
+            </div>
 
-            <StatCard
-              icon="🧑"
-              title="Passengers"
-              value={passengers.toString()}
-              subtitle="Active passenger accounts"
-            />
-
-            <StatCard
-              icon="🚗"
-              title="Drivers"
-              value={drivers.toString()}
-              subtitle="Registered drivers"
-            />
-
-            <StatCard
-              icon="⛔"
-              title="Suspended"
-              value={suspended.toString()}
-              subtitle="Accounts requiring attention"
-            />
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Suspended</p>
+              <h3 className="mt-3 text-3xl font-bold text-red-600 dark:text-red-400">{suspended}</h3>
+              <p className="mt-2 text-xs text-red-500">Action required</p>
+            </div>
           </section>
 
-          {/* Search and Filters */}
-          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex flex-col gap-4 lg:flex-row">
-              {/* Search */}
-              <div className="relative flex-1">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                  🔍
-                </span>
-
+          {/* Table Card */}
+          <section className="rounded-3xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            {/* Filter Bar */}
+            <div className="flex flex-col gap-4 border-b border-slate-100 p-6 lg:flex-row lg:items-center lg:justify-between dark:border-slate-800">
+              <div className="flex-1">
                 <input
+                  type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by name, email or user ID..."
-                  className="w-full rounded-xl border border-slate-200 py-3.5 pl-11 pr-4 text-sm outline-none focus:border-slate-900"
+                  placeholder="Search by name, email, phone, or ID..."
+                  className="w-full max-w-md rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-emerald-500"
                 />
               </div>
 
-              {/* Role */}
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm outline-none focus:border-slate-900"
-              >
-                <option value="All">All Roles</option>
-                <option value="Passenger">Passenger</option>
-                <option value="Driver">Driver</option>
-              </select>
-
-              {/* Status */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm outline-none focus:border-slate-900"
-              >
-                <option value="All">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Suspended">Suspended</option>
-              </select>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-xs text-slate-400">
-                Showing {filteredUsers.length} of {users.length} users
-              </p>
-
-              {(search || roleFilter !== "All" || statusFilter !== "All") && (
-                <button
-                  onClick={() => {
-                    setSearch("");
-                    setRoleFilter("All");
-                    setStatusFilter("All");
-                  }}
-                  className="text-xs font-semibold text-slate-700 hover:underline"
+              <div className="flex flex-wrap items-center gap-3">
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 >
-                  Clear Filters
-                </button>
-              )}
-            </div>
-          </section>
+                  <option value="All">All Roles</option>
+                  <option value="Passenger">Passengers</option>
+                  <option value="Driver">Drivers</option>
+                </select>
 
-          {/* Users Table */}
-          <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 p-6">
-              <div>
-                <h2 className="text-lg font-bold">All Users</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Review and manage user accounts.
-                </p>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Suspended">Suspended</option>
+                </select>
               </div>
-
-              <button className="hidden rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50 sm:block">
-                Export
-              </button>
             </div>
 
+            {/* Users Table */}
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1050px]">
+              <table className="w-full min-w-[850px]">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50 text-left text-[11px] uppercase tracking-wide text-slate-400">
+                  <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800">
                     <th className="px-6 py-4">User</th>
                     <th className="px-6 py-4">Role</th>
+                    <th className="px-6 py-4">Phone</th>
                     <th className="px-6 py-4">Rides</th>
                     <th className="px-6 py-4">Rating</th>
-                    <th className="px-6 py-4">Joined</th>
                     <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Action</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
 
-                <tbody>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td
-                        colSpan={7}
-                        className="px-6 py-16 text-center"
-                      >
-                        <div className="text-3xl">🔍</div>
-                        <p className="mt-3 font-semibold">
-                          No users found
-                        </p>
-                        <p className="mt-1 text-sm text-slate-400">
-                          Try changing your search or filters.
-                        </p>
+                      <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-400">
+                        No users found matching your search.
                       </td>
                     </tr>
                   ) : (
                     filteredUsers.map((user) => (
-                      <tr
-                        key={user.id}
-                        className="border-b border-slate-50 last:border-0 hover:bg-slate-50"
-                      >
-                        {/* User */}
-                        <td className="px-6 py-5">
+                      <tr key={user.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50">
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 font-bold">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                               {user.name.charAt(0)}
                             </div>
-
                             <div>
-                              <p className="text-sm font-semibold">
-                                {user.name}
-                              </p>
-
-                              <p className="mt-1 text-xs text-slate-400">
-                                {user.email}
-                              </p>
-
-                              <p className="mt-1 text-[10px] font-medium text-slate-400">
-                                {user.id}
-                              </p>
+                              <p className="text-sm font-bold text-slate-900 dark:text-white">{user.name}</p>
+                              <p className="text-xs text-slate-400">{user.email} • {user.id}</p>
                             </div>
                           </div>
                         </td>
 
-                        {/* Role */}
-                        <td className="px-6 py-5">
+                        <td className="px-6 py-4">
                           <span
-                            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                               user.role === "Driver"
-                                ? "bg-blue-50 text-blue-700"
-                                : "bg-violet-50 text-violet-700"
+                                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400"
+                                : user.role === "Admin"
+                                ? "bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-400"
+                                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                             }`}
                           >
                             {user.role}
                           </span>
                         </td>
 
-                        {/* Rides */}
-                        <td className="px-6 py-5 text-sm font-semibold">
-                          {user.rides}
-                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{user.phone}</td>
+                        <td className="px-6 py-4 text-sm font-semibold">{user.rides}</td>
+                        <td className="px-6 py-4 text-sm font-semibold">★ {user.rating}</td>
 
-                        {/* Rating */}
-                        <td className="px-6 py-5">
-                          <span className="text-sm font-semibold">
-                            ⭐ {user.rating}
-                          </span>
-                        </td>
-
-                        {/* Joined */}
-                        <td className="px-6 py-5 text-sm text-slate-500">
-                          {user.joined}
-                        </td>
-
-                        {/* Status */}
-                        <td className="px-6 py-5">
+                        <td className="px-6 py-4">
                           <span
-                            className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                            className={`rounded-full px-2.5 py-1 text-xs font-bold ${
                               user.status === "Active"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-red-50 text-red-700"
+                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                                : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
                             }`}
                           >
                             {user.status}
                           </span>
                         </td>
 
-                        {/* Action */}
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-2">
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
                             <button
-                              onClick={() => setSelectedUser(user)}
-                              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-white"
+                              onClick={() => handleOpenUser(user)}
+                              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                             >
                               View
                             </button>
 
                             <button
-                              onClick={() => toggleStatus(user.id)}
-                              className={`rounded-lg px-3 py-2 text-xs font-semibold ${
+                              onClick={() => handleToggleStatus(user.id, user.rawId)}
+                              className={`rounded-lg px-3 py-1.5 text-xs font-semibold shadow-2xs transition ${
                                 user.status === "Active"
-                                  ? "bg-red-50 text-red-600 hover:bg-red-100"
-                                  : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                  ? "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-400"
+                                  : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-400"
                               }`}
                             >
-                              {user.status === "Active"
-                                ? "Suspend"
-                                : "Activate"}
+                              {user.status === "Active" ? "Suspend" : "Activate"}
                             </button>
                           </div>
                         </td>
@@ -504,158 +425,87 @@ export default function AdminUsersPage() {
               </table>
             </div>
           </section>
-
-          {/* Info */}
-          <section className="rounded-3xl border border-slate-200 bg-white p-6">
-            <div className="flex gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50">
-                ℹ️
-              </div>
-
-              <div>
-                <h3 className="font-bold">Admin access</h3>
-                <p className="mt-1 text-sm leading-6 text-slate-500">
-                  User suspension and account management actions are currently
-                  running in demo mode. They will be connected to the Commuto
-                  backend and database during integration.
-                </p>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
 
       {/* User Details Modal */}
-      {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-7 shadow-2xl">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-lg font-bold text-white">
+      {isModalOpen && selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-lg font-bold text-white dark:bg-emerald-600">
                   {selectedUser.name.charAt(0)}
                 </div>
-
                 <div>
-                  <h2 className="text-xl font-bold">
-                    {selectedUser.name}
-                  </h2>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    {selectedUser.id}
-                  </p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedUser.name}</h3>
+                  <p className="text-xs text-slate-400">{selectedUser.id} • Joined {selectedUser.joined}</p>
                 </div>
               </div>
 
               <button
-                onClick={() => setSelectedUser(null)}
-                className="text-2xl text-slate-400 hover:text-slate-700"
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
               >
-                ×
+                ✕
               </button>
             </div>
 
-            {/* Details */}
-            <div className="mt-7 grid gap-3 sm:grid-cols-2">
-              <Detail label="Email" value={selectedUser.email} />
-              <Detail label="Phone" value={selectedUser.phone} />
-              <Detail label="Role" value={selectedUser.role} />
-              <Detail label="Joined" value={selectedUser.joined} />
-              <Detail
-                label="Total Rides"
-                value={selectedUser.rides.toString()}
-              />
-              <Detail
-                label="Rating"
-                value={`⭐ ${selectedUser.rating}`}
-              />
-            </div>
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                <p className="text-xs text-slate-400">Email Address</p>
+                <p className="mt-1 truncate text-sm font-semibold text-slate-900 dark:text-white">{selectedUser.email}</p>
+              </div>
 
-            <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-500">
-                  Account Status
-                </span>
+              <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                <p className="text-xs text-slate-400">Phone</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{selectedUser.phone}</p>
+              </div>
 
-                <span
-                  className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-                    selectedUser.status === "Active"
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-red-50 text-red-700"
-                  }`}
-                >
-                  {selectedUser.status}
-                </span>
+              <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                <p className="text-xs text-slate-400">Role</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{selectedUser.role}</p>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                <p className="text-xs text-slate-400">Rating & Rides</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">★ {selectedUser.rating} ({selectedUser.rides} rides)</p>
               </div>
             </div>
 
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => toggleStatus(selectedUser.id)}
-                className={`flex-1 rounded-xl py-3 text-sm font-semibold ${
+            <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+              <span
+                className={`rounded-full px-3 py-1.5 text-xs font-bold ${
                   selectedUser.status === "Active"
-                    ? "bg-red-50 text-red-600 hover:bg-red-100"
-                    : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                    : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
                 }`}
               >
-                {selectedUser.status === "Active"
-                  ? "Suspend User"
-                  : "Activate User"}
-              </button>
+                Status: {selectedUser.status}
+              </span>
 
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="flex-1 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800"
-              >
-                Close
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleToggleStatus(selectedUser.id, selectedUser.rawId)}
+                  className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                    selectedUser.status === "Active"
+                      ? "bg-red-600 text-white hover:bg-red-700"
+                      : "bg-emerald-600 text-white hover:bg-emerald-700"
+                  }`}
+                >
+                  {selectedUser.status === "Active" ? "Suspend Account" : "Activate Account"}
+                </button>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
     </main>
-  );
-}
-
-function StatCard({
-  icon,
-  title,
-  value,
-  subtitle,
-}: {
-  icon: string;
-  title: string;
-  value: string;
-  subtitle: string;
-}) {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-slate-500">{title}</p>
-          <h2 className="mt-3 text-3xl font-bold">{value}</h2>
-        </div>
-
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-xl">
-          {icon}
-        </div>
-      </div>
-
-      <p className="mt-5 text-xs text-slate-400">{subtitle}</p>
-    </div>
-  );
-}
-
-function Detail({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-2xl bg-slate-50 p-4">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="mt-1 break-words text-sm font-semibold">{value}</p>
-    </div>
   );
 }

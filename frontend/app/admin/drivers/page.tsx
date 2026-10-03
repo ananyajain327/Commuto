@@ -1,9 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import AdminSidebar from "@/components/AdminSidebar";
+import AdminHeader from "@/components/AdminHeader";
+import { apiUrl } from "@/lib/api";
 
 type Driver = {
   id: string;
+  rawId?: number;
   name: string;
   email: string;
   phone: string;
@@ -20,6 +24,7 @@ type Driver = {
 const initialDrivers: Driver[] = [
   {
     id: "DRV-1001",
+    rawId: 2,
     name: "Rahul Sharma",
     email: "rahul.sharma@gmail.com",
     phone: "+91 98765 43210",
@@ -34,6 +39,7 @@ const initialDrivers: Driver[] = [
   },
   {
     id: "DRV-1002",
+    rawId: 4,
     name: "Aman Verma",
     email: "aman.verma@gmail.com",
     phone: "+91 91234 56789",
@@ -48,6 +54,7 @@ const initialDrivers: Driver[] = [
   },
   {
     id: "DRV-1003",
+    rawId: 6,
     name: "Vikram Singh",
     email: "vikram.singh@gmail.com",
     phone: "+91 99887 66554",
@@ -58,57 +65,144 @@ const initialDrivers: Driver[] = [
     earnings: 39600,
     verification: "Verified",
     status: "Active",
-    joined: "03 Mar 2026",
+    joined: "10 Dec 2025",
   },
   {
     id: "DRV-1004",
+    rawId: 8,
     name: "Rohit Meena",
     email: "rohit.meena@gmail.com",
     phone: "+91 90123 45678",
     vehicle: "Mahindra XUV700",
     vehicleNumber: "RJ14 GH 9012",
-    rating: 4.3,
-    rides: 96,
-    earnings: 21400,
+    rating: 4.5,
+    rides: 94,
+    earnings: 21500,
     verification: "Rejected",
     status: "Suspended",
-    joined: "18 Mar 2026",
+    joined: "05 Mar 2026",
   },
   {
     id: "DRV-1005",
+    rawId: 9,
     name: "Arjun Gupta",
     email: "arjun.gupta@gmail.com",
     phone: "+91 93456 78901",
     vehicle: "Honda City",
     vehicleNumber: "RJ14 JK 5634",
     rating: 4.8,
-    rides: 275,
-    earnings: 55750,
+    rides: 260,
+    earnings: 55900,
     verification: "Pending",
     status: "Active",
-    joined: "05 Apr 2026",
+    joined: "18 Jan 2026",
   },
 ];
 
+interface BackendUser {
+  id: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  role: "PASSENGER" | "DRIVER" | "ADMIN";
+  active: boolean;
+  verified: boolean;
+  createdAt: string;
+}
+
+interface BackendVerification {
+  id: number;
+  driverId: number;
+  driverName: string;
+  driverEmail: string;
+  licenseNumber: string;
+  vehicleRc: string;
+  vehicleModel: string;
+  vehicleNumber: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+}
+
 export default function AdminDriversPage() {
-  const [drivers, setDrivers] = useState(initialDrivers);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
   const [search, setSearch] = useState("");
   const [verificationFilter, setVerificationFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
-  const [showDocuments, setShowDocuments] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    let isCurrent = true;
+    const fetchDrivers = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const [usersRes, verifRes] = await Promise.all([
+          fetch(apiUrl("/api/admin/users"), { headers }),
+          fetch(apiUrl("/api/admin/verifications"), { headers }),
+        ]);
+
+        if (usersRes.ok && isCurrent) {
+          const userList = (await usersRes.json()) as BackendUser[];
+          const verifList = verifRes.ok ? ((await verifRes.json()) as BackendVerification[]) : [];
+
+          const driverUsers = userList.filter((u) => u.role === "DRIVER");
+          if (driverUsers.length > 0) {
+            const mapped: Driver[] = driverUsers.map((u) => {
+              const matchingVerif = verifList.find((v) => v.driverId === u.id || v.driverEmail === u.email);
+              const verifStatus = matchingVerif
+                ? matchingVerif.status === "APPROVED"
+                  ? "Verified"
+                  : matchingVerif.status === "REJECTED"
+                  ? "Rejected"
+                  : "Pending"
+                : u.verified
+                ? "Verified"
+                : "Pending";
+
+              return {
+                id: `DRV-${u.id}`,
+                rawId: u.id,
+                name: u.fullName,
+                email: u.email,
+                phone: u.phone || "+91 ••••• •••••",
+                vehicle: matchingVerif?.vehicleModel || "Maruti Suzuki Dzire",
+                vehicleNumber: matchingVerif?.vehicleNumber || "RJ14 AB 1234",
+                rating: 4.8,
+                rides: 14,
+                earnings: 3200,
+                verification: verifStatus,
+                status: u.active ? "Active" : "Suspended",
+                joined: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "Recent",
+              };
+            });
+            setDrivers(mapped);
+          }
+        }
+      } catch {
+        // Fall back gracefully to mock list
+      }
+    };
+
+    void fetchDrivers();
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   const filteredDrivers = useMemo(() => {
     return drivers.filter((driver) => {
       const matchesSearch =
         driver.name.toLowerCase().includes(search.toLowerCase()) ||
         driver.email.toLowerCase().includes(search.toLowerCase()) ||
-        driver.id.toLowerCase().includes(search.toLowerCase()) ||
-        driver.vehicleNumber.toLowerCase().includes(search.toLowerCase());
+        driver.vehicle.toLowerCase().includes(search.toLowerCase()) ||
+        driver.vehicleNumber.toLowerCase().includes(search.toLowerCase()) ||
+        driver.id.toLowerCase().includes(search.toLowerCase());
 
       const matchesVerification =
-        verificationFilter === "All" ||
-        driver.verification === verificationFilter;
+        verificationFilter === "All" || driver.verification === verificationFilter;
 
       const matchesStatus =
         statusFilter === "All" || driver.status === statusFilter;
@@ -117,618 +211,313 @@ export default function AdminDriversPage() {
     });
   }, [drivers, search, verificationFilter, statusFilter]);
 
-  const stats = {
-    total: drivers.length,
-    verified: drivers.filter((d) => d.verification === "Verified").length,
-    pending: drivers.filter((d) => d.verification === "Pending").length,
-    rejected: drivers.filter((d) => d.verification === "Rejected").length,
+  const handleOpenDriver = (driver: Driver) => {
+    setSelectedDriver(driver);
+    setIsModalOpen(true);
   };
 
-  const updateVerification = (
-    id: string,
-    verification: Driver["verification"]
-  ) => {
-    setDrivers((current) =>
-      current.map((driver) =>
-        driver.id === id ? { ...driver, verification } : driver
-      )
-    );
-
-    setSelectedDriver((current) =>
-      current?.id === id ? { ...current, verification } : current
-    );
-  };
-
-  const toggleStatus = (id: string) => {
-    setDrivers((current) =>
-      current.map((driver) =>
-        driver.id === id
+  const handleToggleStatus = async (id: string, rawId?: number) => {
+    setDrivers((prev) =>
+      prev.map((d) =>
+        d.id === id
           ? {
-              ...driver,
-              status: driver.status === "Active" ? "Suspended" : "Active",
+              ...d,
+              status: d.status === "Active" ? "Suspended" : "Active",
             }
-          : driver
+          : d
       )
     );
 
-    setSelectedDriver((current) =>
-      current?.id === id
-        ? {
-            ...current,
-            status:
-              current.status === "Active" ? "Suspended" : "Active",
-          }
-        : current
-    );
-  };
-
-  const verificationStyle = (status: Driver["verification"]) => {
-    if (status === "Verified") {
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    if (selectedDriver && selectedDriver.id === id) {
+      setSelectedDriver((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: prev.status === "Active" ? "Suspended" : "Active",
+            }
+          : null
+      );
     }
 
-    if (status === "Pending") {
-      return "bg-amber-50 text-amber-700 border-amber-200";
+    const targetRawId = rawId || (id.startsWith("DRV-") ? Number(id.replace("DRV-", "")) : null);
+    if (targetRawId && !isNaN(targetRawId)) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          await fetch(apiUrl(`/api/admin/users/${targetRawId}/toggle-status`), {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch {
+          // Keep optimistic
+        }
+      }
     }
-
-    return "bg-red-50 text-red-700 border-red-200";
   };
 
-  const statusStyle = (status: Driver["status"]) => {
-    return status === "Active"
-      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-      : "bg-red-50 text-red-700 border-red-200";
-  };
+  const totalDrivers = drivers.length;
+  const verifiedDrivers = drivers.filter((d) => d.verification === "Verified").length;
+  const pendingDrivers = drivers.filter((d) => d.verification === "Pending").length;
+  const suspendedDrivers = drivers.filter((d) => d.status === "Suspended").length;
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-slate-200 bg-white lg:block">
-        <div className="flex h-full flex-col">
-          <div className="border-b border-slate-100 px-6 py-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-lg font-bold text-white">
-                C
-              </div>
+      <AdminSidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-              <div>
-                <h1 className="text-lg font-bold">Commuto</h1>
-                <p className="text-xs text-slate-500">Admin Console</p>
-              </div>
-            </div>
-          </div>
-
-          <nav className="flex-1 space-y-1 px-4 py-5">
-            <a
-              href="/admin"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              📊 Dashboard
-            </a>
-
-            <a
-              href="/admin/users"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              👥 Users
-            </a>
-
-            <a
-              href="/admin/drivers"
-              className="flex items-center gap-3 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white"
-            >
-              🚗 Drivers
-            </a>
-
-            <a
-              href="/admin/verifications"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              ✓ Verifications
-            </a>
-
-            <a
-              href="/admin/rides"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              🛣️ Rides
-            </a>
-
-            <a
-              href="/admin/complaints"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              ⚠️ Complaints
-            </a>
-
-            <a
-              href="/admin/analytics"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              📈 Analytics
-            </a>
-          </nav>
-
-          <div className="border-t border-slate-100 p-4">
-            <a
-              href="/dashboard"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              ← User Dashboard
-            </a>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <section className="lg:ml-64">
+      {/* Main Content */}
+      <div className="lg:ml-64">
         {/* Header */}
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-          <div className="flex items-center justify-between px-5 py-4 sm:px-8">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                Administration
-              </p>
-              <h2 className="text-xl font-bold sm:text-2xl">
-                Driver Management
-              </h2>
+        <AdminHeader
+          title="Drivers Management"
+          subtitle="Manage verified captains, pending KYC approvals, vehicles and ratings"
+          onOpenMobileMenu={() => setMobileMenuOpen(true)}
+          breadcrumbs={[{ label: "Admin", href: "/admin" }, { label: "Drivers" }]}
+        />
+
+        {/* Content */}
+        <div className="space-y-8 px-6 py-8">
+          {/* Top Summary Cards */}
+          <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Drivers</p>
+              <h3 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">{totalDrivers}</h3>
+              <p className="mt-2 text-xs text-slate-400">Registered captains</p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold">Ananya Jain</p>
-                <p className="text-xs text-slate-500">Administrator</p>
-              </div>
-
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
-                AJ
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="space-y-6 p-5 sm:p-8">
-          {/* Intro */}
-          <div>
-            <h3 className="text-2xl font-bold tracking-tight">
-              Drivers
-            </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Manage drivers, verification status, vehicles and platform
-              access.
-            </p>
-          </div>
-
-          {/* Stats */}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">Total Drivers</p>
-              <p className="mt-2 text-3xl font-bold">{stats.total}</p>
-              <p className="mt-2 text-xs text-slate-400">
-                Registered on Commuto
-              </p>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Verified</p>
+              <h3 className="mt-3 text-3xl font-bold text-emerald-600 dark:text-emerald-400">{verifiedDrivers}</h3>
+              <p className="mt-2 text-xs text-emerald-600">KYC approved</p>
             </div>
 
-            <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">Verified</p>
-              <p className="mt-2 text-3xl font-bold text-emerald-600">
-                {stats.verified}
-              </p>
-              <p className="mt-2 text-xs text-emerald-600">
-                Ready to drive
-              </p>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Pending Review</p>
+              <h3 className="mt-3 text-3xl font-bold text-amber-600 dark:text-amber-400">{pendingDrivers}</h3>
+              <p className="mt-2 text-xs text-amber-600">Awaiting document check</p>
             </div>
 
-            <div className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">Pending</p>
-              <p className="mt-2 text-3xl font-bold text-amber-600">
-                {stats.pending}
-              </p>
-              <p className="mt-2 text-xs text-amber-600">
-                Need review
-              </p>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Suspended</p>
+              <h3 className="mt-3 text-3xl font-bold text-red-600 dark:text-red-400">{suspendedDrivers}</h3>
+              <p className="mt-2 text-xs text-red-500">Deactivated accounts</p>
             </div>
+          </section>
 
-            <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">Rejected</p>
-              <p className="mt-2 text-3xl font-bold text-red-600">
-                {stats.rejected}
-              </p>
-              <p className="mt-2 text-xs text-red-600">
-                Verification failed
-              </p>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex flex-col gap-3 xl:flex-row">
-              <div className="relative flex-1">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                  🔍
-                </span>
-
+          {/* Table Card */}
+          <section className="rounded-3xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            {/* Filter Bar */}
+            <div className="flex flex-col gap-4 border-b border-slate-100 p-6 lg:flex-row lg:items-center lg:justify-between dark:border-slate-800">
+              <div className="flex-1">
                 <input
+                  type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by driver name, email, ID or vehicle number..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  placeholder="Search by driver name, vehicle, number or ID..."
+                  className="w-full max-w-md rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-emerald-500"
                 />
               </div>
 
-              <select
-                value={verificationFilter}
-                onChange={(e) => setVerificationFilter(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
-              >
-                <option value="All">All Verification</option>
-                <option value="Verified">Verified</option>
-                <option value="Pending">Pending</option>
-                <option value="Rejected">Rejected</option>
-              </select>
+              <div className="flex flex-wrap items-center gap-3">
+                <select
+                  value={verificationFilter}
+                  onChange={(e) => setVerificationFilter(e.target.value)}
+                  className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+                  <option value="All">All Verifications</option>
+                  <option value="Verified">Verified</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
 
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
-              >
-                <option value="All">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Suspended">Suspended</option>
-              </select>
-
-              <button
-                onClick={() => {
-                  setSearch("");
-                  setVerificationFilter("All");
-                  setStatusFilter("All");
-                }}
-                className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                Clear
-              </button>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-              <div>
-                <h4 className="font-bold">All Drivers</h4>
-                <p className="text-xs text-slate-500">
-                  Showing {filteredDrivers.length} drivers
-                </p>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Suspended">Suspended</option>
+                </select>
               </div>
-
-              <button className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
-                + Add Driver
-              </button>
             </div>
 
+            {/* Drivers Table */}
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1050px] text-left">
-                <thead className="bg-slate-50">
-                  <tr className="text-xs uppercase tracking-wide text-slate-500">
-                    <th className="px-5 py-4">Driver</th>
-                    <th className="px-5 py-4">Vehicle</th>
-                    <th className="px-5 py-4">Rating</th>
-                    <th className="px-5 py-4">Rides</th>
-                    <th className="px-5 py-4">Earnings</th>
-                    <th className="px-5 py-4">Verification</th>
-                    <th className="px-5 py-4">Status</th>
-                    <th className="px-5 py-4">Action</th>
+              <table className="w-full min-w-[900px]">
+                <thead>
+                  <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800">
+                    <th className="px-6 py-4">Driver</th>
+                    <th className="px-6 py-4">Vehicle</th>
+                    <th className="px-6 py-4">Trips</th>
+                    <th className="px-6 py-4">Rating</th>
+                    <th className="px-6 py-4">Verification</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100">
-                  {filteredDrivers.map((driver) => (
-                    <tr
-                      key={driver.id}
-                      className="hover:bg-slate-50/70"
-                    >
-                      <td className="px-5 py-5">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 font-bold text-slate-700">
-                            {driver.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </div>
-
-                          <div>
-                            <p className="font-semibold">
-                              {driver.name}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              {driver.id}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-5 py-5">
-                        <p className="text-sm font-medium">
-                          {driver.vehicle}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {driver.vehicleNumber}
-                        </p>
-                      </td>
-
-                      <td className="px-5 py-5">
-                        <span className="font-semibold">
-                          ⭐ {driver.rating}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-5 font-medium">
-                        {driver.rides}
-                      </td>
-
-                      <td className="px-5 py-5 font-semibold">
-                        ₹{driver.earnings.toLocaleString("en-IN")}
-                      </td>
-
-                      <td className="px-5 py-5">
-                        <span
-                          className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${verificationStyle(
-                            driver.verification
-                          )}`}
-                        >
-                          {driver.verification}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-5">
-                        <span
-                          className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${statusStyle(
-                            driver.status
-                          )}`}
-                        >
-                          {driver.status}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-5">
-                        <button
-                          onClick={() => setSelectedDriver(driver)}
-                          className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-                        >
-                          View
-                        </button>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {filteredDrivers.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-400">
+                        No drivers found matching your search.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredDrivers.map((driver) => (
+                      <tr key={driver.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                              {driver.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-slate-900 dark:text-white">{driver.name}</p>
+                              <p className="text-xs text-slate-400">{driver.email} • {driver.id}</p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">{driver.vehicle}</p>
+                          <p className="text-xs text-slate-400">{driver.vehicleNumber}</p>
+                        </td>
+
+                        <td className="px-6 py-4 text-sm font-semibold">{driver.rides}</td>
+                        <td className="px-6 py-4 text-sm font-semibold">★ {driver.rating}</td>
+
+                        <td className="px-6 py-4">
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                              driver.verification === "Verified"
+                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                                : driver.verification === "Pending"
+                                ? "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400"
+                                : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                            }`}
+                          >
+                            {driver.verification}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                              driver.status === "Active"
+                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                                : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                            }`}
+                          >
+                            {driver.status}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenDriver(driver)}
+                              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                            >
+                              Details
+                            </button>
+
+                            <button
+                              onClick={() => handleToggleStatus(driver.id, driver.rawId)}
+                              className={`rounded-lg px-3 py-1.5 text-xs font-semibold shadow-2xs transition ${
+                                driver.status === "Active"
+                                  ? "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-400"
+                                  : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-400"
+                              }`}
+                            >
+                              {driver.status === "Active" ? "Suspend" : "Activate"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
-
-              {filteredDrivers.length === 0 && (
-                <div className="p-12 text-center">
-                  <div className="text-4xl">🚗</div>
-                  <p className="mt-3 font-semibold">
-                    No drivers found
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Try changing your search or filters.
-                  </p>
-                </div>
-              )}
             </div>
-          </div>
+          </section>
         </div>
-      </section>
+      </div>
 
-      {/* Driver Detail Modal */}
-      {selectedDriver && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                  Driver Profile
-                </p>
-                <h3 className="text-xl font-bold">
-                  {selectedDriver.name}
-                </h3>
+      {/* Driver Details Modal */}
+      {isModalOpen && selectedDriver && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-lg font-bold text-white dark:bg-emerald-600">
+                  {selectedDriver.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedDriver.name}</h3>
+                  <p className="text-xs text-slate-400">{selectedDriver.id} • Joined {selectedDriver.joined}</p>
+                </div>
               </div>
 
               <button
-                onClick={() => setSelectedDriver(null)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-6 p-6">
-              {/* Profile */}
-              <div className="flex items-center gap-4 rounded-2xl bg-slate-50 p-5">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-xl font-bold text-white">
-                  {selectedDriver.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </div>
-
-                <div>
-                  <h4 className="text-lg font-bold">
-                    {selectedDriver.name}
-                  </h4>
-                  <p className="text-sm text-slate-500">
-                    {selectedDriver.email}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {selectedDriver.phone}
-                  </p>
-                </div>
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                <p className="text-xs text-slate-400">Email & Phone</p>
+                <p className="mt-1 truncate text-sm font-semibold text-slate-900 dark:text-white">{selectedDriver.email}</p>
+                <p className="text-xs text-slate-500">{selectedDriver.phone}</p>
               </div>
 
-              {/* Info */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">Driver ID</p>
-                  <p className="mt-1 font-semibold">
-                    {selectedDriver.id}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">Joined</p>
-                  <p className="mt-1 font-semibold">
-                    {selectedDriver.joined}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">Vehicle</p>
-                  <p className="mt-1 font-semibold">
-                    {selectedDriver.vehicle}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">
-                    Vehicle Number
-                  </p>
-                  <p className="mt-1 font-semibold">
-                    {selectedDriver.vehicleNumber}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">Rating</p>
-                  <p className="mt-1 font-semibold">
-                    ⭐ {selectedDriver.rating} / 5
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs text-slate-500">
-                    Total Earnings
-                  </p>
-                  <p className="mt-1 font-semibold">
-                    ₹{selectedDriver.earnings.toLocaleString("en-IN")}
-                  </p>
-                </div>
+              <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                <p className="text-xs text-slate-400">Vehicle Info</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{selectedDriver.vehicle}</p>
+                <p className="text-xs text-slate-500">{selectedDriver.vehicleNumber}</p>
               </div>
 
-              {/* Verification */}
-              <div>
-                <p className="mb-3 text-sm font-bold">
-                  Verification Status
-                </p>
-
-                <div className="flex flex-wrap gap-2">
-                  <span
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${verificationStyle(
-                      selectedDriver.verification
-                    )}`}
-                  >
-                    {selectedDriver.verification}
-                  </span>
-
-                  <span
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${statusStyle(
-                      selectedDriver.status
-                    )}`}
-                  >
-                    {selectedDriver.status}
-                  </span>
-                </div>
+              <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                <p className="text-xs text-slate-400">Verification Status</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{selectedDriver.verification}</p>
               </div>
 
-              {/* Documents */}
-              <div className="rounded-2xl border border-slate-200 p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-bold">
-                      Verification Documents
-                    </h4>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Identity and vehicle documents
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => setShowDocuments(!showDocuments)}
-                    className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
-                  >
-                    {showDocuments ? "Hide" : "View Documents"}
-                  </button>
-                </div>
-
-                {showDocuments && (
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl bg-slate-50 p-4 text-center">
-                      <div className="text-2xl">🪪</div>
-                      <p className="mt-2 text-sm font-semibold">
-                        Identity Proof
-                      </p>
-                      <p className="text-xs text-emerald-600">
-                        Uploaded
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl bg-slate-50 p-4 text-center">
-                      <div className="text-2xl">📄</div>
-                      <p className="mt-2 text-sm font-semibold">
-                        Driving Licence
-                      </p>
-                      <p className="text-xs text-emerald-600">
-                        Uploaded
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl bg-slate-50 p-4 text-center">
-                      <div className="text-2xl">🚘</div>
-                      <p className="mt-2 text-sm font-semibold">
-                        Vehicle RC
-                      </p>
-                      <p className="text-xs text-emerald-600">
-                        Uploaded
-                      </p>
-                    </div>
-                  </div>
-                )}
+              <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+                <p className="text-xs text-slate-400">Stats</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">★ {selectedDriver.rating} ({selectedDriver.rides} trips)</p>
               </div>
+            </div>
 
-              {/* Actions */}
-              <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-5">
-                {selectedDriver.verification === "Pending" && (
-                  <>
-                    <button
-                      onClick={() =>
-                        updateVerification(
-                          selectedDriver.id,
-                          "Verified"
-                        )
-                      }
-                      className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-700"
-                    >
-                      ✓ Approve Verification
-                    </button>
+            <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+              <span
+                className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                  selectedDriver.status === "Active"
+                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                    : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                }`}
+              >
+                Status: {selectedDriver.status}
+              </span>
 
-                    <button
-                      onClick={() =>
-                        updateVerification(
-                          selectedDriver.id,
-                          "Rejected"
-                        )
-                      }
-                      className="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white hover:bg-red-700"
-                    >
-                      ✕ Reject
-                    </button>
-                  </>
-                )}
-
+              <div className="flex gap-2">
                 <button
-                  onClick={() => toggleStatus(selectedDriver.id)}
-                  className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                  onClick={() => handleToggleStatus(selectedDriver.id, selectedDriver.rawId)}
+                  className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                    selectedDriver.status === "Active"
+                      ? "bg-red-600 text-white hover:bg-red-700"
+                      : "bg-emerald-600 text-white hover:bg-emerald-700"
+                  }`}
                 >
-                  {selectedDriver.status === "Active"
-                    ? "Suspend Driver"
-                    : "Activate Driver"}
+                  {selectedDriver.status === "Active" ? "Suspend Driver" : "Activate Driver"}
+                </button>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  Close
                 </button>
               </div>
             </div>
