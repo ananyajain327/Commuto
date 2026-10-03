@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useLayoutEffect } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -16,47 +16,58 @@ const ThemeContext = createContext<ThemeContextType>({
   resolvedTheme: "light",
 });
 
+function applyThemeToDOM(theme: Theme): "light" | "dark" {
+  if (typeof window === "undefined") return "light";
+  
+  const root = document.documentElement;
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  const active = isDark ? "dark" : "light";
+
+  if (isDark) {
+    root.classList.add("dark");
+    root.setAttribute("data-theme", "dark");
+    root.style.colorScheme = "dark";
+  } else {
+    root.classList.remove("dark");
+    root.setAttribute("data-theme", "light");
+    root.style.colorScheme = "light";
+  }
+
+  return active;
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
-  useEffect(() => {
-    const stored = localStorage.getItem("commuto_theme") as Theme | null;
-    if (stored && (stored === "light" || stored === "dark" || stored === "system")) {
-      setThemeState(stored);
+  // Read initial stored theme synchronously on mount
+  useLayoutEffect(() => {
+    try {
+      const stored = localStorage.getItem("commuto_theme") as Theme | null;
+      if (stored === "light" || stored === "dark" || stored === "system") {
+        setThemeState(stored);
+        const resolved = applyThemeToDOM(stored);
+        setResolvedTheme(resolved);
+      } else {
+        const resolved = applyThemeToDOM("system");
+        setResolvedTheme(resolved);
+      }
+    } catch {
+      // Fallback
     }
   }, []);
 
+  // Listen to system preference changes if in system mode
   useEffect(() => {
-    const root = document.documentElement;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const applyTheme = () => {
-      let active: "light" | "dark" = "light";
-      if (theme === "system") {
-        active = mediaQuery.matches ? "dark" : "light";
-      } else {
-        active = theme;
-      }
-
-      setResolvedTheme(active);
-
-      if (active === "dark") {
-        root.classList.add("dark");
-        root.setAttribute("data-theme", "dark");
-        root.style.colorScheme = "dark";
-      } else {
-        root.classList.remove("dark");
-        root.setAttribute("data-theme", "light");
-        root.style.colorScheme = "light";
-      }
-    };
-
-    applyTheme();
 
     const handleChange = () => {
       if (theme === "system") {
-        applyTheme();
+        const resolved = applyThemeToDOM("system");
+        setResolvedTheme(resolved);
       }
     };
 
@@ -66,7 +77,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem("commuto_theme", newTheme);
+    try {
+      localStorage.setItem("commuto_theme", newTheme);
+    } catch {
+      // Ignore
+    }
+    const resolved = applyThemeToDOM(newTheme);
+    setResolvedTheme(resolved);
   };
 
   return (
