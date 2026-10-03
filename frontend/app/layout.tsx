@@ -20,7 +20,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#020617" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
   ],
 };
 
@@ -33,6 +33,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/ThemeProvider";
+import ActiveRideWidget from "@/components/ActiveRideWidget";
 
 const themeInitScript = `
   (function() {
@@ -71,7 +72,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col transition-colors duration-200 bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <ActiveRideWidget />
+        </ThemeProvider>
       </body>
     </html>
   );

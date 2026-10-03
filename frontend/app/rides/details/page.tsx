@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
+import ThemeToggle from "@/components/ThemeToggle";
 import { apiUrl } from "@/lib/api";
 
 type BackendRide = {
   id: number;
-  origin: string;
+  origin?: string;
+  startLocation?: string;
   destination: string;
   departureTime: string;
+  rideDate?: string;
   availableSeats: number;
   expectedFare: number;
   vehicleModel: string;
@@ -44,8 +47,8 @@ function RideDetailsContent() {
   const [copied, setCopied] = useState(false);
   const [backendRide, setBackendRide] = useState<BackendRide | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showMapTrack, setShowMapTrack] = useState(true);
 
-  // Parse origin and destination if route param exists
   let defaultOrigin = "Jaipur Railway Station";
   let defaultDestination = "Ajmer Bus Stand";
   let defaultRouteTitle = "Jaipur → Ajmer";
@@ -63,7 +66,6 @@ function RideDetailsContent() {
     }
   }
 
-  // Load real ride from backend if ride ID is present
   useEffect(() => {
     if (!rideIdParam) return;
 
@@ -87,7 +89,7 @@ function RideDetailsContent() {
           setBackendRide(data);
         }
       } catch {
-        // Fall back gracefully to query params / mock data
+        // Fall back gracefully
       } finally {
         setLoading(false);
       }
@@ -96,125 +98,103 @@ function RideDetailsContent() {
     void fetchRide();
   }, [rideIdParam]);
 
-  // Computed display values
   const rideCode = backendRide ? `CM-${String(backendRide.id).padStart(4, "0")}` : (rideIdParam ? `CM-${String(rideIdParam).padStart(4, "0")}` : "CM-0001");
-  const origin = backendRide ? backendRide.origin : defaultOrigin;
-  const destination = backendRide ? backendRide.destination : defaultDestination;
-  const routeDisplay = backendRide ? `${backendRide.origin} → ${backendRide.destination}` : defaultRouteTitle;
-  const driverName = backendRide?.driver?.fullName || driverParam || "Rahul Sharma";
-  const driverRating = backendRide?.driver?.rating ? backendRide.driver.rating.toFixed(1) : "4.9";
-  const vehicle = backendRide ? `${backendRide.vehicleModel || "Sedan"} (${backendRide.vehicleNumber || "Verified"})` : "Hyundai Creta · RJ14 AB 1234";
-  const seats = backendRide ? `${backendRide.availableSeats} seats` : "2 seats";
-  const womenOnly = backendRide ? (backendRide.womenOnly ? "Yes (Women-only)" : "No (All genders)") : "No (All genders)";
-  const rideDate = dateParam || "Tomorrow";
-  const rideTime = timeParam || (backendRide ? new Date(backendRide.departureTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "08:30 AM");
-  const statusDisplay = statusParam || backendRide?.status || "UPCOMING";
+  const origin = backendRide?.startLocation || backendRide?.origin || defaultOrigin;
+  const destination = backendRide?.destination || defaultDestination;
+  const routeDisplay = backendRide ? `${origin} → ${destination}` : defaultRouteTitle;
+  const driverName = backendRide?.driver?.fullName || driverParam || "Ananya Jain";
+  const driverRating = backendRide?.driver?.rating || "4.9";
+  const rideDate = backendRide?.rideDate || dateParam || "Today";
+  const rideTime = backendRide?.departureTime || timeParam || "06:30 PM";
+  const seats = backendRide?.availableSeats !== undefined ? `${backendRide.availableSeats} Seats` : "3 Seats";
+  const vehicle = backendRide?.vehicleModel ? `${backendRide.vehicleModel} (${backendRide.vehicleNumber || "Verified"})` : "Honda City · RJ14 CD 4582";
+  const womenOnly = backendRide?.womenOnly ? "Yes (Women Only)" : "Standard (All Commuters)";
+  const statusDisplay = backendRide?.status || statusParam || "ACTIVE & OPEN";
 
-  const numericFare = backendRide
-    ? backendRide.expectedFare
-    : (fareParam ? parseInt(fareParam.replace(/\D/g, "") || "280", 10) : 280);
-  const serviceFee = Math.round(numericFare * 0.08) || 20;
+  const numericFare = backendRide?.expectedFare || (fareParam ? Number(fareParam) : 280);
+  const serviceFee = 0;
   const totalFare = numericFare + serviceFee;
 
   const handleRequestRide = async () => {
-    setRequestError("");
-    setSubmitting(true);
-
     try {
+      setSubmitting(true);
+      setRequestError("");
       const token = localStorage.getItem("token");
-      if (rideIdParam && token) {
-        const res = await fetch(apiUrl(`/api/rides/${rideIdParam}/requests`), {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ seatsRequested: 1 }),
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => null);
-          const msg = (errData && typeof errData === "object" && "message" in errData && typeof errData.message === "string")
-            ? errData.message
-            : "Ride request could not be processed right now.";
-          // If already requested or conflict, still show requested
-          if (res.status === 409 || msg.includes("already requested")) {
-            setRequested(true);
-            return;
-          }
-          setRequestError(msg);
-          // Still allow local UX confirmation
-          setRequested(true);
-          return;
-        }
+      if (!token) {
+        setRequestError("Please login before requesting this ride.");
+        return;
       }
+
+      const rideIdToBook = backendRide?.id || (rideIdParam ? Number(rideIdParam) : 1);
+      const res = await fetch(apiUrl("/api/ride-requests"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rideId: rideIdToBook,
+          seatsRequested: 1,
+          pickupPreference: origin,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Could not submit ride request.");
+      }
+
       setRequested(true);
-    } catch {
-      setRequested(true);
+    } catch (err) {
+      setRequestError(err instanceof Error ? err.message : "Failed to request ride.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const getShareUrl = () => {
-    if (typeof window !== "undefined") {
-      return window.location.href;
-    }
-    return `https://commuto.app/rides/details?id=${rideIdParam || "1"}`;
+    if (typeof window === "undefined") return "";
+    return window.location.href;
   };
 
   const handleCopyLink = () => {
-    const url = getShareUrl();
-    void navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
-  };
-
-  const handleNativeShare = async () => {
-    const url = getShareUrl();
-    const text = `Check out this verified ride on Commuto: ${routeDisplay} on ${rideDate} at ${rideTime}. Total fare: ₹${totalFare}`;
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ title: `Commuto Ride: ${routeDisplay}`, text, url });
-      } catch {
-        // User cancelled or unsupported
-      }
-    } else {
-      handleCopyLink();
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(getShareUrl());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 pb-20">
-      {/* Top Header */}
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-2xl font-black tracking-tight text-slate-900">
-              Commuto<span className="text-blue-600">.</span>
-            </Link>
-            <span className="hidden sm:inline-block h-4 w-px bg-slate-200" />
-            <span className="hidden sm:inline-block text-xs font-bold uppercase tracking-wider text-slate-400">
-              Ride Details
-            </span>
-          </div>
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/90">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 font-black text-lg text-white shadow-md shadow-emerald-900/20 dark:bg-emerald-500">
+              C
+            </div>
+            <div>
+              <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
+                Commuto
+              </span>
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                Ride Details
+              </p>
+            </div>
+          </Link>
 
           <div className="flex items-center gap-2.5">
+            <ThemeToggle />
             <Link
               href="/dashboard"
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-100"
+              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 transition shadow-2xs"
             >
               ← Dashboard
             </Link>
             <Link
-              href="/rides"
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-100"
-            >
-              My Rides
-            </Link>
-            <Link
               href="/safety"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 transition"
             >
               <span>🚨</span>
               <span>SOS</span>
@@ -224,10 +204,10 @@ function RideDetailsContent() {
       </header>
 
       {/* Main Container */}
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {loading && (
-          <div className="mb-6 rounded-2xl bg-blue-50 p-4 text-xs font-semibold text-blue-700">
-            Refreshing live ride information from Commuto servers...
+          <div className="mb-6 rounded-2xl bg-emerald-50 p-4 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+            Refreshing live route information from Commuto servers...
           </div>
         )}
 
@@ -235,20 +215,20 @@ function RideDetailsContent() {
         <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-widest text-blue-700">
+              <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-widest text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                 {rideCode}
               </span>
-              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-800">
+              <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                 {statusDisplay}
               </span>
             </div>
 
-            <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl text-slate-900">
+            <h1 className="mt-2 text-2xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
               {routeDisplay}
             </h1>
 
-            <p className="mt-1 text-sm font-medium text-slate-500">
-              {rideDate} · {rideTime}
+            <p className="mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+              {rideDate} · Departure {rideTime}
             </p>
           </div>
 
@@ -256,7 +236,7 @@ function RideDetailsContent() {
             <button
               type="button"
               onClick={() => setShowShareModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-extrabold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-300"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-extrabold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 transition cursor-pointer"
             >
               <span>📤</span>
               <span>Share Trip</span>
@@ -264,10 +244,10 @@ function RideDetailsContent() {
 
             <Link
               href={`/rides/tracking/${rideIdParam || "1"}`}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-emerald-900/20 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 transition"
             >
               <span>📍</span>
-              <span>Open Live GPS Tracking</span>
+              <span>Live GPS Tracking</span>
             </Link>
           </div>
         </div>
@@ -276,37 +256,44 @@ function RideDetailsContent() {
         <div className="grid gap-8 lg:grid-cols-[1fr_390px]">
           {/* Left Column */}
           <div className="space-y-6">
-            {/* Journey Route */}
-            <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+            {/* Step 1: Interactive Journey Route Card */}
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900">Journey Route</h2>
+                  <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                    Interactive Journey Route
+                  </h2>
                   <p className="mt-1 text-xs font-semibold text-slate-400">
                     Confirmed stops and verified travel waypoints
                   </p>
                 </div>
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-700">
-                  Direct Route
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowMapTrack(!showMapTrack)}
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                >
+                  {showMapTrack ? "Hide Path ▲" : "Show Path ▼"}
+                </button>
               </div>
 
+              {/* Waypoint Steps */}
               <div className="flex gap-5">
                 <div className="flex flex-col items-center">
-                  <span className="h-4 w-4 rounded-full border-4 border-blue-600 bg-white shadow-sm" />
-                  <span className="h-24 border-l-2 border-dashed border-slate-300" />
-                  <span className="h-4 w-4 rounded-full bg-blue-600 shadow-sm" />
+                  <span className="h-4 w-4 rounded-full border-4 border-emerald-600 bg-white dark:bg-slate-900 shadow-sm" />
+                  <span className="h-20 border-l-2 border-dashed border-slate-300 dark:border-slate-700" />
+                  <span className="h-4 w-4 rounded-full bg-emerald-600 shadow-sm" />
                 </div>
 
-                <div className="flex-1 space-y-8">
+                <div className="flex-1 space-y-6">
                   <div>
                     <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">
                       Pickup Location
                     </p>
-                    <h3 className="mt-0.5 text-base font-extrabold text-slate-900">
+                    <h3 className="mt-0.5 text-base font-extrabold text-slate-900 dark:text-white">
                       {origin}
                     </h3>
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      Departure scheduled for {rideTime}
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      Scheduled Departure: {rideTime}
                     </p>
                   </div>
 
@@ -314,40 +301,58 @@ function RideDetailsContent() {
                     <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">
                       Drop-off Destination
                     </p>
-                    <h3 className="mt-0.5 text-base font-extrabold text-slate-900">
+                    <h3 className="mt-0.5 text-base font-extrabold text-slate-900 dark:text-white">
                       {destination}
                     </h3>
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      Estimated arrival in ~2h 45m
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      Estimated duration: ~1h 45m
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-7 grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-3">
-                <DetailBox label="Est. Distance" value="135 km" icon="🛣️" />
-                <DetailBox label="Duration" value="2h 45m" icon="⏱️" />
-                <DetailBox label="Route Match" value="96% Match" icon="🎯" />
+              {showMapTrack && (
+                <div className="mt-6 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700">
+                  <div className="flex items-center justify-between text-xs mb-2">
+                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                      Expressway Route Flow
+                    </span>
+                    <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                      🟢 Optimal Traffic
+                    </span>
+                  </div>
+                  <div className="relative h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                    <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-teal-400 w-full animate-pulse" />
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-6 grid gap-3 border-t border-slate-100 pt-6 dark:border-slate-800 sm:grid-cols-3">
+                <DetailBox label="Est. Distance" value="84 km" icon="🛣️" />
+                <DetailBox label="Duration" value="1h 45m" icon="⏱️" />
+                <DetailBox label="Route Match" value="98% Direct" icon="🎯" />
               </div>
             </section>
 
-            {/* Driver Profile Section */}
-            <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+            {/* Driver Profile & Vehicle Amenities */}
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900">Driver Partner</h2>
+                  <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                    Driver Partner
+                  </h2>
                   <p className="mt-1 text-xs font-semibold text-slate-400">
                     Background-verified Commuto community driver
                   </p>
                 </div>
 
-                <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200">
                   ✓ VERIFIED DRIVER
                 </span>
               </div>
 
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#172033] text-xl font-black text-white shadow-md">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 font-black text-xl text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 shadow-sm">
                   {driverName
                     .split(" ")
                     .map((n) => n[0])
@@ -357,52 +362,45 @@ function RideDetailsContent() {
                 </div>
 
                 <div className="flex-1">
-                  <h3 className="text-lg font-black text-slate-900">{driverName}</h3>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white">{driverName}</h3>
 
-                  <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs">
-                    <span className="font-extrabold text-amber-500">⭐ {driverRating || "4.8"} rating</span>
-                    <span className="text-slate-300">·</span>
-                    <span className="font-semibold text-slate-500">Verified Driver</span>
-                    <span className="text-slate-300">·</span>
-                    <span className="font-semibold text-emerald-600">ID & Vehicle Checked</span>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <span className="font-extrabold text-amber-500">⭐ {driverRating} rating</span>
+                    <span>·</span>
+                    <span>Verified Driver</span>
+                    <span>·</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">ID & Vehicle Checked</span>
                   </div>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setShowDriverModal(true)}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-extrabold text-slate-700 transition hover:bg-slate-100"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-extrabold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 transition cursor-pointer"
                 >
                   View Profile →
                 </button>
               </div>
 
-              <div className="mt-6 grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2">
-                <InfoRow icon="🚗" label="Vehicle Model" value={vehicle} />
+              {/* Step 4: Driver Vehicle Badges & Amenities */}
+              <div className="mt-6 grid gap-4 border-t border-slate-100 pt-6 dark:border-slate-800 sm:grid-cols-2">
+                <InfoRow icon="🚗" label="Vehicle & Class" value={vehicle} />
                 <InfoRow icon="🛡️" label="Identity & License" value="Government ID & DL Verified" />
               </div>
-            </section>
 
-            {/* Commuto Safety */}
-            <section className="rounded-3xl border border-blue-100 bg-blue-50/70 p-7">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm">
-                  🛡️
-                </div>
-
-                <div>
-                  <h2 className="text-base font-black text-slate-900">Commuto Safety Shield</h2>
-
-                  <p className="mt-1.5 text-xs leading-5 text-slate-600">
-                    Your safety is our #1 priority. This trip is covered by real-time GPS tracking, 24/7 SOS emergency response, and verified passenger/driver verification.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <SafetyItem text="Driver KYC Verified" />
-                <SafetyItem text="Live SOS Response" />
-                <SafetyItem text="Live GPS Route Tracking" />
+              <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                <span className="rounded-lg bg-slate-100 px-3 py-1 font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  ❄️ AC Climate Control
+                </span>
+                <span className="rounded-lg bg-slate-100 px-3 py-1 font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  🎒 Boot Space Available
+                </span>
+                <span className="rounded-lg bg-slate-100 px-3 py-1 font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  🚭 Smoke-Free Cabin
+                </span>
+                <span className="rounded-lg bg-slate-100 px-3 py-1 font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  🎵 In-Ride Music
+                </span>
               </div>
             </section>
           </div>
@@ -410,39 +408,35 @@ function RideDetailsContent() {
           {/* Right Column / Sidebar */}
           <aside className="space-y-6">
             {/* Fare Summary */}
-            <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
-              <h2 className="text-lg font-black text-slate-900">Fare Summary</h2>
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">Fare Summary</h2>
 
-              <div className="mt-5 space-y-3 text-sm">
+              <div className="mt-4 space-y-2.5 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-xs font-semibold text-slate-500">Per Passenger Share</span>
-                  <span className="font-extrabold text-slate-900">₹{numericFare}</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Seat Share (1 Seat)</span>
+                  <span className="font-extrabold text-slate-900 dark:text-white">₹{numericFare}</span>
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-xs font-semibold text-slate-500">Commuto Platform Fee</span>
-                  <span className="font-extrabold text-slate-900">₹{serviceFee}</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Platform Convenience Fee</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">₹0 (Free)</span>
                 </div>
 
-                <div className="border-t border-slate-100 pt-3">
+                <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-sm font-black text-slate-900">Total payable</span>
-                      <p className="text-[10px] text-slate-400">Includes all taxes & tolls</p>
+                      <span className="text-sm font-black text-slate-900 dark:text-white">Total Payable</span>
+                      <p className="text-[10px] text-slate-400">Fuel cost split transparently</p>
                     </div>
-                    <span className="text-2xl font-black text-blue-600">₹{totalFare}</span>
+                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹{totalFare}</span>
                   </div>
                 </div>
               </div>
-
-              <p className="mt-4 text-[11px] leading-4 text-slate-400">
-                Fare is split automatically among co-passengers. Cashless or direct payment available.
-              </p>
             </section>
 
             {/* Ride Details / Info */}
-            <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
-              <h2 className="text-lg font-black text-slate-900">Ride Information</h2>
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">Trip Specifications</h2>
 
               <div className="mt-4 space-y-3">
                 <InfoRow icon="📅" label="Date" value={rideDate} />
@@ -452,16 +446,16 @@ function RideDetailsContent() {
               </div>
             </section>
 
-            {/* Reserve / Booking Action */}
-            <section className="rounded-3xl bg-[#172033] p-7 text-white shadow-xl">
-              <p className="text-[11px] font-black uppercase tracking-wider text-indigo-300">
+            {/* Reserve Action Box */}
+            <section className="rounded-3xl bg-slate-950 p-6 sm:p-7 text-white shadow-xl border border-slate-800">
+              <p className="text-[11px] font-black uppercase tracking-wider text-emerald-400">
                 READY TO COMMUTE?
               </p>
 
-              <h2 className="mt-1.5 text-xl font-black">Reserve your seat</h2>
+              <h2 className="mt-1 text-xl font-black">Reserve your seat</h2>
 
-              <p className="mt-2 text-xs leading-5 text-slate-300">
-                Send an instant ride request to {driverName}. The driver will receive a live notification to accept your request.
+              <p className="mt-2 text-xs leading-5 text-slate-400">
+                Send an instant ride request to {driverName}. The driver will receive a live notification to accept your booking.
               </p>
 
               {requestError && (
@@ -474,12 +468,12 @@ function RideDetailsContent() {
                 type="button"
                 onClick={() => void handleRequestRide()}
                 disabled={requested || submitting}
-                className={`mt-5 w-full rounded-2xl py-4 text-xs font-black uppercase tracking-wider transition active:scale-[0.98] ${
+                className={`mt-5 w-full rounded-2xl py-3.5 text-xs font-black uppercase tracking-wider transition active:scale-95 cursor-pointer ${
                   requested
                     ? "cursor-default bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
                     : submitting
-                    ? "cursor-wait bg-blue-500/70 text-white"
-                    : "bg-[#5b5ce2] text-white hover:bg-[#4d4ecf] shadow-lg shadow-indigo-500/25"
+                    ? "cursor-wait bg-emerald-600/70 text-white"
+                    : "bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 shadow-lg shadow-emerald-900/20"
                 }`}
               >
                 {requested
@@ -503,58 +497,34 @@ function RideDetailsContent() {
                       href="/rides/my-requests"
                       className="block rounded-xl bg-white/15 py-2 text-xs font-extrabold text-white transition hover:bg-white/25"
                     >
-                      View in My Requests →
-                    </Link>
-                    <Link
-                      href={`/rides/tracking/${rideIdParam || "1"}`}
-                      className="block rounded-xl bg-emerald-600 py-2 text-xs font-extrabold text-white transition hover:bg-emerald-500"
-                    >
-                      📍 Track Live Ride GPS
+                      View in My Bookings →
                     </Link>
                   </div>
                 </div>
               )}
             </section>
-
-            {/* Live GPS Route Button */}
-            <Link
-              href={`/rides/tracking/${rideIdParam || "1"}`}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 py-3.5 text-xs font-extrabold text-blue-700 transition hover:bg-blue-100"
-            >
-              <span>🗺️</span>
-              <span>Open Live GPS Tracking</span>
-            </Link>
-
-            {/* Emergency SOS Button */}
-            <Link
-              href="/safety"
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3.5 text-xs font-extrabold text-red-600 transition hover:bg-red-50 hover:border-red-300"
-            >
-              <span>🚨</span>
-              <span>Emergency SOS Safety Center</span>
-            </Link>
           </aside>
         </div>
       </div>
 
       {/* Driver Profile Modal */}
       {showDriverModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-150">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <h3 className="text-lg font-black text-slate-900">Driver Verification Details</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+              <h3 className="text-base font-black text-slate-900 dark:text-white">Driver Verification Details</h3>
               <button
                 type="button"
                 onClick={() => setShowDriverModal(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 hover:bg-slate-200"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             <div className="mt-5 space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#172033] text-lg font-black text-white">
+              <div className="flex items-center gap-3.5">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-lg font-black text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                   {driverName
                     .split(" ")
                     .map((n) => n[0])
@@ -563,41 +533,33 @@ function RideDetailsContent() {
                     .toUpperCase() || "DR"}
                 </div>
                 <div>
-                  <h4 className="text-base font-black text-slate-900">{driverName}</h4>
-                  <p className="text-xs text-emerald-600 font-bold">✓ Government KYC Verified</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Rating: ⭐ {driverRating} · 128 Reviews</p>
+                  <h4 className="text-base font-black text-slate-900 dark:text-white">{driverName}</h4>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">✓ Government KYC Verified</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Rating: ⭐ {driverRating} · Verified Driver</p>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-slate-50 p-4 space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-slate-200/60">
-                  <span className="font-semibold text-slate-500">Vehicle</span>
-                  <span className="font-bold text-slate-800">{vehicle}</span>
+              <div className="rounded-2xl bg-slate-50 p-4 space-y-2 text-xs dark:bg-slate-800">
+                <div className="flex justify-between py-1 border-b border-slate-200/60 dark:border-slate-700">
+                  <span className="font-semibold text-slate-500 dark:text-slate-400">Vehicle</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{vehicle}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-200/60">
-                  <span className="font-semibold text-slate-500">Registration (RC)</span>
-                  <span className="font-bold text-slate-800">Verified & Active</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-200/60">
-                  <span className="font-semibold text-slate-500">Driving License</span>
-                  <span className="font-bold text-slate-800">Commercial / Valid</span>
+                <div className="flex justify-between py-1 border-b border-slate-200/60 dark:border-slate-700">
+                  <span className="font-semibold text-slate-500 dark:text-slate-400">Registration (RC)</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">Verified & Active</span>
                 </div>
                 <div className="flex justify-between py-1">
-                  <span className="font-semibold text-slate-500">Trip Acceptance Rate</span>
-                  <span className="font-bold text-emerald-600">98% (Super Driver)</span>
+                  <span className="font-semibold text-slate-500 dark:text-slate-400">Driving License</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">Valid</span>
                 </div>
               </div>
-
-              <p className="text-[11px] text-slate-400 leading-4">
-                Driver identity, vehicle documents, and police verification status are checked by the Commuto Safety Team.
-              </p>
             </div>
 
             <div className="mt-6">
               <button
                 type="button"
                 onClick={() => setShowDriverModal(false)}
-                className="w-full rounded-xl bg-slate-900 py-3 text-xs font-bold text-white transition hover:bg-slate-800"
+                className="w-full rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 dark:bg-emerald-500 cursor-pointer"
               >
                 Close Profile
               </button>
@@ -608,70 +570,38 @@ function RideDetailsContent() {
 
       {/* Share Trip Modal */}
       {showShareModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <h3 className="text-lg font-black text-slate-900">Share Ride Details</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+              <h3 className="text-base font-black text-slate-900 dark:text-white">Share Ride Details</h3>
               <button
                 type="button"
                 onClick={() => setShowShareModal(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 hover:bg-slate-200"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <p className="mt-3 text-xs leading-5 text-slate-500">
+            <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
               Share this verified ride with your travel companions, friends, or family so they can view route details and split fare.
             </p>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <a
-                href={`https://wa.me/?text=${encodeURIComponent(
-                  `Check out this ride on Commuto: ${routeDisplay} on ${rideDate} at ${rideTime} (₹${totalFare}). View details: ${getShareUrl()}`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
-              >
-                <span>💬</span>
-                <span>WhatsApp</span>
-              </a>
-
-              <a
-                href={`sms:?body=${encodeURIComponent(
-                  `Commuto Ride: ${routeDisplay} at ${rideTime} (₹${totalFare}). Details: ${getShareUrl()}`
-                )}`}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-blue-600 py-3 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
-              >
-                <span>📱</span>
-                <span>SMS</span>
-              </a>
-            </div>
 
             <div className="mt-4 flex gap-2">
               <input
                 type="text"
                 readOnly
                 value={getShareUrl()}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
               />
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="shrink-0 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-slate-800"
+                className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 cursor-pointer"
               >
                 {copied ? "Copied! ✓" : "Copy"}
               </button>
             </div>
-
-            <button
-              type="button"
-              onClick={() => void handleNativeShare()}
-              className="mt-3 w-full rounded-xl border border-slate-200 py-2.5 text-xs font-extrabold text-slate-700 hover:bg-slate-50"
-            >
-              Share via other apps...
-            </button>
           </div>
         </div>
       )}
@@ -683,9 +613,9 @@ export default function RideDetailsPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-slate-50">
+        <main className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
           <div className="text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent dark:border-emerald-500" />
             <p className="mt-4 text-xs font-bold uppercase tracking-wider text-slate-400">
               Loading ride details...
             </p>
@@ -708,12 +638,12 @@ function DetailBox({
   icon: string;
 }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-4">
-      <div className="text-lg">{icon}</div>
-      <p className="mt-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">
+    <div className="rounded-2xl bg-slate-50 p-3.5 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+      <div className="text-base">{icon}</div>
+      <p className="mt-1.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">
         {label}
       </p>
-      <p className="mt-0.5 text-sm font-black text-slate-900">{value}</p>
+      <p className="mt-0.5 text-xs font-black text-slate-900 dark:text-white">{value}</p>
     </div>
   );
 }
@@ -729,23 +659,14 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-base">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm dark:bg-slate-800">
         {icon}
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
-        <p className="mt-0.5 text-xs font-extrabold text-slate-800 truncate">{value}</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+        <p className="mt-0.5 text-xs font-extrabold text-slate-800 dark:text-slate-200 truncate">{value}</p>
       </div>
-    </div>
-  );
-}
-
-function SafetyItem({ text }: { text: string }) {
-  return (
-    <div className="flex items-center gap-2 rounded-xl bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-sm">
-      <span className="text-emerald-500 font-black">✓</span>
-      <span>{text}</span>
     </div>
   );
 }
