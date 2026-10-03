@@ -22,6 +22,10 @@ export default function LoginPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [showCustomGoogleInput, setShowCustomGoogleInput] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState("");
+  const [customGoogleName, setCustomGoogleName] = useState("");
+  const [customGoogleRole, setCustomGoogleRole] = useState<"PASSENGER" | "DRIVER" | "ADMIN">("PASSENGER");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -507,9 +511,10 @@ export default function LoginPage() {
       </div>
 
       {/* Google Account Picker Modal */}
+      {/* Google Account Picker Modal */}
       {showGoogleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900 dark:text-white">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -535,7 +540,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowGoogleModal(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 cursor-pointer"
               >
                 ✕
               </button>
@@ -545,11 +550,11 @@ export default function LoginPage() {
               Choose an account to continue to <strong>Commuto</strong>:
             </p>
 
-            <div className="mt-4 space-y-2">
+            <div className="mt-3 space-y-2">
               <button
                 type="button"
                 onClick={() => handleGoogleLoginAccount("Ananya Jain", "ananyajain729@gmail.com", "PASSENGER")}
-                className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 p-3 text-left transition hover:border-[#5b5ce2] hover:bg-indigo-50/50 dark:border-slate-800 dark:hover:bg-slate-800"
+                className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 p-3 text-left transition hover:border-emerald-500 hover:bg-emerald-50/40 dark:border-slate-800 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-700">
                   AJ
@@ -558,41 +563,126 @@ export default function LoginPage() {
                   <p className="text-sm font-bold truncate">Ananya Jain</p>
                   <p className="text-xs text-slate-500 truncate dark:text-slate-400">ananyajain729@gmail.com</p>
                 </div>
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Passenger →</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleGoogleLoginAccount("Verified Driver", "driver@commuto.com", "DRIVER")}
-                className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 p-3 text-left transition hover:border-[#5b5ce2] hover:bg-indigo-50/50 dark:border-slate-800 dark:hover:bg-slate-800"
+                onClick={() => handleGoogleLoginAccount("Rahul Sharma", "driver@commuto.com", "DRIVER")}
+                className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 p-3 text-left transition hover:border-emerald-500 hover:bg-emerald-50/40 dark:border-slate-800 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
-                  VD
+                  RS
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <p className="text-sm font-bold truncate">Verified Driver</p>
+                  <p className="text-sm font-bold truncate">Rahul Sharma</p>
                   <p className="text-xs text-slate-500 truncate dark:text-slate-400">driver@commuto.com</p>
                 </div>
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Driver →</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleGoogleLoginAccount("Commuto Admin", "admin@commuto.com", "ADMIN")}
-                className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 p-3 text-left transition hover:border-[#5b5ce2] hover:bg-indigo-50/50 dark:border-slate-800 dark:hover:bg-slate-800"
+                onClick={() => handleGoogleLoginAccount("Platform Admin", "admin@commuto.com", "ADMIN")}
+                className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 p-3 text-left transition hover:border-emerald-500 hover:bg-emerald-50/40 dark:border-slate-800 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
-                  AD
+                  PA
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <p className="text-sm font-bold truncate">Platform Admin</p>
                   <p className="text-xs text-slate-500 truncate dark:text-slate-400">admin@commuto.com</p>
                 </div>
+                <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">Admin →</span>
               </button>
             </div>
 
-            <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
-              <p className="text-[11px] text-slate-400">
-                To add a custom Google account, configure <code className="text-[10px] bg-slate-100 px-1 py-0.5 rounded dark:bg-slate-800">NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> in environment variables.
-              </p>
+            {/* Custom Google Account Section */}
+            <div className="mt-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowCustomGoogleInput(!showCustomGoogleInput)}
+                className="flex w-full items-center justify-between text-xs font-bold text-emerald-600 hover:underline dark:text-emerald-400 cursor-pointer py-1"
+              >
+                <span>➕ Sign in with another Google account</span>
+                <span>{showCustomGoogleInput ? "▲" : "▼"}</span>
+              </button>
+
+              {showCustomGoogleInput && (
+                <div className="mt-3 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-800/60">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Your Google Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={customGoogleEmail}
+                      onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                      placeholder="e.g. yourname@gmail.com"
+                      className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Full Name (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={customGoogleName}
+                      onChange={(e) => setCustomGoogleName(e.target.value)}
+                      placeholder="e.g. Ananya Jain"
+                      className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Login as
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCustomGoogleRole("PASSENGER")}
+                        className={`rounded-xl border py-2 text-xs font-bold transition cursor-pointer ${
+                          customGoogleRole === "PASSENGER"
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                            : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                        }`}
+                      >
+                        🧑 Passenger
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCustomGoogleRole("DRIVER")}
+                        className={`rounded-xl border py-2 text-xs font-bold transition cursor-pointer ${
+                          customGoogleRole === "DRIVER"
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                            : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                        }`}
+                      >
+                        🚗 Driver
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={!customGoogleEmail.trim()}
+                    onClick={() => {
+                      if (!customGoogleEmail.trim()) return;
+                      handleGoogleLoginAccount(
+                        customGoogleName.trim() || customGoogleEmail.split("@")[0],
+                        customGoogleEmail.trim(),
+                        customGoogleRole
+                      );
+                    }}
+                    className="w-full rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-emerald-500 disabled:opacity-50 cursor-pointer"
+                  >
+                    Continue with this Google Account →
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
