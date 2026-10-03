@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { apiUrl } from "@/lib/api";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface DriverRequestSummary {
   requestId: number;
@@ -153,6 +154,8 @@ export default function DriverDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
+
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold">{loading ? "Loading..." : driverName}</p>
               <p className="text-xs text-slate-500">

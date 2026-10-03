@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const quickActions = [
   {
@@ -279,6 +280,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Theme Switcher */}
+              <ThemeToggle />
 
               {/* Notification Link */}
               <Link
