@@ -23,10 +23,11 @@ interface RideChatDrawerProps {
 }
 
 const QUICK_REPLIES = [
-  "I am at the pickup point",
-  "Arriving in 2 minutes",
-  "Where are you waiting?",
-  "Thank you!",
+  "📍 I am at the pickup point",
+  "⏱️ Arriving in 2 minutes",
+  "🚗 Near the main gate",
+  "❓ Where are you waiting?",
+  "👍 Thank you!",
 ];
 
 export default function RideChatDrawer({
@@ -44,7 +45,7 @@ export default function RideChatDrawer({
       const stored = typeof window !== "undefined" ? localStorage.getItem("user") : null;
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed?.id) return Number(parsed.id);
+        if (parsed?.userId || parsed?.id) return Number(parsed.userId || parsed.id);
       }
     } catch {
       // ignore
@@ -170,10 +171,10 @@ export default function RideChatDrawer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-sm sm:p-4">
-      <div className="flex h-full w-full max-w-md flex-col bg-white shadow-2xl sm:h-[88vh] sm:rounded-3xl border border-slate-200 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm sm:p-4">
+      <div className="flex h-full w-full max-w-md flex-col bg-white dark:bg-slate-900 shadow-2xl sm:h-[88vh] sm:rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 bg-[#172033] px-5 py-4 text-white">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-900 px-5 py-4 text-white dark:border-slate-800 dark:bg-slate-950">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-xl font-bold">
               💬
@@ -186,14 +187,14 @@ export default function RideChatDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white transition"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white transition cursor-pointer"
           >
             ✕
           </button>
         </div>
 
         {/* Message Stream */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f7f9fc]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-950">
           {loading ? (
             <div className="flex h-full items-center justify-center text-xs font-semibold text-slate-400">
               Loading chat history…
@@ -201,7 +202,7 @@ export default function RideChatDrawer({
           ) : messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center p-6 text-slate-400">
               <span className="text-4xl mb-2">🚗💬</span>
-              <p className="text-sm font-bold text-slate-700">No messages yet</p>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">No messages yet</p>
               <p className="text-xs text-slate-400 mt-1 max-w-55">
                 Coordinate pickup, timing, or updates directly with your co-travelers.
               </p>
@@ -217,14 +218,14 @@ export default function RideChatDrawer({
                   className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
                 >
                   <div className="flex items-center gap-1.5 px-1 mb-1">
-                    <span className="text-[10px] font-bold text-slate-500">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
                       {isMe ? "You" : msg.senderName}
                     </span>
                     <span
                       className={`rounded px-1.5 py-0.2 text-[9px] font-extrabold ${
                         isDriver
-                          ? "bg-indigo-100 text-[#5b5ce2]"
-                          : "bg-slate-200 text-slate-600"
+                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300"
+                          : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                       }`}
                     >
                       {msg.senderRole}
@@ -234,8 +235,8 @@ export default function RideChatDrawer({
                   <div
                     className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-xs font-medium shadow-xs leading-relaxed ${
                       isMe
-                        ? "bg-[#5b5ce2] text-white rounded-tr-xs"
-                        : "bg-white text-slate-800 border border-slate-200 rounded-tl-xs"
+                        ? "bg-emerald-600 text-white rounded-tr-xs"
+                        : "bg-white text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 rounded-tl-xs"
                     }`}
                   >
                     {msg.content}
@@ -255,14 +256,14 @@ export default function RideChatDrawer({
         </div>
 
         {/* Quick Replies */}
-        <div className="border-t border-slate-100 bg-white px-3 py-2">
+        <div className="border-t border-slate-100 bg-white dark:bg-slate-900 dark:border-slate-800 px-3 py-2">
           <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             {QUICK_REPLIES.map((reply, i) => (
               <button
                 key={i}
                 type="button"
                 onClick={() => void handleSend(reply)}
-                className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-[#5b5ce2] transition"
+                className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-emerald-950/60 dark:hover:text-emerald-300 transition cursor-pointer"
               >
                 {reply}
               </button>
@@ -276,7 +277,7 @@ export default function RideChatDrawer({
             e.preventDefault();
             void handleSend();
           }}
-          className="flex items-center gap-2 border-t border-slate-100 bg-white p-3"
+          className="flex items-center gap-2 border-t border-slate-100 bg-white dark:bg-slate-900 dark:border-slate-800 p-3"
         >
           <input
             type="text"
@@ -284,12 +285,12 @@ export default function RideChatDrawer({
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Type a message..."
             maxLength={1000}
-            className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-semibold outline-none transition focus:border-[#5b5ce2] focus:bg-white"
+            className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-semibold outline-none transition focus:border-emerald-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:bg-slate-900 dark:focus:border-emerald-500"
           />
           <button
             type="submit"
             disabled={!inputText.trim() || sending}
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#5b5ce2] text-white transition hover:bg-[#4a4bcf] disabled:opacity-50"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white transition hover:bg-emerald-500 disabled:opacity-50 cursor-pointer shadow-sm"
           >
             ➤
           </button>
