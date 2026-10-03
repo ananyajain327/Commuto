@@ -1,6 +1,8 @@
 package Commuto.Backend.dto;
 
 import java.util.List;
+import Commuto.Backend.dto.DriverRideSummaryDto;
+import Commuto.Backend.dto.DriverRequestSummaryDto;
 
 public record DriverAnalyticsResponse(
         String driverName,

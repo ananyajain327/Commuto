@@ -5,6 +5,7 @@ import Commuto.Backend.entity.RideRequest;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.RideRepository;
 import Commuto.Backend.repository.RideRequestRepository;
+import Commuto.Backend.service.RatingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
