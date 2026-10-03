@@ -89,9 +89,9 @@ class RideServiceTest {
     }
 
     @Test
-    void unverifiedDriverCannotCreateRide() {
+    void inactiveDriverCannotCreateRide() {
         User driver = driver(7L);
-        driver.setVerified(false);
+        driver.setActive(false);
 
         Commuto.Backend.dto.CreateRideRequest request = new Commuto.Backend.dto.CreateRideRequest();
         request.setStartLocation("Jaipur");

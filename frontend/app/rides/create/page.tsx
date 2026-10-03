@@ -1,65 +1,89 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { apiUrl } from "@/lib/api";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface ApiErrorResponse {
   message?: string;
   error?: string;
 }
 
-export default function CreateRidePage() {
+function CreateRideContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [womenOnly, setWomenOnly] = useState(false);
-
   const [startLocation, setStartLocation] = useState("");
   const [destination, setDestination] = useState("");
   const [rideDate, setRideDate] = useState("");
-  const [departureTime, setDepartureTime] = useState("");
-  const [availableSeats, setAvailableSeats] = useState("1");
-  const [expectedFare, setExpectedFare] = useState("");
-  const [vehicleModel, setVehicleModel] = useState("");
-  const [vehicleNumber, setVehicleNumber] = useState("");
-  const [notes, setNotes] = useState("");
+  const [departureTime, setDepartureTime] = useState("09:00");
+  const [availableSeats, setAvailableSeats] = useState("3");
+  const [expectedFare, setExpectedFare] = useState("250");
+  const [vehicleModel, setVehicleModel] = useState("Maruti Suzuki Dzire");
+  const [vehicleNumber, setVehicleNumber] = useState("RJ14 AB 1234");
+  const [notes, setNotes] = useState("AC Ride. Luggage space available. Please reach pickup on time.");
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const fromParam = searchParams.get("from");
+    const toParam = searchParams.get("to");
+    const dateParam = searchParams.get("date");
+
+    if (fromParam) setStartLocation(fromParam);
+    if (toParam) setDestination(toParam);
+    if (dateParam) {
+      setRideDate(dateParam);
+    } else {
+      const today = new Date().toISOString().split("T")[0];
+      setRideDate(today);
+    }
+  }, [searchParams]);
+
   const handlePublishRide = async () => {
     setMessage("");
     setError("");
 
-    if (
-      !startLocation.trim() ||
-      !destination.trim() ||
-      !rideDate ||
-      !departureTime ||
-      !expectedFare ||
-      !vehicleModel.trim() ||
-      !vehicleNumber.trim()
-    ) {
-      setError("Please fill all required ride details.");
+    const start = startLocation.trim();
+    const dest = destination.trim();
+    const vModel = vehicleModel.trim();
+    const vNumber = vehicleNumber.trim();
+    const fareNum = Number(expectedFare);
+    const seatsNum = Number(availableSeats);
+
+    if (!start || !dest || !rideDate || !departureTime || !expectedFare || !vModel || !vNumber) {
+      setError("Please fill all required ride details (route, date, departure time, fare, vehicle).");
       return;
     }
 
-    if (Number(availableSeats) < 1 || Number(availableSeats) > 6) {
+    if (seatsNum < 1 || seatsNum > 6) {
       setError("Available seats must be between 1 and 6.");
       return;
     }
 
-    if (Number(expectedFare) <= 0) {
+    if (fareNum <= 0) {
       setError("Expected fare must be greater than 0.");
       return;
     }
 
     const token = localStorage.getItem("token");
-
     if (!token) {
-      setError("Please login as a driver before publishing a ride.");
+      setError("Please login before publishing a ride.");
       return;
+    }
+
+    // Format departureTime as "HH:mm"
+    let formattedTime = departureTime.trim();
+    if (/^\d:\d\d$/.test(formattedTime)) {
+      formattedTime = "0" + formattedTime;
+    }
+    if (formattedTime.length === 5) {
+      formattedTime = formattedTime + ":00";
     }
 
     try {
@@ -72,23 +96,22 @@ export default function CreateRidePage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          startLocation: startLocation.trim(),
-          destination: destination.trim(),
+          startLocation: start,
+          destination: dest,
           rideDate,
-          departureTime,
-          availableSeats: Number(availableSeats),
-          expectedFare: Number(expectedFare),
-          vehicleModel: vehicleModel.trim(),
-          vehicleNumber: vehicleNumber.trim(),
+          departureTime: formattedTime.slice(0, 5), // LocalTime in Spring Boot accepts HH:mm or HH:mm:ss
+          availableSeats: seatsNum,
+          expectedFare: fareNum,
+          vehicleModel: vModel,
+          vehicleNumber: vNumber,
           womenOnly,
           notes: notes.trim(),
         }),
       });
 
       let data: ApiErrorResponse | null = null;
-
       try {
-        data = await response.json() as ApiErrorResponse;
+        data = (await response.json()) as ApiErrorResponse;
       } catch {
         data = null;
       }
@@ -97,11 +120,11 @@ export default function CreateRidePage() {
         throw new Error(
           data?.message ||
             data?.error ||
-            "Failed to publish ride. Please try again."
+            "Failed to publish ride. Please verify your details and try again."
         );
       }
 
-      setMessage("Ride published successfully! 🚗");
+      setMessage("Ride published successfully! 🚗 Passengers can now find and book seats.");
 
       setTimeout(() => {
         router.push("/rides");
@@ -118,96 +141,93 @@ export default function CreateRidePage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <div>
-            <div className="text-2xl font-bold tracking-tight">
-              Commuto<span className="text-blue-600">.</span>
+      <header className="border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-lg font-bold text-white shadow-xs dark:bg-emerald-600">
+              C
             </div>
+            <div>
+              <div className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Commuto<span className="text-emerald-500">.</span>
+              </div>
+              <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                Smart Mobility
+              </p>
+            </div>
+          </Link>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Share your journey with trusted co-passengers
-            </p>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Link
+              href="/dashboard"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              ← Dashboard
+            </Link>
           </div>
-
-          <a
-            href="/dashboard"
-            className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-          >
-            ← Dashboard
-          </a>
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-8">
         {/* Hero */}
-        <section className="mb-8 rounded-3xl bg-slate-900 px-8 py-9 text-white shadow-xl">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-blue-400">
-            Driver Dashboard
+        <section className="mb-8 rounded-3xl bg-slate-900 px-8 py-8 text-white shadow-xl dark:bg-slate-900 dark:border dark:border-slate-800">
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-emerald-400">
+            Publish & Share Journey
           </p>
 
-          <h1 className="text-3xl font-bold md:text-4xl">
+          <h1 className="text-2xl font-black sm:text-3xl md:text-4xl">
             Offer a Ride.
           </h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
-            Publish your journey, share your available seats and let Commuto
-            find passengers travelling along your route.
+          <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-300 sm:text-sm md:leading-6">
+            Publish your empty seats, split fuel costs, and let Commuto find verified passengers travelling along your route.
           </p>
         </section>
 
         {/* Success Message */}
         {message && (
-          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-semibold text-green-700">
+          <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-sm font-bold text-emerald-800 shadow-xs dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
             ✓ {message}
           </div>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-700">
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm font-bold text-red-700 shadow-xs dark:border-red-900 dark:bg-red-950/50 dark:text-red-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span>⚠</span>
                 <span>{error}</span>
               </div>
-              {(error.toLowerCase().includes("verif") || error.toLowerCase().includes("documents")) && (
-                <a
-                  href="/driver/verification"
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-700 transition"
-                >
-                  Complete Verification Now →
-                </a>
-              )}
             </div>
           </div>
         )}
 
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
           {/* Form */}
-          <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
-            <div className="mb-7">
-              <h2 className="text-xl font-bold">Ride details</h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Enter the details of your upcoming journey.
+          <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Ride Details</h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Enter origin, destination, departure schedule and vehicle info.
               </p>
             </div>
 
             <div className="space-y-6">
               {/* Route */}
               <div>
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-slate-400">
-                  Journey
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Route & Corridor
                 </h3>
 
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <InputField
-                    label="Starting point"
+                    label="Starting point (Origin)"
                     icon="📍"
-                    placeholder="e.g. Jaipur"
+                    placeholder="e.g. Jaipur, Mansarovar"
                     value={startLocation}
                     onChange={(e) => setStartLocation(e.target.value)}
                   />
@@ -215,20 +235,20 @@ export default function CreateRidePage() {
                   <InputField
                     label="Destination"
                     icon="🎯"
-                    placeholder="e.g. Ajmer"
+                    placeholder="e.g. Ajmer, Bus Stand"
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
                   />
                 </div>
               </div>
 
-              {/* Date Time */}
+              {/* Schedule */}
               <div>
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-slate-400">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Schedule
                 </h3>
 
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <InputField
                     label="Travel date"
                     icon="📅"
@@ -249,20 +269,20 @@ export default function CreateRidePage() {
 
               {/* Seats & Fare */}
               <div>
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-slate-400">
-                  Ride preferences
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Capacity & Pricing
                 </h3>
 
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                    <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
                       Available seats
                     </label>
 
                     <select
                       value={availableSeats}
                       onChange={(e) => setAvailableSeats(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                     >
                       <option value="1">1 Seat</option>
                       <option value="2">2 Seats</option>
@@ -274,9 +294,9 @@ export default function CreateRidePage() {
                   </div>
 
                   <InputField
-                    label="Expected fare per passenger"
+                    label="Fare per passenger (₹)"
                     icon="₹"
-                    placeholder="e.g. 350"
+                    placeholder="e.g. 250"
                     type="number"
                     value={expectedFare}
                     onChange={(e) => setExpectedFare(e.target.value)}
@@ -286,181 +306,139 @@ export default function CreateRidePage() {
 
               {/* Vehicle */}
               <div>
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-slate-400">
-                  Vehicle information
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Vehicle Information
                 </h3>
 
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <InputField
-                    label="Vehicle model"
+                    label="Vehicle Model"
                     icon="🚗"
-                    placeholder="e.g. Hyundai Creta"
+                    placeholder="e.g. Maruti Suzuki Dzire"
                     value={vehicleModel}
                     onChange={(e) => setVehicleModel(e.target.value)}
                   />
 
                   <InputField
-                    label="Vehicle number"
+                    label="Registration Number"
                     icon="🔢"
-                    placeholder="e.g. RJ14AB1234"
+                    placeholder="e.g. RJ14 AB 1234"
                     value={vehicleNumber}
                     onChange={(e) => setVehicleNumber(e.target.value)}
                   />
                 </div>
               </div>
 
-              {/* Women Only */}
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <button
-                  type="button"
-                  onClick={() => setWomenOnly(!womenOnly)}
-                  className="flex w-full items-center justify-between text-left"
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-                        womenOnly ? "bg-pink-100" : "bg-white"
-                      }`}
-                    >
-                      👩
-                    </div>
-
-                    <div>
-                      <p className="text-sm font-bold">
-                        Women-only ride
-                      </p>
-
-                      <p className="mt-1 text-xs text-slate-500">
-                        Only accept female passengers for this ride
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`h-6 w-11 rounded-full p-1 transition ${
-                      womenOnly ? "bg-pink-500" : "bg-slate-300"
-                    }`}
-                  >
-                    <div
-                      className={`h-4 w-4 rounded-full bg-white transition ${
-                        womenOnly ? "translate-x-5" : ""
-                      }`}
-                    />
-                  </div>
-                </button>
-              </div>
-
-              {/* Notes */}
+              {/* Preferences */}
               <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  Additional notes
-                </label>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Preferences & Guidelines
+                </h3>
 
-                <textarea
-                  rows={4}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add pickup instructions, luggage information, etc."
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white"
-                />
-              </div>
-
-              {/* Publish */}
-              <button
-                type="button"
-                onClick={handlePublishRide}
-                disabled={loading}
-                className={`w-full rounded-xl px-6 py-4 text-sm font-bold text-white shadow-lg transition ${
-                  loading
-                    ? "cursor-not-allowed bg-slate-400"
-                    : "bg-blue-600 shadow-blue-600/20 hover:bg-blue-700"
-                }`}
-              >
-                {loading ? "Publishing Ride..." : "🚀 Publish Ride"}
-              </button>
-            </div>
-          </section>
-
-          {/* Summary */}
-          <aside className="h-fit space-y-5">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold text-blue-600">
-                RIDE PREVIEW
-              </p>
-
-              <h2 className="mt-2 text-xl font-bold">
-                Your journey
-              </h2>
-
-              <div className="my-6 space-y-5">
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <span className="h-3 w-3 rounded-full border-2 border-blue-600" />
-                    <span className="h-10 border-l border-dashed border-slate-300" />
-                    <span className="h-3 w-3 rounded-full bg-blue-600" />
-                  </div>
-
-                  <div className="space-y-5">
+                <div className="space-y-4">
+                  <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60 dark:hover:bg-slate-800">
                     <div>
-                      <p className="text-xs text-slate-400">FROM</p>
-                      <p className="font-bold">
-                        {startLocation || "Not selected"}
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">Women Only Ride</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Allow booking requests from female co-passengers only.
                       </p>
                     </div>
 
-                    <div>
-                      <p className="text-xs text-slate-400">TO</p>
-                      <p className="font-bold">
-                        {destination || "Not selected"}
-                      </p>
-                    </div>
+                    <input
+                      type="checkbox"
+                      checked={womenOnly}
+                      onChange={(e) => setWomenOnly(e.target.checked)}
+                      className="h-5 w-5 accent-emerald-600 rounded cursor-pointer"
+                    />
+                  </label>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Trip Notes / Pickup Instructions
+                    </label>
+
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="e.g. AC available, trunk space for medium bags, please arrive 5 minutes early."
+                      rows={3}
+                      className="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    />
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <InfoBox
-                  title="Date"
-                  value={rideDate || "Not selected"}
-                />
-
-                <InfoBox
-                  title="Time"
-                  value={departureTime || "Not selected"}
-                />
-
-                <InfoBox
-                  title="Seats"
-                  value={`${availableSeats} ${
-                    Number(availableSeats) === 1 ? "Seat" : "Seats"
-                  }`}
-                />
-
-                <InfoBox
-                  title="Fare"
-                  value={expectedFare ? `₹${expectedFare}` : "₹ —"}
-                />
+              {/* Submit */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={handlePublishRide}
+                  className="w-full rounded-2xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-md shadow-emerald-950/20 transition hover:bg-emerald-500 disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? "Publishing Ride..." : "Publish Ride Now 🚗"}
+                </button>
               </div>
             </div>
+          </section>
 
-            {/* Safety */}
-            <div className="rounded-3xl border border-blue-100 bg-blue-50 p-6">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white">
-                🛡️
-              </div>
-
-              <h3 className="font-bold">Ride safety</h3>
-
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Verified passengers, ratings and Commuto&apos;s safety features
-                help make every shared journey more trustworthy.
+          {/* Ride Preview Sticky Sidebar */}
+          <aside className="space-y-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Live Preview
               </p>
+              <h3 className="mt-1 text-base font-bold text-slate-900 dark:text-white">Your Commute</h3>
 
-              <div className="mt-4 space-y-2 text-xs font-semibold text-slate-600">
-                <p>✓ Verified profiles</p>
-                <p>✓ Passenger ratings</p>
-                <p>✓ Emergency SOS</p>
+              <div className="mt-5 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                    A
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase">Pickup</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {startLocation || "Starting location"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="ml-3 h-4 border-l-2 border-dashed border-slate-200 dark:border-slate-700" />
+
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-400">
+                    B
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase">Dropoff</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {destination || "Destination"}
+                    </p>
+                  </div>
+                </div>
               </div>
+
+              <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+                <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                  <p className="text-[10px] font-semibold text-slate-400">Schedule</p>
+                  <p className="mt-0.5 text-xs font-bold text-slate-900 dark:text-white">
+                    {rideDate || "Date"} • {departureTime || "Time"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                  <p className="text-[10px] font-semibold text-slate-400">Expected Fare</p>
+                  <p className="mt-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    ₹{expectedFare || "0"} / seat
+                  </p>
+                </div>
+              </div>
+
+              {womenOnly && (
+                <div className="mt-4 rounded-xl bg-pink-50 p-2.5 text-center text-xs font-bold text-pink-700 dark:bg-pink-950/40 dark:text-pink-300">
+                  🌸 Women-only Ride Enabled
+                </div>
+              )}
             </div>
           </aside>
         </div>
@@ -469,58 +447,48 @@ export default function CreateRidePage() {
   );
 }
 
+export default function CreateRidePage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">Loading ride publisher...</div>}>
+      <CreateRideContent />
+    </Suspense>
+  );
+}
+
 function InputField({
   label,
   icon,
-  placeholder,
   type = "text",
+  placeholder,
   value,
   onChange,
 }: {
   label: string;
   icon: string;
-  placeholder?: string;
   type?: string;
+  placeholder?: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
+      <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
         {label}
       </label>
 
-      <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 focus-within:border-blue-500 focus-within:bg-white">
-        <span className="mr-3 text-lg">{icon}</span>
+      <div className="relative">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+          {icon}
+        </span>
 
         <input
           type={type}
+          placeholder={placeholder}
           value={value}
           onChange={onChange}
-          placeholder={placeholder}
-          className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm font-medium outline-none transition focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
         />
       </div>
-    </div>
-  );
-}
-
-function InfoBox({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-xl bg-slate-50 p-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-        {title}
-      </p>
-
-      <p className="mt-1 truncate text-xs font-bold text-slate-700">
-        {value}
-      </p>
     </div>
   );
 }

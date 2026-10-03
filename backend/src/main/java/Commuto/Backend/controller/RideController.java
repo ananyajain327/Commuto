@@ -35,7 +35,6 @@ public class RideController {
     // =========================
 
     @PostMapping
-    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<RideResponse> createRide(
             Authentication authentication,
             @Valid @RequestBody CreateRideRequest request) {
@@ -54,7 +53,6 @@ public class RideController {
     // =========================
 
     @GetMapping("/my-rides")
-    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<List<RideResponse>> getMyRides(
             Authentication authentication) {
 

@@ -21,16 +21,8 @@ public class RideService {
 
     public Ride createRide(User driver, CreateRideRequest request) {
 
-        if (driver.getRole() != User.Role.DRIVER) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only drivers can create rides");
-        }
-
         if (!driver.isActive()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Driver account is inactive");
-        }
-
-        if (!driver.isVerified()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Driver account is not verified. Please submit documents for verification first.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Driver account is inactive or suspended");
         }
 
         Ride ride = new Ride();
