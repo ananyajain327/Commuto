@@ -4,20 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import ThemeToggle from "@/components/ThemeToggle";
-
-// ── types ──────────────────────────────────────────────────────────────────────
-
-type NotifCategory = "RIDE_REQUEST" | "RIDE_UPDATE" | "SAFETY" | "SYSTEM" | "RATING";
-
-interface AppNotification {
-  id: number;
-  category: NotifCategory;
-  title: string;
-  body: string;
-  timestamp: string;
-  read: boolean;
-  actionUrl?: string;
-}
+import {
+  AppNotification,
+  NotifCategory,
+  getUserNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+  saveUserNotifications,
+} from "@/lib/notifications";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
 
@@ -48,65 +42,6 @@ function relativeTime(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-// ── mock data (used when backend has no notifications endpoint) ───────────────
-
-const MOCK: AppNotification[] = [
-  {
-    id: 1,
-    category: "RIDE_REQUEST",
-    title: "Ride Request Accepted",
-    body: "Your request for the Jaipur → Ajmer ride on 12 Sep has been accepted by the driver.",
-    timestamp: new Date(Date.now() - 5 * 60_000).toISOString(),
-    read: false,
-    actionUrl: "/rides/my-requests",
-  },
-  {
-    id: 2,
-    category: "RIDE_UPDATE",
-    title: "Driver is on the way",
-    body: "Rajesh K. is 4 minutes away from your pickup point at Vaishali Nagar.",
-    timestamp: new Date(Date.now() - 18 * 60_000).toISOString(),
-    read: false,
-    actionUrl: "/rides/tracking",
-  },
-  {
-    id: 3,
-    category: "RATING",
-    title: "New rating received",
-    body: "You received a ⭐ 5-star rating from your Jaipur → Kishangarh ride. Keep it up!",
-    timestamp: new Date(Date.now() - 2 * 3600_000).toISOString(),
-    read: false,
-    actionUrl: "/ratings",
-  },
-  {
-    id: 4,
-    category: "RIDE_REQUEST",
-    title: "Ride Request Rejected",
-    body: "Sorry, your request for the Jaipur → Delhi ride was not accepted by the driver.",
-    timestamp: new Date(Date.now() - 6 * 3600_000).toISOString(),
-    read: true,
-    actionUrl: "/rides/search",
-  },
-  {
-    id: 5,
-    category: "SAFETY",
-    title: "SOS alert resolved",
-    body: "Your SOS alert from 2 Sep has been reviewed. Our safety team thanks you for your report.",
-    timestamp: new Date(Date.now() - 24 * 3600_000).toISOString(),
-    read: true,
-    actionUrl: "/safety",
-  },
-  {
-    id: 6,
-    category: "SYSTEM",
-    title: "Welcome to Commuto!",
-    body: "Your account is set up and ready. Explore rides near you and enjoy smarter commuting.",
-    timestamp: new Date(Date.now() - 3 * 86_400_000).toISOString(),
-    read: true,
-    actionUrl: "/dashboard",
-  },
-];
-
 // ── component ──────────────────────────────────────────────────────────────────
 
 const FILTER_TABS = ["All", "Unread", "Ride", "Safety", "System"] as const;
@@ -117,32 +52,39 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterTab>("All");
 
-  // ── load ───────────────────────────────────────────────────────────────────
+  // ── load real notifications ───────────────────────────────────────────────────
   useEffect(() => {
     let alive = true;
 
     const load = async () => {
+      const localData = getUserNotifications();
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
       if (!token) {
-        if (alive) { setNotifs(MOCK); setLoading(false); }
+        if (alive) {
+          setNotifs(localData);
+          setLoading(false);
+        }
         return;
       }
 
       try {
-        // Attempt to hit a real backend notifications endpoint
         const res = await fetch(apiUrl("/api/notifications"), {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.ok) {
-          const data: AppNotification[] = await res.json();
-          if (alive) setNotifs(data.length ? data : MOCK);
+          const backendData: AppNotification[] = await res.json();
+          if (alive) {
+            // Combine backend & local events if both exist, avoiding duplicates
+            const combined = [...backendData, ...localData.filter((l) => !backendData.some((b) => b.id === l.id))];
+            setNotifs(combined);
+          }
         } else {
-          // Fallback to mock if endpoint not yet implemented
-          if (alive) setNotifs(MOCK);
+          if (alive) setNotifs(localData);
         }
       } catch {
-        if (alive) setNotifs(MOCK);
+        if (alive) setNotifs(localData);
       } finally {
         if (alive) setLoading(false);
       }
@@ -163,11 +105,20 @@ export default function NotificationsPage() {
     return true;
   });
 
-  const markAllRead = () =>
+  const markAllRead = () => {
+    markAllNotificationsAsRead();
     setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
 
-  const markOneRead = (id: number) =>
+  const markOneRead = (id: number) => {
+    markNotificationAsRead(id);
     setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  };
+
+  const clearAllNotifications = () => {
+    saveUserNotifications([]);
+    setNotifs([]);
+  };
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
@@ -201,6 +152,15 @@ export default function NotificationsPage() {
                 Mark all as read
               </button>
             )}
+            {notifs.length > 0 && (
+              <button
+                type="button"
+                onClick={clearAllNotifications}
+                className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-900/60 cursor-pointer"
+              >
+                Clear all
+              </button>
+            )}
             <ThemeToggle />
           </div>
         </div>
@@ -211,7 +171,7 @@ export default function NotificationsPage() {
         {/* SUMMARY CHIPS */}
         <div className="mb-6 flex flex-wrap gap-3">
           <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 dark:border-emerald-900/50 dark:bg-emerald-950/30">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className={`h-2 w-2 rounded-full ${unreadCount > 0 ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
             <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">{unreadCount} unread</span>
           </div>
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 dark:border-slate-800 dark:bg-slate-900">
@@ -228,7 +188,7 @@ export default function NotificationsPage() {
               onClick={() => setFilter(tab)}
               className={`shrink-0 rounded-2xl px-4 py-2 text-xs font-bold transition cursor-pointer ${
                 filter === tab
-                  ? "bg-slate-900 text-white dark:bg-emerald-600 dark:text-white"
+                  ? "bg-slate-900 text-white dark:bg-violet-600 dark:text-white"
                   : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
               }`}
             >
@@ -240,12 +200,12 @@ export default function NotificationsPage() {
         {/* LOADING */}
         {loading && (
           <div className="flex flex-col items-center py-20 text-slate-400 dark:text-slate-500">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 dark:border-slate-800 border-t-emerald-500" />
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 dark:border-slate-800 border-t-violet-500" />
             <p className="mt-4 text-sm font-semibold">Loading notifications…</p>
           </div>
         )}
 
-        {/* EMPTY */}
+        {/* EMPTY STATE */}
         {!loading && filtered.length === 0 && (
           <div className="flex flex-col items-center py-20 text-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-4xl">
@@ -255,11 +215,11 @@ export default function NotificationsPage() {
             <p className="mt-2 max-w-xs text-sm leading-6 text-slate-400 dark:text-slate-500">
               {filter === "Unread"
                 ? "You're all caught up. No unread notifications."
-                : "Updates about your rides, requests and safety will appear here."}
+                : "Real-time updates about your rides, bookings and safety alerts will appear here."}
             </p>
             <Link
               href="/dashboard"
-              className="mt-6 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-500 shadow-md"
+              className="mt-6 rounded-2xl bg-violet-600 px-6 py-3 text-sm font-extrabold text-white transition hover:bg-violet-500 shadow-md"
             >
               Go to Dashboard →
             </Link>
@@ -310,7 +270,7 @@ function NotifCard({
       className={`group flex items-start gap-4 rounded-3xl border bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:bg-slate-900 ${
         notif.read
           ? "border-slate-200 dark:border-slate-800"
-          : "border-emerald-300 ring-1 ring-emerald-200/50 dark:border-emerald-800 dark:ring-emerald-900/50"
+          : "border-violet-300 ring-1 ring-violet-200/50 dark:border-violet-800 dark:ring-violet-900/50"
       }`}
     >
       {/* Icon */}
@@ -326,7 +286,7 @@ function NotifCard({
           <div>
             <div className="flex items-center gap-2">
               {!notif.read && (
-                <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                <span className="h-2 w-2 shrink-0 rounded-full bg-violet-500" />
               )}
               <p className="text-sm font-extrabold leading-tight text-slate-900 dark:text-slate-100">
                 {notif.title}
@@ -351,7 +311,7 @@ function NotifCard({
 
         {/* CTA arrow */}
         {notif.actionUrl && (
-          <p className="mt-3 text-xs font-bold text-emerald-600 dark:text-emerald-400 transition group-hover:underline">
+          <p className="mt-3 text-xs font-bold text-violet-600 dark:text-violet-400 transition group-hover:underline">
             View details →
           </p>
         )}

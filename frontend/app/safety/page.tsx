@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import ThemeToggle from "@/components/ThemeToggle";
+import { addUserNotification } from "@/lib/notifications";
 
 interface EmergencyContact {
   id: number;
@@ -214,6 +215,14 @@ export default function SafetyCenterPage() {
         setSosOpen(false);
         setSosMessage("");
         setSuccessMessage(`SOS alert activated!${contactDetails}`);
+
+        addUserNotification({
+          category: "SAFETY",
+          title: "SOS Alert Dispatched",
+          body: `Emergency SOS alert activated.${contactDetails}`,
+          actionUrl: "/safety",
+        });
+
         await loadSafetyData();
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "SOS failed to transmit.";
@@ -248,6 +257,12 @@ export default function SafetyCenterPage() {
       }
 
       setSuccessMessage("Emergency alert marked as resolved.");
+      addUserNotification({
+        category: "SAFETY",
+        title: "SOS Alert Resolved",
+        body: "Your emergency alert has been marked as resolved by safety dispatch.",
+        actionUrl: "/safety",
+      });
       await loadSafetyData();
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: unknown) {

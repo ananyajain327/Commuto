@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 import { apiUrl } from "@/lib/api";
+import { getUnreadNotificationCount } from "@/lib/notifications";
 
 interface PassengerRideRequest {
   id: number;
@@ -77,6 +78,9 @@ export default function DashboardPage() {
   const [toLocation, setToLocation] = useState("");
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState<number>(() => {
+    return getUnreadNotificationCount();
+  });
 
   const fetchPassengerData = useCallback(async () => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -135,8 +139,16 @@ export default function DashboardPage() {
     };
     void loadData();
 
+    const syncUnread = () => {
+      setUnreadNotifsCount(getUnreadNotificationCount());
+    };
+    window.addEventListener("commuto_notifications_updated", syncUnread);
+    window.addEventListener("storage", syncUnread);
+
     return () => {
       isMounted = false;
+      window.removeEventListener("commuto_notifications_updated", syncUnread);
+      window.removeEventListener("storage", syncUnread);
     };
   }, [router, fetchPassengerData]);
 
@@ -352,7 +364,9 @@ export default function DashboardPage() {
                 className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 shadow-2xs"
               >
                 🔔
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-800" />
+                {unreadNotifsCount > 0 && (
+                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-violet-500 ring-2 ring-white dark:ring-slate-800 animate-pulse" />
+                )}
               </Link>
 
               <Link

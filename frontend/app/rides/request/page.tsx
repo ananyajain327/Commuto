@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import { apiUrl } from "@/lib/api";
+import { addUserNotification } from "@/lib/notifications";
 
 interface Ride {
   id: number;
@@ -247,6 +248,13 @@ function RideRequestContent() {
         storedRequests.unshift(newReq);
         localStorage.setItem("custom_ride_requests", JSON.stringify(storedRequests));
 
+        addUserNotification({
+          category: "RIDE_REQUEST",
+          title: "Custom Ride Request Posted",
+          body: `Your request from ${customFrom.trim()} to ${customTo.trim()} for ${seats} seat(s) on ${customDate} has been posted.`,
+          actionUrl: "/rides/my-requests",
+        });
+
         setRequested(true);
       } else {
         // Specific ride booking
@@ -274,6 +282,13 @@ function RideRequestContent() {
                 : "Failed to send ride request.")
           );
         }
+
+        addUserNotification({
+          category: "RIDE_REQUEST",
+          title: "Ride Request Sent",
+          body: `Request for ${seats} seat(s) sent to ${ride?.driver?.fullName || "driver"} for ${ride?.startLocation} → ${ride?.destination}.`,
+          actionUrl: "/rides/my-requests",
+        });
 
         setRequested(true);
       }
