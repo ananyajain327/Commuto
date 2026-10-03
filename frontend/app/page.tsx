@@ -1,9 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Home() {
+  const router = useRouter();
+
+  const handleProtectedNavigation = (targetPath: string) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token) {
+      router.push(targetPath);
+    } else {
+      router.push(`/login?redirect=${encodeURIComponent(targetPath)}`);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
       {/* NAVBAR */}
@@ -42,12 +54,13 @@ export default function Home() {
             >
               Safety Standards
             </a>
-            <Link
-              href="/rides/search"
-              className="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+            <button
+              type="button"
+              onClick={() => handleProtectedNavigation("/rides/search")}
+              className="transition hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer"
             >
               Browse Rides
-            </Link>
+            </button>
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
@@ -92,31 +105,50 @@ export default function Home() {
             verified community members.
           </p>
 
-          {/* ACTION CTA BUTTONS */}
+          {/* PRIMARY AUTH & INTENT ACTIONS */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
             <Link
-              href="/rides/search"
-              className="flex items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-700 active:scale-95"
+              href="/register"
+              className="flex items-center gap-2 rounded-2xl bg-indigo-600 px-7 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-700 active:scale-95"
             >
-              <span>🔍</span>
-              <span>Find a Ride</span>
+              <span>🚀</span>
+              <span>Get Started / Register</span>
             </Link>
 
             <Link
-              href="/rides/create"
-              className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-extrabold text-slate-800 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 active:scale-95"
+              href="/login"
+              className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-7 py-3.5 text-sm font-extrabold text-slate-800 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 active:scale-95"
             >
-              <span>🚗</span>
-              <span>Offer Seats</span>
+              <span>🔑</span>
+              <span>Log In</span>
             </Link>
+          </div>
 
-            <Link
-              href="/rides/request"
-              className="flex items-center gap-2 rounded-2xl border border-dashed border-slate-300 px-5 py-3.5 text-sm font-bold text-slate-600 transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:text-slate-400 dark:hover:border-indigo-500 dark:hover:text-indigo-300"
+          {/* RIDE OPTIONS (PROTECTED REDIRECTS) */}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => handleProtectedNavigation("/rides/search")}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
             >
-              <span>📢</span>
-              <span>Post Custom Request</span>
-            </Link>
+              <span>🔍 Find a Ride</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleProtectedNavigation("/rides/create")}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
+            >
+              <span>🚗 Offer Seats</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleProtectedNavigation("/rides/request")}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
+            >
+              <span>📢 Post Custom Request</span>
+            </button>
           </div>
 
           {/* QUICK TRUST BADGES */}
@@ -157,33 +189,30 @@ export default function Home() {
           </div>
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {/* Step 1 */}
             <div className="relative rounded-3xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-xl text-white font-black shadow-md shadow-indigo-500/20">
                 1
               </div>
               <h3 className="mt-5 text-base font-extrabold text-slate-900 dark:text-white">
-                Search or Publish Route
+                Create Account or Log In
               </h3>
               <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Enter your start point and destination. Drivers post vacant seats and passengers find matches along their exact route.
+                Sign up with your verified details. Choose whether you want to ride as a passenger or offer carpools as a driver.
               </p>
             </div>
 
-            {/* Step 2 */}
             <div className="relative rounded-3xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-xl text-white font-black shadow-md shadow-indigo-500/20">
                 2
               </div>
               <h3 className="mt-5 text-base font-extrabold text-slate-900 dark:text-white">
-                Instant Request & Confirmation
+                Match & Request Instantly
               </h3>
               <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Request a seat with one click. Drivers review passenger profiles, ratings, and vehicle preferences before accepting.
+                Search available rides or publish your seats. Requests are confirmed instantly with verified ratings and vehicle details.
               </p>
             </div>
 
-            {/* Step 3 */}
             <div className="relative rounded-3xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-xl text-white font-black shadow-md shadow-emerald-500/20">
                 3
@@ -278,7 +307,7 @@ export default function Home() {
               href="/register"
               className="rounded-xl bg-indigo-600 px-6 py-3 text-xs font-bold text-white shadow-md shadow-indigo-500/25 transition hover:bg-indigo-700"
             >
-              Sign Up Now
+              Get Started (Sign Up)
             </Link>
             <Link
               href="/login"
