@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 
@@ -53,7 +54,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
       </head>
       <body className="min-h-full flex flex-col transition-colors duration-200 bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <ThemeProvider>{children}</ThemeProvider>
