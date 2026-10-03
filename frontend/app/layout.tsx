@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   description:
     "Share rides, split travel costs, track journeys with live GPS, and commute safer and smarter with verified co-travelers.",
   keywords: ["ride sharing", "carpooling", "commute", "fare split", "live ride tracking"],
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

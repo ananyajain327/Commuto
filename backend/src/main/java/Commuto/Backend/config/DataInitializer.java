@@ -68,20 +68,48 @@ public class DataInitializer implements CommandLineRunner {
             passenger.setVerified(false);
             User savedPassenger = userRepository.save(passenger);
 
-            // 4. Sample upcoming ride
-            Ride sampleRide = new Ride();
-            sampleRide.setDriver(savedDriver);
-            sampleRide.setStartLocation("Cyber City, Gurugram");
-            sampleRide.setDestination("Connaught Place, New Delhi");
-            sampleRide.setRideDate(LocalDate.now().plusDays(1));
-            sampleRide.setDepartureTime(LocalTime.of(9, 0));
-            sampleRide.setAvailableSeats(3);
-            sampleRide.setExpectedFare(180.0);
-            sampleRide.setVehicleModel("Hyundai Creta");
-            sampleRide.setVehicleNumber("DL 09 CC 8899");
-            sampleRide.setStatus(Ride.RideStatus.UPCOMING);
-            sampleRide.setNotes("Non-smoking, AC available, leaving punctually at 9 AM.");
-            rideRepository.save(sampleRide);
+            // 4. Sample upcoming rides
+            Ride sampleRide1 = new Ride();
+            sampleRide1.setDriver(savedDriver);
+            sampleRide1.setStartLocation("Cyber City, Gurugram");
+            sampleRide1.setDestination("Connaught Place, New Delhi");
+            sampleRide1.setRideDate(LocalDate.now().plusDays(1));
+            sampleRide1.setDepartureTime(LocalTime.of(9, 0));
+            sampleRide1.setAvailableSeats(3);
+            sampleRide1.setExpectedFare(180.0);
+            sampleRide1.setVehicleModel("Hyundai Creta");
+            sampleRide1.setVehicleNumber("DL 09 CC 8899");
+            sampleRide1.setStatus(Ride.RideStatus.UPCOMING);
+            sampleRide1.setNotes("Non-smoking, AC available, leaving punctually at 9 AM.");
+            rideRepository.save(sampleRide1);
+
+            Ride sampleRide2 = new Ride();
+            sampleRide2.setDriver(savedDriver);
+            sampleRide2.setStartLocation("Jaipur");
+            sampleRide2.setDestination("Delhi");
+            sampleRide2.setRideDate(LocalDate.now().plusDays(2));
+            sampleRide2.setDepartureTime(LocalTime.of(7, 30));
+            sampleRide2.setAvailableSeats(4);
+            sampleRide2.setExpectedFare(450.0);
+            sampleRide2.setVehicleModel("Honda City");
+            sampleRide2.setVehicleNumber("RJ 14 CZ 1234");
+            sampleRide2.setStatus(Ride.RideStatus.UPCOMING);
+            sampleRide2.setNotes("Highway ride, expressway route, pet-friendly.");
+            rideRepository.save(sampleRide2);
+
+            Ride sampleRide3 = new Ride();
+            sampleRide3.setDriver(savedDriver);
+            sampleRide3.setStartLocation("Jaipur");
+            sampleRide3.setDestination("Ajmer");
+            sampleRide3.setRideDate(LocalDate.now().plusDays(1));
+            sampleRide3.setDepartureTime(LocalTime.of(16, 0));
+            sampleRide3.setAvailableSeats(2);
+            sampleRide3.setExpectedFare(220.0);
+            sampleRide3.setVehicleModel("Maruti Brezza");
+            sampleRide3.setVehicleNumber("RJ 14 AB 5678");
+            sampleRide3.setStatus(Ride.RideStatus.UPCOMING);
+            sampleRide3.setNotes("Comfortable split-fare ride with ample luggage space.");
+            rideRepository.save(sampleRide3);
 
             // 5. Emergency Contacts for Passenger
             EmergencyContact pContact1 = new EmergencyContact();
