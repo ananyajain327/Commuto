@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { apiUrl } from "@/lib/api";
@@ -16,9 +16,9 @@ function CreateRideContent() {
   const searchParams = useSearchParams();
 
   const [womenOnly, setWomenOnly] = useState(false);
-  const [startLocation, setStartLocation] = useState("");
-  const [destination, setDestination] = useState("");
-  const [rideDate, setRideDate] = useState("");
+  const [startLocation, setStartLocation] = useState(() => searchParams.get("from") || "");
+  const [destination, setDestination] = useState(() => searchParams.get("to") || "");
+  const [rideDate, setRideDate] = useState(() => searchParams.get("date") || new Date().toISOString().split("T")[0]);
   const [departureTime, setDepartureTime] = useState("09:00");
   const [availableSeats, setAvailableSeats] = useState("3");
   const [expectedFare, setExpectedFare] = useState("250");
@@ -30,21 +30,6 @@ function CreateRideContent() {
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fromParam = searchParams.get("from");
-    const toParam = searchParams.get("to");
-    const dateParam = searchParams.get("date");
-
-    if (fromParam) setStartLocation(fromParam);
-    if (toParam) setDestination(toParam);
-    if (dateParam) {
-      setRideDate(dateParam);
-    } else {
-      const today = new Date().toISOString().split("T")[0];
-      setRideDate(today);
-    }
-  }, [searchParams]);
 
   const handleUseCurrentLocation = () => {
     if (typeof window === "undefined" || !("geolocation" in navigator)) {

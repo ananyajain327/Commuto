@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useLayoutEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -39,26 +39,24 @@ function applyThemeToDOM(theme: Theme): "light" | "dark" {
   return active;
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
-
-  // Read initial stored theme synchronously on mount
-  useLayoutEffect(() => {
-    try {
-      const stored = localStorage.getItem("commuto_theme") as Theme | null;
-      if (stored === "light" || stored === "dark" || stored === "system") {
-        setThemeState(stored);
-        const resolved = applyThemeToDOM(stored);
-        setResolvedTheme(resolved);
-      } else {
-        const resolved = applyThemeToDOM("system");
-        setResolvedTheme(resolved);
-      }
-    } catch {
-      // Fallback
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "system";
+  try {
+    const stored = localStorage.getItem("commuto_theme") as Theme | null;
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      return stored;
     }
-  }, []);
+  } catch {
+    // Fallback
+  }
+  return "system";
+}
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => {
+    return typeof window !== "undefined" ? applyThemeToDOM(getInitialTheme()) : "light";
+  });
 
   // Listen to system preference changes if in system mode
   useEffect(() => {

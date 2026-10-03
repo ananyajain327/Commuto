@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import { apiUrl } from "@/lib/api";
@@ -25,7 +25,6 @@ interface Ride {
 }
 
 function RideRequestContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const rideIdParam = searchParams.get("rideId");
   const fromParam = searchParams.get("from") || "";
@@ -55,7 +54,6 @@ function RideRequestContent() {
   const [errorMessage, setErrorMessage] = useState("");
   const [requested, setRequested] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(false);
-  const [locationSuccess, setLocationSuccess] = useState(false);
 
   // GPS auto-detect
   const handleUseCurrentLocation = () => {
@@ -65,7 +63,6 @@ function RideRequestContent() {
     }
 
     setDetectingLocation(true);
-    setLocationSuccess(false);
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -105,8 +102,6 @@ function RideRequestContent() {
           else setPickupPreference(fallback);
         } finally {
           setDetectingLocation(false);
-          setLocationSuccess(true);
-          setTimeout(() => setLocationSuccess(false), 4000);
         }
       },
       (err) => {
@@ -123,12 +118,8 @@ function RideRequestContent() {
 
   // Fetch specific ride if rideId exists
   useEffect(() => {
-    if (!rideIdParam) {
-      setIsCustomMode(true);
-      return;
-    }
+    if (!rideIdParam) return;
 
-    setIsCustomMode(false);
     async function fetchRideDetails() {
       try {
         setLoadingRide(true);
@@ -140,7 +131,6 @@ function RideRequestContent() {
         });
 
         if (!res.ok) {
-          // If ride not found, switch to custom mode
           setIsCustomMode(true);
           return;
         }
@@ -157,7 +147,7 @@ function RideRequestContent() {
       }
     }
 
-    fetchRideDetails();
+    void fetchRideDetails();
   }, [rideIdParam]);
 
   const farePerSeat =
