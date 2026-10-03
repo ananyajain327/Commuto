@@ -1,59 +1,66 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"find" | "offer">("find");
-  const [fromLoc, setFromLoc] = useState("");
-  const [toLoc, setToLoc] = useState("");
-
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
       {/* NAVBAR */}
-      <nav className="border-b border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80 sticky top-0 z-30 backdrop-blur-md">
+      <nav className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white font-black text-lg shadow-md shadow-indigo-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-black text-lg text-white shadow-md shadow-indigo-500/20">
               C
             </div>
-
             <div>
-              <h1 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">Commuto</h1>
+              <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
+                Commuto
+              </span>
               <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
                 Smart Mobility
               </p>
             </div>
           </Link>
 
-          <div className="hidden items-center gap-7 text-xs font-bold text-slate-600 dark:text-slate-300 md:flex">
-            <a href="#how-it-works" className="transition hover:text-indigo-600 dark:hover:text-indigo-400">
+          <div className="hidden items-center gap-8 text-xs font-bold text-slate-600 dark:text-slate-300 md:flex">
+            <a
+              href="#how-it-works"
+              className="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+            >
               How it works
             </a>
-            <a href="#features" className="transition hover:text-indigo-600 dark:hover:text-indigo-400">
-              Features
+            <a
+              href="#features"
+              className="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+            >
+              Why Commuto
             </a>
-            <a href="#safety" className="transition hover:text-indigo-600 dark:hover:text-indigo-400">
-              Safety
+            <a
+              href="#safety"
+              className="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+            >
+              Safety Standards
             </a>
-            <Link href="/rides/search" className="transition hover:text-indigo-600 dark:hover:text-indigo-400">
-              Find Rides
+            <Link
+              href="/rides/search"
+              className="transition hover:text-indigo-600 dark:hover:text-indigo-400"
+            >
+              Browse Rides
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <ThemeToggle />
             <Link
               href="/login"
-              className="rounded-xl px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 transition"
+              className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               Log in
             </Link>
-
             <Link
               href="/register"
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition hover:bg-indigo-700"
+              className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition hover:bg-indigo-700 active:scale-95"
             >
               Get Started
             </Link>
@@ -62,347 +69,230 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-16 pt-8 sm:px-6 sm:pt-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8 lg:pt-16">
-        <div>
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+      <section className="relative overflow-hidden px-4 pb-20 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pt-20">
+        <div className="mx-auto max-w-5xl text-center">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-4 py-1.5 text-xs font-bold text-indigo-700 shadow-xs dark:border-indigo-900/60 dark:bg-indigo-950/50 dark:text-indigo-300">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            The smarter way to share a ride
+            Verified Student & Workplace Carpooling
           </div>
 
-          <h2 className="max-w-3xl text-3xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-6xl sm:leading-[1.1]">
             Share the ride.
             <br />
-            <span className="text-indigo-600 dark:text-indigo-400">Split the fare.</span>
+            <span className="bg-gradient-to-r from-indigo-600 to-emerald-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-emerald-400">
+              Split the fuel cost.
+            </span>
             <br />
-            Travel smarter.
-          </h2>
+            Travel safer together.
+          </h1>
 
-          <p className="mt-4 max-w-xl text-xs sm:text-sm sm:leading-relaxed text-slate-500 dark:text-slate-400">
-            Find people going your way, share the journey and pay only your
-            fair share. Commuto makes everyday travel affordable, intelligent
-            and safer with verified co-travelers.
+          <p className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400 sm:text-base">
+            Commuto connects everyday commuters heading in the same direction.
+            Cut daily travel expenses, reduce highway congestion, and ride with
+            verified community members.
           </p>
 
-          {/* SEARCH CARD */}
-          <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex gap-1.5 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
-              <button
-                type="button"
-                onClick={() => setActiveTab("find")}
-                className={`flex-1 rounded-xl px-3 py-2.5 text-xs font-bold transition cursor-pointer ${
-                  activeTab === "find"
-                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
-              >
-                Find a ride
-              </button>
+          {/* ACTION CTA BUTTONS */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
+            <Link
+              href="/rides/search"
+              className="flex items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-700 active:scale-95"
+            >
+              <span>🔍</span>
+              <span>Find a Ride</span>
+            </Link>
 
-              <button
-                type="button"
-                onClick={() => setActiveTab("offer")}
-                className={`flex-1 rounded-xl px-3 py-2.5 text-xs font-bold transition cursor-pointer ${
-                  activeTab === "offer"
-                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
-              >
-                Offer a ride
-              </button>
-            </div>
+            <Link
+              href="/rides/create"
+              className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-extrabold text-slate-800 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 active:scale-95"
+            >
+              <span>🚗</span>
+              <span>Offer Seats</span>
+            </Link>
 
-            <div className="grid gap-2.5 p-2.5 md:grid-cols-[1fr_auto_1fr] md:items-end">
-              <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  From (Pickup)
-                </label>
-
-                <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800/60">
-                  <span className="text-base">📍</span>
-                  <input
-                    type="text"
-                    value={fromLoc}
-                    onChange={(e) => setFromLoc(e.target.value)}
-                    placeholder="Your pickup point"
-                    className="w-full bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-xs text-slate-400 dark:border-slate-700 dark:bg-slate-800 md:flex">
-                →
-              </div>
-
-              <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  To (Destination)
-                </label>
-
-                <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800/60">
-                  <span className="text-base">🎯</span>
-                  <input
-                    type="text"
-                    value={toLoc}
-                    onChange={(e) => setToLoc(e.target.value)}
-                    placeholder="Where are you going?"
-                    className="w-full bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="p-2.5 pt-0">
-              {activeTab === "find" ? (
-                <Link
-                  href={`/rides/search?from=${encodeURIComponent(fromLoc)}&to=${encodeURIComponent(toLoc)}`}
-                  className="block w-full rounded-xl bg-indigo-600 py-3 text-center text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition hover:bg-indigo-700"
-                >
-                  Find matching rides →
-                </Link>
-              ) : (
-                <Link
-                  href="/driver/dashboard"
-                  className="block w-full rounded-xl bg-indigo-600 py-3 text-center text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition hover:bg-indigo-700"
-                >
-                  Publish & Offer a ride →
-                </Link>
-              )}
-            </div>
+            <Link
+              href="/rides/request"
+              className="flex items-center gap-2 rounded-2xl border border-dashed border-slate-300 px-5 py-3.5 text-sm font-bold text-slate-600 transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:text-slate-400 dark:hover:border-indigo-500 dark:hover:text-indigo-300"
+            >
+              <span>📢</span>
+              <span>Post Custom Request</span>
+            </Link>
           </div>
 
-          {/* TRUST */}
-          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <span>✓ Verified drivers</span>
-            <span>✓ Fair fare splitting</span>
-            <span>✓ SOS emergency alert</span>
-          </div>
-        </div>
-
-        {/* MAP VISUAL */}
-        <div className="relative">
-          <div className="relative h-96 sm:h-[480px] overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900 shadow-xl">
-            {/* Map grid */}
-            <div className="absolute inset-0 opacity-40 dark:opacity-20">
-              <div className="absolute left-[12%] top-[-10%] h-[130%] w-16 rotate-[18deg] bg-indigo-200 dark:bg-indigo-800" />
-              <div className="absolute left-[38%] top-[-10%] h-[130%] w-24 rotate-[-28deg] bg-indigo-200 dark:bg-indigo-800" />
-              <div className="absolute right-[15%] top-[-10%] h-[130%] w-20 rotate-[22deg] bg-indigo-200 dark:bg-indigo-800" />
+          {/* QUICK TRUST BADGES */}
+          <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-4 text-center dark:border-slate-800 dark:bg-slate-900/60 shadow-xs">
+              <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">100%</p>
+              <p className="mt-0.5 text-xs font-bold text-slate-600 dark:text-slate-400">Verified Profiles</p>
             </div>
-
-            {/* Route */}
-            <svg
-              className="absolute inset-0 h-full w-full"
-              viewBox="0 0 500 600"
-              fill="none"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M70 470 C150 410, 150 330, 235 350 C315 370, 300 240, 425 150"
-                stroke="#6366f1"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeDasharray="10 8"
-              />
-            </svg>
-
-            {/* Pickup */}
-            <div className="absolute bottom-[17%] left-[11%]">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-indigo-600 text-base shadow-xl">
-                📍
-              </div>
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-4 text-center dark:border-slate-800 dark:bg-slate-900/60 shadow-xs">
+              <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">₹0</p>
+              <p className="mt-0.5 text-xs font-bold text-slate-600 dark:text-slate-400">Commission Fee</p>
             </div>
-
-            {/* Destination */}
-            <div className="absolute right-[12%] top-[20%]">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-slate-900 text-base shadow-xl dark:bg-slate-800">
-                🎯
-              </div>
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-4 text-center dark:border-slate-800 dark:bg-slate-900/60 shadow-xs">
+              <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">Live</p>
+              <p className="mt-0.5 text-xs font-bold text-slate-600 dark:text-slate-400">GPS & SOS Shield</p>
             </div>
-
-            {/* Driver marker */}
-            <div className="absolute left-[45%] top-[49%]">
-              <div className="relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-white bg-white text-xl shadow-xl dark:bg-slate-800">
-                🚗
-                <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
-              </div>
-            </div>
-
-            {/* Floating route card */}
-            <div className="absolute left-4 top-4 rounded-2xl border border-slate-200 bg-white/95 p-3.5 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                  🧠
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Smart Match
-                  </p>
-                  <p className="text-sm font-black text-slate-900 dark:text-white">94% compatible</p>
-                </div>
-              </div>
-            </div>
-
-            {/* ETA card */}
-            <div className="absolute bottom-4 right-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 text-white shadow-2xl">
-              <p className="text-[10px] font-semibold text-slate-400">
-                Driver arriving in
-              </p>
-              <p className="text-2xl font-black">8 min</p>
-              <p className="text-[10px] text-slate-400">1.8 km away · Live GPS</p>
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-4 text-center dark:border-slate-800 dark:bg-slate-900/60 shadow-xs">
+              <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">👩 Safe</p>
+              <p className="mt-0.5 text-xs font-bold text-slate-600 dark:text-slate-400">Women-Only Option</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* STATS */}
-      <section className="border-y border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 px-4 py-6 sm:grid-cols-4 sm:px-6 lg:px-8">
-          {[
-            ["Smart", "Ride matching"],
-            ["Fair", "Dynamic fares"],
-            ["Live", "GPS tracking"],
-            ["Safe", "Verified community"],
-          ].map(([number, label]) => (
-            <div
-              key={label}
-              className="border-slate-200 px-3 py-2 text-center first:border-0 sm:border-l dark:border-slate-800"
-            >
-              <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{number}</p>
-              <p className="mt-0.5 text-[11px] font-semibold text-slate-400">
-                {label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section id="features" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="max-w-2xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">
-            Built differently
-          </p>
-
-          <h3 className="mt-2 text-2xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-            More than just a ride.
-          </h3>
-
-          <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-            Commuto combines intelligent matching, fair pricing and safety
-            features into one seamless mobility experience.
-          </p>
-        </div>
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              icon: "🧠",
-              title: "Smart Ride Matching",
-              text: "Find rides based on route similarity, pickup proximity, timing and preferences.",
-            },
-            {
-              icon: "💰",
-              title: "Fair Fare Splitting",
-              text: "Pay according to the distance you actually travel instead of an arbitrary equal split.",
-            },
-            {
-              icon: "📍",
-              title: "Live GPS Tracking",
-              text: "Follow your driver's real-time location and get continuously updated arrival estimates.",
-            },
-            {
-              icon: "🛡️",
-              title: "Verified Drivers",
-              text: "Driver identity and vehicle documents are reviewed and verified before rides.",
-            },
-            {
-              icon: "👩",
-              title: "Women-Only Preference",
-              text: "Choose women-only rides for an additional layer of comfort and safety.",
-            },
-            {
-              icon: "🚨",
-              title: "SOS Protection",
-              text: "Quickly alert emergency contacts and share trip data during active rides.",
-            },
-          ].map((feature) => (
-            <div
-              key={feature.title}
-              className="rounded-3xl border border-slate-200 bg-white p-5 transition dark:border-slate-800 dark:bg-slate-900"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-xl dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
-                {feature.icon}
-              </div>
-
-              <h4 className="mt-4 text-base font-bold text-slate-900 dark:text-white">{feature.title}</h4>
-
-              <p className="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                {feature.text}
-              </p>
-            </div>
-          ))}
         </div>
       </section>
 
       {/* HOW IT WORKS */}
-      <section
-        id="how-it-works"
-        className="bg-slate-900 px-4 py-16 text-white sm:px-6 lg:px-8 border-y border-slate-800"
-      >
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">
-              Simple by design
+      <section id="how-it-works" className="border-t border-slate-200/80 bg-white py-16 dark:border-slate-800/80 dark:bg-slate-900/40">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">
+              Simple & Transparent
             </p>
-
-            <h3 className="mt-2 text-2xl sm:text-4xl font-black tracking-tight">
-              Your journey in four steps.
-            </h3>
+            <h2 className="mt-2 text-3xl font-black text-slate-900 dark:text-white sm:text-4xl">
+              How Commuto works
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+              Whether you are driving your daily route or looking for an affordable seat, getting started takes under two minutes.
+            </p>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-            {[
-              ["01", "Search", "Enter where you're going and when."],
-              ["02", "Match", "Commuto finds compatible routes."],
-              ["03", "Share", "Join the ride and split the cost."],
-              ["04", "Save", "Travel smarter and spend less."],
-            ].map(([number, title, text]) => (
-              <div
-                key={number}
-                className="rounded-2xl border border-slate-800 bg-slate-800/60 p-5"
-              >
-                <span className="text-xs font-bold text-indigo-400">
-                  {number}
-                </span>
-
-                <h4 className="mt-3 text-base font-bold">{title}</h4>
-
-                <p className="mt-1 text-xs text-slate-400">
-                  {text}
-                </p>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {/* Step 1 */}
+            <div className="relative rounded-3xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-xl text-white font-black shadow-md shadow-indigo-500/20">
+                1
               </div>
-            ))}
+              <h3 className="mt-5 text-base font-extrabold text-slate-900 dark:text-white">
+                Search or Publish Route
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Enter your start point and destination. Drivers post vacant seats and passengers find matches along their exact route.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative rounded-3xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-xl text-white font-black shadow-md shadow-indigo-500/20">
+                2
+              </div>
+              <h3 className="mt-5 text-base font-extrabold text-slate-900 dark:text-white">
+                Instant Request & Confirmation
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Request a seat with one click. Drivers review passenger profiles, ratings, and vehicle preferences before accepting.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative rounded-3xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-xl text-white font-black shadow-md shadow-emerald-500/20">
+                3
+              </div>
+              <h3 className="mt-5 text-base font-extrabold text-slate-900 dark:text-white">
+                Ride, Track & Split Fare
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Track driver location live with integrated safety shields. Pay transparently with zero hidden charges or commissions.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WHY COMMUTO */}
+      <section id="features" className="py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
+              Features
+            </p>
+            <h2 className="mt-2 text-3xl font-black text-slate-900 dark:text-white sm:text-4xl">
+              Built for everyday dependability
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+              <span className="text-2xl">⚡</span>
+              <h3 className="mt-4 text-sm font-extrabold text-slate-900 dark:text-white">Real-Time GPS Tracking</h3>
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                Passengers can monitor the driver’s location in real-time before and during the trip.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+              <span className="text-2xl">👩</span>
+              <h3 className="mt-4 text-sm font-extrabold text-slate-900 dark:text-white">Women-Only Pooling</h3>
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                Filter rides by women-only to ensure comfortable, safe journeys for female riders and drivers.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+              <span className="text-2xl">🛡️</span>
+              <h3 className="mt-4 text-sm font-extrabold text-slate-900 dark:text-white">One-Touch Emergency SOS</h3>
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                Instant safety alert dispatch with emergency contact notifications and location logs.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+              <span className="text-2xl">💰</span>
+              <h3 className="mt-4 text-sm font-extrabold text-slate-900 dark:text-white">Fair Cost Sharing</h3>
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                Fixed, algorithm-assisted per-seat pricing that covers fuel without commercial surging.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+              <span className="text-2xl">💬</span>
+              <h3 className="mt-4 text-sm font-extrabold text-slate-900 dark:text-white">In-App Ride Chat</h3>
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                Coordinate pickup spots directly within the platform without sharing private phone numbers.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+              <span className="text-2xl">⭐</span>
+              <h3 className="mt-4 text-sm font-extrabold text-slate-900 dark:text-white">Mutual Community Ratings</h3>
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                Two-way ratings ensure accountability, punctuality, and courteous behavior across all trips.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA FOOTER BANNER */}
+      <section className="border-t border-slate-200/80 bg-white px-4 py-16 text-center dark:border-slate-800/80 dark:bg-slate-900">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
+            Ready to start carpooling?
+          </h2>
+          <p className="mt-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Create your account today and connect with people commuting your way.
+          </p>
+
+          <div className="mt-6 flex justify-center gap-3">
+            <Link
+              href="/register"
+              className="rounded-xl bg-indigo-600 px-6 py-3 text-xs font-bold text-white shadow-md shadow-indigo-500/25 transition hover:bg-indigo-700"
+            >
+              Sign Up Now
+            </Link>
+            <Link
+              href="/login"
+              className="rounded-xl border border-slate-200 bg-slate-50 px-6 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            >
+              Log In
+            </Link>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-slate-200 bg-white px-4 py-8 dark:border-slate-800 dark:bg-slate-900 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white text-xs">
-              C
-            </div>
-            <span className="font-bold text-sm text-slate-900 dark:text-white">Commuto</span>
-          </div>
-
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Share the Ride. Split the Fare. Travel Smarter.
-          </p>
-
-          <p className="text-xs text-slate-400">
-            © 2026 Commuto · All rights reserved.
-          </p>
-        </div>
+      <footer className="border-t border-slate-200 bg-slate-50 py-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+        <p>© 2026 Commuto. Intelligent, Safe & Sustainable Mobility.</p>
       </footer>
     </main>
   );

@@ -360,11 +360,11 @@ function RideDetailsContent() {
                   <h3 className="text-lg font-black text-slate-900">{driverName}</h3>
 
                   <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs">
-                    <span className="font-extrabold text-amber-500">⭐ {driverRating} rating</span>
+                    <span className="font-extrabold text-amber-500">⭐ {driverRating || "4.8"} rating</span>
                     <span className="text-slate-300">·</span>
-                    <span className="font-semibold text-slate-500">128 rides completed</span>
+                    <span className="font-semibold text-slate-500">Verified Driver</span>
                     <span className="text-slate-300">·</span>
-                    <span className="font-semibold text-slate-500">Member since 2025</span>
+                    <span className="font-semibold text-emerald-600">ID & Vehicle Checked</span>
                   </div>
                 </div>
 
