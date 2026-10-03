@@ -30,6 +30,10 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Gender gender;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -43,6 +47,12 @@ public class User {
         PASSENGER,
         DRIVER,
         ADMIN
+    }
+
+    public enum Gender {
+        MALE,
+        FEMALE,
+        OTHER
     }
 
     @PrePersist
@@ -99,6 +109,14 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
     }
 
     public boolean isActive() {

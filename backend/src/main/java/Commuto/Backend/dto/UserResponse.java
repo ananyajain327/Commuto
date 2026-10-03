@@ -11,6 +11,7 @@ public class UserResponse {
     private String email;
     private String phone;
     private User.Role role;
+    private User.Gender gender;
     private boolean active;
     private boolean verified;
     private LocalDateTime createdAt;
@@ -21,6 +22,7 @@ public class UserResponse {
         this.email = user.getEmail();
         this.phone = user.getPhone();
         this.role = user.getRole();
+        this.gender = user.getGender();
         this.active = user.isActive();
         this.verified = user.isVerified();
         this.createdAt = user.getCreatedAt();
@@ -44,6 +46,10 @@ public class UserResponse {
 
     public User.Role getRole() {
         return role;
+    }
+
+    public User.Gender getGender() {
+        return gender;
     }
 
     public boolean isActive() {

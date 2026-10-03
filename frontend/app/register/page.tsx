@@ -11,6 +11,7 @@ export default function RegisterPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<"PASSENGER" | "DRIVER">("PASSENGER");
+  const [gender, setGender] = useState<"MALE" | "FEMALE" | "OTHER">("MALE");
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -51,6 +52,7 @@ export default function RegisterPage() {
           phone: phone.trim(),
           password,
           role,
+          gender,
         }),
       });
 
@@ -181,6 +183,53 @@ export default function RegisterPage() {
                 <span className="text-xl">🚗</span>
                 <span className="mt-2 text-sm font-black">Driver</span>
                 <span className="mt-0.5 text-[11px] opacity-75">I have a car and want to offer seats</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Gender selector */}
+          <div className="mt-5">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+              Gender
+            </label>
+            <div className="grid grid-cols-3 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setGender("MALE")}
+                className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-xs font-bold transition cursor-pointer ${
+                  gender === "MALE"
+                    ? "border-amber-700 bg-amber-50/70 text-amber-900 shadow-2xs dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-200"
+                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300"
+                }`}
+              >
+                <span>👨</span>
+                <span>Male</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGender("FEMALE")}
+                className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-xs font-bold transition cursor-pointer ${
+                  gender === "FEMALE"
+                    ? "border-amber-700 bg-amber-50/70 text-amber-900 shadow-2xs dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-200"
+                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300"
+                }`}
+              >
+                <span>👩</span>
+                <span>Female</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGender("OTHER")}
+                className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-xs font-bold transition cursor-pointer ${
+                  gender === "OTHER"
+                    ? "border-amber-700 bg-amber-50/70 text-amber-900 shadow-2xs dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-200"
+                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300"
+                }`}
+              >
+                <span>✨</span>
+                <span>Other</span>
               </button>
             </div>
           </div>

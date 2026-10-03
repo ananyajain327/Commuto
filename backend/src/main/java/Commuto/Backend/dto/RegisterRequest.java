@@ -25,6 +25,8 @@ public class RegisterRequest {
     @NotNull(message = "Role is required")
     private User.Role role;
 
+    private User.Gender gender;
+
     public RegisterRequest() {
     }
 
@@ -66,5 +68,13 @@ public class RegisterRequest {
 
     public void setRole(User.Role role) {
         this.role = role;
+    }
+
+    public User.Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(User.Gender gender) {
+        this.gender = gender;
     }
 }

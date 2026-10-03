@@ -49,6 +49,7 @@ public class UserService {
         );
 
         user.setRole(request.getRole());
+        user.setGender(request.getGender());
         user.setActive(true);
 
         return userRepository.save(user);
