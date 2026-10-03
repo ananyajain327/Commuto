@@ -16,17 +16,17 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
   if (!mounted) {
     return (
       <div
-        className={`inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white/80 p-1 backdrop-blur-md shadow-2xs dark:border-slate-800 dark:bg-slate-900/80 ${className}`}
+        className={`inline-flex items-center gap-1 rounded-2xl border border-stone-200 bg-white/80 p-1 backdrop-blur-md shadow-2xs dark:border-stone-800 dark:bg-stone-900/80 ${className}`}
         aria-hidden="true"
       >
-        <span className="px-3 py-1 text-xs font-bold text-slate-400">Theme</span>
+        <span className="px-3 py-1 text-xs font-bold text-stone-400">Theme</span>
       </div>
     );
   }
 
   return (
     <div
-      className={`inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white/80 p-1 backdrop-blur-md shadow-2xs transition-colors dark:border-slate-800 dark:bg-slate-900/80 ${className}`}
+      className={`inline-flex items-center gap-1 rounded-2xl border border-stone-200 bg-white/80 p-1 backdrop-blur-md shadow-2xs transition-colors dark:border-stone-800 dark:bg-stone-900/80 ${className}`}
       role="group"
       aria-label="Theme switcher"
     >
@@ -35,8 +35,8 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
         onClick={() => setTheme("light")}
         className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
           theme === "light"
-            ? "bg-slate-900 text-white shadow-xs dark:bg-emerald-600 dark:text-white"
-            : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
+            ? "bg-amber-700 text-white shadow-xs dark:bg-amber-600 dark:text-white"
+            : "text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800"
         }`}
         title="Light mode"
       >
@@ -49,8 +49,8 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
         onClick={() => setTheme("dark")}
         className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
           theme === "dark"
-            ? "bg-slate-900 text-white shadow-xs dark:bg-emerald-600 dark:text-white"
-            : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
+            ? "bg-amber-700 text-white shadow-xs dark:bg-amber-600 dark:text-white"
+            : "text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800"
         }`}
         title="Dark mode"
       >
@@ -63,8 +63,8 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
         onClick={() => setTheme("system")}
         className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
           theme === "system"
-            ? "bg-slate-900 text-white shadow-xs dark:bg-emerald-600 dark:text-white"
-            : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
+            ? "bg-amber-700 text-white shadow-xs dark:bg-amber-600 dark:text-white"
+            : "text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800"
         }`}
         title="System default"
       >

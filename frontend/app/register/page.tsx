@@ -90,303 +90,200 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100 flex flex-col justify-between">
+    <main className="min-h-screen bg-[#faf8f5] text-stone-900 transition-colors dark:bg-[#12100e] dark:text-stone-100 flex flex-col justify-between">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 px-6 py-3.5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90">
+      <header className="sticky top-0 z-30 border-b border-stone-200/80 bg-[#faf8f5]/90 px-6 py-3.5 backdrop-blur-md dark:border-stone-800/80 dark:bg-[#12100e]/90">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-lg font-bold text-white shadow-xs transition group-hover:scale-105 dark:bg-emerald-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-700 font-bold text-lg text-white shadow-2xs transition group-hover:scale-105 dark:bg-amber-600">
               C
             </div>
             <div>
-              <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                Commuto<span className="text-emerald-500">.</span>
-              </p>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+              <span className="text-lg font-black tracking-tight text-stone-900 dark:text-white">
+                Commuto
+              </span>
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-400">
                 Smart Mobility
               </p>
             </div>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <ThemeToggle />
             <Link
               href="/login"
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              className="rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 hover:bg-stone-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800 transition shadow-2xs"
             >
-              Sign In →
+              Log in
             </Link>
           </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <div className="mx-auto flex w-full max-w-7xl flex-1 grid-cols-1 items-stretch lg:grid lg:grid-cols-2">
-        {/* LEFT BRAND PANEL */}
-        <section className="relative hidden overflow-hidden rounded-3xl m-6 bg-slate-900 p-12 text-white shadow-2xl dark:border dark:border-slate-800 lg:flex lg:flex-col lg:justify-between">
-          <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-emerald-500/20 blur-3xl" />
-          <div className="absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl" />
-
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-1.5 text-xs font-bold text-emerald-400 backdrop-blur-md">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              Join Verified Mobility Network
+      <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+        <div className="w-full max-w-lg rounded-3xl border border-stone-200/80 bg-white p-6 sm:p-10 shadow-xl dark:border-stone-800 dark:bg-stone-900">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-xs font-bold text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300">
+              <span>🚀</span> Join the Commuto Community
             </div>
 
-            <h1 className="mt-8 text-4xl font-black leading-tight tracking-tight xl:text-5xl">
-              One platform.
-              <br />
-              <span className="bg-gradient-to-r from-emerald-400 to-indigo-400 bg-clip-text text-transparent">
-                Smarter journeys.
-              </span>
+            <h1 className="mt-4 text-2xl sm:text-3xl font-black tracking-tight text-stone-900 dark:text-white">
+              Create your account
             </h1>
-
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-slate-300">
-              Whether you are commuting to university, traveling intercity, or offering empty car seats, Commuto makes shared travel safe, fast, and cost-effective.
+            <p className="mt-1.5 text-xs sm:text-sm text-stone-500 dark:text-stone-400">
+              Start sharing rides, splitting costs, and connecting with verified commuters.
             </p>
+          </div>
 
-            <div className="mt-10 grid grid-cols-2 gap-3.5 max-w-md">
-              <FeatureCard icon="🧠" title="Smart Route Matching" desc="Instant co-traveler pairings" />
-              <FeatureCard icon="💰" title="Fair Fare Splitting" desc="Zero surge, clear per-seat price" />
-              <FeatureCard icon="📍" title="Live GPS & Tracking" desc="Real-time map and trip ETA" />
-              <FeatureCard icon="🛡️" title="Safety & SOS Center" desc="Emergency contacts & verified KYC" />
+          {/* Feedback banners */}
+          {error && (
+            <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
+              ⚠️ {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
+              ✅ {success}
+            </div>
+          )}
+
+          {/* Role selector */}
+          <div className="mt-6">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+              Choose your role
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setRole("PASSENGER")}
+                className={`flex flex-col items-start rounded-2xl border p-4 text-left transition cursor-pointer ${
+                  role === "PASSENGER"
+                    ? "border-amber-700 bg-amber-50/60 text-amber-900 shadow-xs dark:border-amber-500 dark:bg-amber-950/30 dark:text-amber-200"
+                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300 dark:hover:bg-stone-800/80"
+                }`}
+              >
+                <span className="text-xl">👤</span>
+                <span className="mt-2 text-sm font-black">Passenger</span>
+                <span className="mt-0.5 text-[11px] opacity-75">I want to book and share rides</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setRole("DRIVER")}
+                className={`flex flex-col items-start rounded-2xl border p-4 text-left transition cursor-pointer ${
+                  role === "DRIVER"
+                    ? "border-amber-700 bg-amber-50/60 text-amber-900 shadow-xs dark:border-amber-500 dark:bg-amber-950/30 dark:text-amber-200"
+                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300 dark:hover:bg-stone-800/80"
+                }`}
+              >
+                <span className="text-xl">🚗</span>
+                <span className="mt-2 text-sm font-black">Driver</span>
+                <span className="mt-0.5 text-[11px] opacity-75">I have a car and want to offer seats</span>
+              </button>
             </div>
           </div>
 
-          <div className="relative z-10 mt-10 border-t border-white/10 pt-6">
-            <p className="text-xs text-slate-400">
-              Share the ride. Split the fare. Protect the planet.
-            </p>
-          </div>
-        </section>
-
-        {/* RIGHT REGISTRATION FORM */}
-        <section className="flex flex-col justify-center px-6 py-10 sm:px-12 lg:px-16">
-          <div className="mx-auto w-full max-w-md">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                Get Started
-              </p>
-              <h2 className="mt-1.5 text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-                Create your account
-              </h2>
-              <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400 sm:text-sm">
-                Join thousands of verified commuters and travel smarter.
-              </p>
+              <label className="mb-1.5 block text-xs font-bold text-stone-700 dark:text-stone-300">
+                Full Name
+              </label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="e.g. Ananya Jain"
+                className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+              />
             </div>
 
-            {/* Error Alert */}
-            {error && (
-              <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-bold text-red-700 shadow-xs dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
-                <div className="flex items-center gap-2">
-                  <span>⚠</span>
-                  <span>{error}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Success Alert */}
-            {success && (
-              <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-bold text-emerald-800 shadow-xs dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-                <div className="flex items-center gap-2">
-                  <span>✓</span>
-                  <span>{success}</span>
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              {/* Full Name */}
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label
-                  htmlFor="name"
-                  className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300"
-                >
-                  Full name
+                <label className="mb-1.5 block text-xs font-bold text-stone-700 dark:text-stone-300">
+                  Email Address
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400">
-                    👤
-                  </span>
-                  <input
-                    id="name"
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Ananya Jain"
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500"
-                  />
-                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+                />
               </div>
 
-              {/* Email Address */}
               <div>
-                <label
-                  htmlFor="email"
-                  className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300"
-                >
-                  Email address
+                <label className="mb-1.5 block text-xs font-bold text-stone-700 dark:text-stone-300">
+                  Phone Number
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400">
-                    ✉️
-                  </span>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500"
-                  />
-                </div>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+                />
               </div>
+            </div>
 
-              {/* Phone Number */}
-              <div>
-                <label
-                  htmlFor="phone"
-                  className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300"
-                >
-                  Phone number
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400">
-                    📱
-                  </span>
-                  <input
-                    id="phone"
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              {/* Role Selection */}
-              <div>
-                <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  How will you use Commuto?
-                </label>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setRole("PASSENGER")}
-                    className={`rounded-2xl border p-3.5 text-left transition cursor-pointer ${
-                      role === "PASSENGER"
-                        ? "border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/20"
-                        : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="text-xl">🧑</div>
-                    <p className="mt-2 text-sm font-bold">Passenger</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Book & split rides</p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setRole("DRIVER")}
-                    className={`rounded-2xl border p-3.5 text-left transition cursor-pointer ${
-                      role === "DRIVER"
-                        ? "border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/20"
-                        : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="text-xl">🚗</div>
-                    <p className="mt-2 text-sm font-bold">Driver</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Offer empty seats</p>
-                  </button>
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300"
-                >
-                  Password (min. 8 characters)
-                </label>
-
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400">
-                    🔒
-                  </span>
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    minLength={8}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a strong password"
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-12 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
-                    title={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? "👁️" : "🙈"}
-                  </button>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="pt-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-bold text-stone-700 dark:text-stone-300">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimum 8 characters"
+                  className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 pr-12 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+                />
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-2xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-500 disabled:opacity-50 cursor-pointer"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition cursor-pointer"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {loading ? "Creating your account..." : "Create Account →"}
+                  {showPassword ? "🙈" : "👁️"}
                 </button>
               </div>
-            </form>
+            </div>
 
-            <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="font-bold text-emerald-600 hover:underline dark:text-emerald-400"
-              >
-                Sign In
-              </Link>
-            </p>
-          </div>
-        </section>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`h-12 w-full rounded-xl text-sm font-extrabold text-white shadow-md shadow-amber-900/20 transition cursor-pointer ${
+                loading
+                  ? "cursor-not-allowed bg-stone-400"
+                  : "bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 active:scale-95"
+              }`}
+            >
+              {loading ? "Creating your account..." : "Complete Registration →"}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-xs text-stone-500 dark:text-stone-400">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="font-bold text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 transition"
+            >
+              Sign in here
+            </Link>
+          </p>
+        </div>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 py-4 text-center text-[11px] text-slate-400 dark:border-slate-800">
-        Commuto Smart Mobility Platform • All rights reserved
+      <footer className="border-t border-stone-200 bg-white/50 py-6 text-center text-xs text-stone-400 dark:border-stone-800 dark:bg-stone-900/40">
+        © 2026 Commuto · Smart Mobility & Safe Carpooling.
       </footer>
     </main>
-  );
-}
-
-function FeatureCard({
-  icon,
-  title,
-  desc,
-}: {
-  icon: string;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-xs">
-      <div className="text-lg">{icon}</div>
-      <p className="mt-2 text-xs font-bold text-white">{title}</p>
-      <p className="mt-0.5 text-[11px] text-slate-400 leading-tight">{desc}</p>
-    </div>
   );
 }
