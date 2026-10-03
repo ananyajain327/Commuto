@@ -65,7 +65,7 @@ function getStoredTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>(getStoredTheme);
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
@@ -91,9 +91,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const initial = getStoredTheme();
-    setThemeState(initial);
-    applyThemeToDOM(initial);
+    applyThemeToDOM(theme);
 
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "commuto_theme" && (e.newValue === "dark" || e.newValue === "light")) {
@@ -104,7 +102,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+  }, [theme]);
 
   return (
     <ThemeContext.Provider

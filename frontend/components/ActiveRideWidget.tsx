@@ -60,9 +60,22 @@ export default function ActiveRideWidget() {
   }, []);
 
   useEffect(() => {
-    void checkActiveRide();
-    const interval = setInterval(checkActiveRide, 15000);
-    return () => clearInterval(interval);
+    let isMounted = true;
+    const fetchRide = async () => {
+      if (isMounted) {
+        await checkActiveRide();
+      }
+    };
+    void fetchRide();
+    const interval = setInterval(() => {
+      if (isMounted) {
+        void checkActiveRide();
+      }
+    }, 15000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [pathname, checkActiveRide]);
 
   // Don't show inside active tracking page itself to avoid duplication

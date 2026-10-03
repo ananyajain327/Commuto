@@ -62,7 +62,15 @@ const quickActions = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ fullName?: string; email?: string; role?: string } | null>(null);
+  const [user] = useState<{ fullName?: string; email?: string; role?: string } | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = localStorage.getItem("user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
   const [requests, setRequests] = useState<PassengerRideRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [fromLocation, setFromLocation] = useState("");
@@ -72,7 +80,10 @@ export default function DashboardPage() {
 
   const fetchPassengerData = useCallback(async () => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (!token) return;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -95,6 +106,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     try {
       const stored = localStorage.getItem("user");
       if (stored) {
@@ -107,7 +119,6 @@ export default function DashboardPage() {
           router.replace("/admin");
           return;
         }
-        setUser(parsed);
       } else {
         router.replace("/login");
         return;
@@ -117,7 +128,16 @@ export default function DashboardPage() {
       return;
     }
 
-    void fetchPassengerData();
+    const loadData = async () => {
+      if (isMounted) {
+        await fetchPassengerData();
+      }
+    };
+    void loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [router, fetchPassengerData]);
 
   const handleUseCurrentLocation = () => {
