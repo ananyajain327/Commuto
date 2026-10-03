@@ -76,8 +76,8 @@ class EndToEndRideFlowIntegrationTest {
         CreateRideRequest rideReq = new CreateRideRequest();
         rideReq.setStartLocation("Cyber City");
         rideReq.setDestination("Sector 29");
-        rideReq.setRideDate(LocalDate.now().plusDays(1));
-        rideReq.setDepartureTime(LocalTime.of(9, 30));
+        rideReq.setRideDate(LocalDate.now());
+        rideReq.setDepartureTime(LocalTime.now().minusMinutes(1));
         rideReq.setAvailableSeats(3);
         rideReq.setExpectedFare(150.0);
         rideReq.setVehicleModel("Honda City");

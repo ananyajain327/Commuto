@@ -28,6 +28,12 @@ class RideRequestServiceTest {
     @Mock
     private RideRepository rideRepository;
 
+    @Mock
+    private org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+
+    @Mock
+    private RatingService ratingService;
+
     @InjectMocks
     private RideRequestService rideRequestService;
 

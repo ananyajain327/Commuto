@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 import { apiUrl } from "@/lib/api";
 
 type RequestStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
@@ -98,6 +100,33 @@ export default function DriverRequestsPage() {
 
   useEffect(() => {
     queueMicrotask(() => void fetchDriverRequests());
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    let client: Client | null = null;
+    try {
+      client = new Client({
+        webSocketFactory: () => new SockJS(apiUrl("/ws")) as unknown as WebSocket,
+        connectHeaders: { Authorization: `Bearer ${token}` },
+        reconnectDelay: 5000,
+        onConnect: () => {
+          client?.subscribe("/topic/driver/requests", () => {
+            void fetchDriverRequests();
+            setSuccessMessage("🔔 New ride request received in real time!");
+          });
+        },
+      });
+      client.activate();
+    } catch {
+      // Graceful fallback to regular refresh
+    }
+
+    return () => {
+      if (client) {
+        void client.deactivate();
+      }
+    };
   }, []);
 
   const handleAction = async (id: number, action: "accept" | "reject") => {

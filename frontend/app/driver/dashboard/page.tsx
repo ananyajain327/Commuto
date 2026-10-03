@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 import { apiUrl } from "@/lib/api";
 
 interface DriverRequestSummary {
@@ -54,6 +56,7 @@ export default function DriverDashboard() {
   const [online, setOnline] = useState(false);
   const [analytics, setAnalytics] = useState<DriverAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [newRequestNotification, setNewRequestNotification] = useState<string | null>(null);
 
   useEffect(() => {
     let isCurrent = true;
@@ -87,6 +90,45 @@ export default function DriverDashboard() {
     void loadAnalytics();
     return () => {
       isCurrent = false;
+    };
+  }, []);
+
+  // Real-time WebSocket connection for instant passenger requests
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const client = new Client({
+      webSocketFactory: () => new SockJS(apiUrl("/ws")) as unknown as WebSocket,
+      connectHeaders: { Authorization: `Bearer ${token}` },
+      reconnectDelay: 5000,
+      onConnect: () => {
+        client.subscribe("/topic/driver/requests", (message) => {
+          try {
+            const req = JSON.parse(message.body) as DriverRequestSummary;
+            if (req && req.requestId) {
+              setAnalytics((prev) => {
+                if (!prev) return prev;
+                const existing = prev.pendingRequests.some((r) => r.requestId === req.requestId);
+                if (existing) return prev;
+                return {
+                  ...prev,
+                  pendingRequests: [req, ...prev.pendingRequests],
+                };
+              });
+              setNewRequestNotification(`🔔 New ride request received from ${req.passengerName || "a passenger"} for ${req.route || "your ride"}!`);
+              setTimeout(() => setNewRequestNotification(null), 7000);
+            }
+          } catch {
+            // Ignore parse errors
+          }
+        });
+      },
+    });
+
+    client.activate();
+    return () => {
+      void client.deactivate();
     };
   }, []);
 
@@ -142,6 +184,31 @@ export default function DriverDashboard() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
+        {/* Real-time Notification Banner */}
+        {newRequestNotification && (
+          <div
+            role="alert"
+            className="mb-6 flex items-center justify-between gap-4 rounded-2xl bg-indigo-600 px-6 py-4 text-white shadow-xl animate-bounce"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 text-xl backdrop-blur-sm">
+                🚗
+              </span>
+              <div>
+                <p className="text-sm font-bold">{newRequestNotification}</p>
+                <p className="text-xs text-indigo-100">Review and accept the request below to confirm the seat.</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setNewRequestNotification(null)}
+              className="rounded-lg bg-white/10 px-3 py-1 text-xs font-semibold hover:bg-white/20"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {/* Online Status */}
         <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">

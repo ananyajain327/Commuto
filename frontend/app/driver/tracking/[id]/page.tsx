@@ -14,6 +14,8 @@ interface Ride {
   driverName: string;
   startLocation: string;
   destination: string;
+  rideDate?: string;
+  departureTime?: string;
   status: "UPCOMING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
   vehicleModel?: string;
   vehicleNumber?: string;
@@ -268,7 +270,9 @@ export default function DriverTrackingPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) {
-        throw new Error(action === "start" ? "Unable to start this ride." : "Unable to complete this ride.");
+        const errorData = await response.json().catch(() => null);
+        const customMessage = errorData?.message || errorData?.detail;
+        throw new Error(customMessage || (action === "start" ? "Unable to start this ride." : "Unable to complete this ride."));
       }
 
       const nextRide: Ride = await response.json();
@@ -281,6 +285,18 @@ export default function DriverTrackingPage() {
       setIsCompleting(false);
     }
   };
+
+  const isBeforeScheduledTime = () => {
+    if (!ride?.rideDate || !ride?.departureTime) return false;
+    try {
+      const scheduled = new Date(`${ride.rideDate}T${ride.departureTime}`);
+      return new Date() < scheduled;
+    } catch {
+      return false;
+    }
+  };
+
+  const isTooEarly = isBeforeScheduledTime();
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -365,14 +381,34 @@ export default function DriverTrackingPage() {
 
         {ride && ride.status === "UPCOMING" && (
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-600">The ride is ready to begin. Start it when you are at the pickup point.</p>
+            {isTooEarly ? (
+              <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">🕒</span>
+                  <p className="text-xs font-bold uppercase tracking-wider text-amber-800">Scheduled Departure</p>
+                </div>
+                <p className="mt-1 text-sm font-semibold">
+                  This ride is scheduled for {ride.rideDate || "upcoming"} at {ride.departureTime || "scheduled time"}.
+                </p>
+                <p className="mt-1 text-xs text-amber-700">
+                  Per Commuto platform policy, drivers cannot start rides before the scheduled date and time.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-600">The scheduled departure time has been reached. You may start the ride when ready.</p>
+            )}
+
             <button
               type="button"
               onClick={() => void handleRideLifecycle("start")}
-              disabled={isStarting || isCompleting}
-              className="mt-4 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isStarting || isCompleting || isTooEarly}
+              className={`mt-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition ${
+                isTooEarly
+                  ? "bg-slate-300 cursor-not-allowed opacity-80"
+                  : "bg-emerald-600 hover:bg-emerald-700 active:scale-95 shadow-md"
+              }`}
             >
-              {isStarting ? "Starting ride..." : "Start ride"}
+              {isStarting ? "Starting ride..." : isTooEarly ? "Locked Until Scheduled Time" : "Start ride"}
             </button>
           </div>
         )}

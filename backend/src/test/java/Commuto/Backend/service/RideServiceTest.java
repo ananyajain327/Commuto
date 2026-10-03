@@ -9,6 +9,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,6 +36,8 @@ class RideServiceTest {
         Ride ride = new Ride();
         ride.setDriver(driver);
         ride.setStatus(Ride.RideStatus.UPCOMING);
+        ride.setRideDate(LocalDate.now());
+        ride.setDepartureTime(LocalTime.now().minusMinutes(5));
         when(rideRepository.findById(11L)).thenReturn(Optional.of(ride));
         when(rideRepository.save(ride)).thenReturn(ride);
 
@@ -39,6 +45,20 @@ class RideServiceTest {
 
         assertEquals(Ride.RideStatus.ACTIVE, started.getStatus());
         verify(rideRepository).save(ride);
+    }
+
+    @Test
+    void driverCannotStartRideBeforeScheduledDateTime() {
+        User driver = driver(7L);
+        Ride ride = new Ride();
+        ride.setDriver(driver);
+        ride.setStatus(Ride.RideStatus.UPCOMING);
+        ride.setRideDate(LocalDate.now().plusDays(1));
+        ride.setDepartureTime(LocalTime.of(10, 0));
+        when(rideRepository.findById(11L)).thenReturn(Optional.of(ride));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> rideService.startRide(11L, driver));
+        assertEquals(400, ex.getStatusCode().value());
     }
 
     @Test

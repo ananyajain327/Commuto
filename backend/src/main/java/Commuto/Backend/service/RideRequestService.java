@@ -1,11 +1,13 @@
 package Commuto.Backend.service;
 
+import Commuto.Backend.dto.DriverRequestSummaryDto;
 import Commuto.Backend.entity.Ride;
 import Commuto.Backend.entity.RideRequest;
 import Commuto.Backend.entity.RideRequest.RequestStatus;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.RideRepository;
 import Commuto.Backend.repository.RideRequestRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,12 +18,18 @@ public class RideRequestService {
 
     private final RideRequestRepository rideRequestRepository;
     private final RideRepository rideRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final RatingService ratingService;
 
     public RideRequestService(
             RideRequestRepository rideRequestRepository,
-            RideRepository rideRepository) {
+            RideRepository rideRepository,
+            SimpMessagingTemplate messagingTemplate,
+            RatingService ratingService) {
         this.rideRequestRepository = rideRequestRepository;
         this.rideRepository = rideRepository;
+        this.messagingTemplate = messagingTemplate;
+        this.ratingService = ratingService;
     }
 
     @Transactional
@@ -66,7 +74,22 @@ public class RideRequestService {
         request.setFare(calculatedFare);
         request.setStatus(RequestStatus.PENDING);
 
-        return rideRequestRepository.save(request);
+        RideRequest saved = rideRequestRepository.save(request);
+
+        try {
+            Double passengerRating = ratingService.getAverageRating(passenger);
+            DriverRequestSummaryDto summaryDto = new DriverRequestSummaryDto(
+                    saved,
+                    passengerRating != null ? passengerRating : 5.0
+            );
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/driver/" + ride.getDriver().getId() + "/requests", summaryDto);
+                messagingTemplate.convertAndSend("/topic/driver/requests", summaryDto);
+            }
+        } catch (Exception ignored) {
+        }
+
+        return saved;
     }
 
     public List<RideRequest> getPassengerRequests(User passenger) {

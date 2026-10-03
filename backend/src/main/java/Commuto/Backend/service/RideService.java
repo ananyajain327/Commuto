@@ -63,14 +63,24 @@ public class RideService {
 
     public Ride startRide(Long rideId, User driver) {
         Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
 
         if (!ride.getDriver().getId().equals(driver.getId())) {
-            throw new RuntimeException("You are not the driver of this ride");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the driver of this ride");
         }
 
         if (ride.getStatus() != Ride.RideStatus.UPCOMING) {
-            throw new RuntimeException("Ride can only be started from UPCOMING status");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride can only be started from UPCOMING status");
+        }
+
+        if (ride.getRideDate() != null && ride.getDepartureTime() != null) {
+            java.time.LocalDateTime scheduledDeparture = java.time.LocalDateTime.of(ride.getRideDate(), ride.getDepartureTime());
+            if (java.time.LocalDateTime.now().isBefore(scheduledDeparture)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Ride cannot be started before scheduled departure date and time (" + ride.getRideDate() + " at " + ride.getDepartureTime() + ")"
+                );
+            }
         }
 
         ride.setStatus(Ride.RideStatus.ACTIVE);
