@@ -274,7 +274,7 @@ export default function ProfilePage() {
         )}
 
         {/* PROFILE HERO CARD */}
-        <section className="mb-6 overflow-hidden rounded-[32px] bg-[#172033] p-7 text-white shadow-[0_25px_60px_rgba(23,32,51,0.15)]">
+        <section className="mb-6 overflow-hidden rounded-4xl bg-[#172033] p-7 text-white shadow-[0_25px_60px_rgba(23,32,51,0.15)]">
           <div className="flex items-center gap-5">
             {/* Avatar */}
             <div className="relative">
@@ -513,7 +513,7 @@ function QuickLink({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-[24px] border border-slate-200 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg"
+      className="group flex items-center gap-4 rounded-3xl border border-slate-200 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg"
     >
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-xl transition group-hover:bg-indigo-50">
         {icon}

@@ -303,7 +303,7 @@ function NotifCard({
     // @ts-expect-error – dynamic tag props
     <Wrapper
       {...wrapperProps}
-      className={`group flex items-start gap-4 rounded-[24px] border bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
+      className={`group flex items-start gap-4 rounded-3xl border bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
         notif.read
           ? "border-slate-200"
           : "border-indigo-200 ring-1 ring-indigo-100"

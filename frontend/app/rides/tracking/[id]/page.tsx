@@ -453,7 +453,7 @@ export default function PassengerTrackingPage() {
 
         {errorMessage && <p role="alert" className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700">{errorMessage}</p>}
 
-        <div className="h-[min(68vh,640px)] min-h-[400px] overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
+        <div className="h-[min(68vh,640px)] min-h-100 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
           <RideMap pickup={pickup} destination={destination} driver={driverPoint} route={route} />
         </div>
       </section>

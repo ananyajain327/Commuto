@@ -146,11 +146,11 @@ export default function RideTrackingPage() {
             </div>
 
             {/* Demo Map */}
-            <div className="relative h-[500px] overflow-hidden bg-slate-100">
+            <div className="relative h-125 overflow-hidden bg-slate-100">
               {/* Map Grid */}
               <div className="absolute inset-0 opacity-40">
                 <div className="absolute left-[15%] top-0 h-full w-px bg-slate-300" />
-                <div className="absolute left-[35%] top-0 h-full w-px rotate-[12deg] bg-slate-300" />
+                <div className="absolute left-[35%] top-0 h-full w-px rotate-12 bg-slate-300" />
                 <div className="absolute left-[60%] top-0 h-full w-px rotate-[-8deg] bg-slate-300" />
                 <div className="absolute left-[82%] top-0 h-full w-px bg-slate-300" />
 
@@ -163,9 +163,9 @@ export default function RideTrackingPage() {
               {/* Roads */}
               <div className="absolute left-[-10%] top-[50%] h-10 w-[120%] rotate-[-8deg] bg-white shadow-sm" />
 
-              <div className="absolute left-[45%] top-[-10%] h-[120%] w-10 rotate-[18deg] bg-white shadow-sm" />
+              <div className="absolute left-[45%] top-[-10%] h-[120%] w-10 rotate-18 bg-white shadow-sm" />
 
-              <div className="absolute left-[10%] top-[25%] h-6 w-[80%] rotate-[18deg] bg-white shadow-sm" />
+              <div className="absolute left-[10%] top-[25%] h-6 w-[80%] rotate-18 bg-white shadow-sm" />
 
               {/* Route */}
               <div className="absolute left-[20%] top-[65%] h-1 w-[60%] rotate-[-18deg] rounded-full bg-indigo-500" />

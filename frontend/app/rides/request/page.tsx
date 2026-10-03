@@ -8,7 +8,7 @@ import { apiUrl } from "@/lib/api";
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[300px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50">
+    <div className="flex h-75 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50">
       <p className="text-xs font-semibold text-slate-400">Loading map...</p>
     </div>
   ),

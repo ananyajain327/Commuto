@@ -37,12 +37,6 @@ class EndToEndRideFlowIntegrationTest {
     private RideRepository rideRepository;
 
     @Autowired
-    private RideRequestRepository rideRequestRepository;
-
-    @Autowired
-    private RatingRepository ratingRepository;
-
-    @Autowired
     private RideService rideService;
 
     @Autowired

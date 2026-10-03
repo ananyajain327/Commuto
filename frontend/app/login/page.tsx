@@ -114,7 +114,7 @@ export default function LoginPage() {
         <section className="relative hidden overflow-hidden bg-[#172033] lg:flex">
           {/* Decorative circles */}
           <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[#5b5ce2]/30 blur-3xl" />
-          <div className="absolute -bottom-40 -right-20 h-[500px] w-[500px] rounded-full bg-indigo-500/20 blur-3xl" />
+          <div className="absolute -bottom-40 -right-20 h-125 w-125 rounded-full bg-indigo-500/20 blur-3xl" />
 
           <div className="relative z-10 flex w-full flex-col justify-between p-12 xl:p-16">
 

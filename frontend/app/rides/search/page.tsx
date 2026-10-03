@@ -560,7 +560,7 @@ function RideCard({
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
         {/* Driver */}
-        <div className="flex min-w-[220px] items-center gap-4">
+        <div className="flex min-w-55 items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-lg font-bold text-white">
             {getInitials(ride.driverName)}
           </div>
@@ -608,7 +608,7 @@ function RideCard({
         </div>
 
         {/* Time */}
-        <div className="min-w-[110px]">
+        <div className="min-w-28">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             Departure
           </p>
@@ -619,7 +619,7 @@ function RideCard({
         </div>
 
         {/* Match */}
-        <div className="min-w-[100px]">
+        <div className="min-w-25">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             Route Match
           </p>
@@ -630,7 +630,7 @@ function RideCard({
         </div>
 
         {/* Fare */}
-        <div className="min-w-[90px]">
+        <div className="min-w-24">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             Est. Fare
           </p>

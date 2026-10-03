@@ -465,7 +465,7 @@ export default function DashboardPage() {
                 <Link
                   key={action.title}
                   href={action.href}
-                  className="group rounded-[24px] border border-slate-200 bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl"
+                  className="group rounded-3xl border border-slate-200 bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl"
                 >
                   <div className="flex items-center justify-between">
 
@@ -617,7 +617,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-6 overflow-x-auto">
-              <div className="min-w-[650px]">
+              <div className="min-w-160">
 
                 {recentRides.map((ride, index) => (
                   <div
@@ -733,7 +733,7 @@ function StatCard({
   label: string;
 }) {
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white p-5">
+    <div className="rounded-3xl border border-slate-200 bg-white p-5">
       <div className="flex items-center justify-between">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
           {icon}
