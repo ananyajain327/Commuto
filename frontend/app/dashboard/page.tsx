@@ -7,10 +7,10 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 const quickActions = [
   {
-    icon: "🔍",
+    icon: "📢",
     title: "Request a Ride",
-    description: "Find routes and request a trip",
-    href: "/rides/search",
+    description: "Post a ride request or book seats",
+    href: "/rides/request",
   },
   {
     icon: "🚗",
@@ -210,6 +210,7 @@ export default function DashboardPage() {
 
           <SidebarItem icon="⌂" label="Overview" href="/dashboard" active />
           <SidebarItem icon="⌕" label="Find a Ride" href="/rides/search" />
+          <SidebarItem icon="📢" label="Request a Ride" href="/rides/request" />
           <SidebarItem icon="🚗" label="Offer a Ride" href="/rides/create" />
           <SidebarItem icon="▣" label="My Rides" href="/rides" />
 

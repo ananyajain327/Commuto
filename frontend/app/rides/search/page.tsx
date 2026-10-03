@@ -489,26 +489,26 @@ export default function FindRidePage() {
               route, or turn off the women-only filter.
             </p>
 
-            <div className="mx-auto mt-6 flex max-w-sm flex-col gap-3 sm:flex-row sm:justify-center">
+            <div className="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
               <a
-                href={`/rides/create?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${encodeURIComponent(date)}`}
-                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-blue-700"
+                href={`/rides/request?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${encodeURIComponent(date)}`}
+                className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-500"
               >
-                <span>🚗</span>
-                <span>Offer This Ride</span>
+                <span>📢</span>
+                <span>Request This Ride</span>
               </a>
 
               <a
-                href="/rides/my-requests"
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                href={`/rides/create?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${encodeURIComponent(date)}`}
+                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               >
-                <span>📋</span>
-                <span>My Requests</span>
+                <span>🚗</span>
+                <span>Offer Ride</span>
               </a>
             </div>
 
             <p className="mx-auto mt-4 max-w-sm text-xs text-slate-400">
-              Can&apos;t find what you need? Create your own ride and let other passengers join, or check your existing requests.
+              No active rides currently on this route? Post a ride request and nearby verified drivers will be notified to pick you up!
             </p>
           </div>
         )}
