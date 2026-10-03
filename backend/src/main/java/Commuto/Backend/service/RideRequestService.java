@@ -7,7 +7,6 @@ import Commuto.Backend.entity.RideRequest.RequestStatus;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.RideRepository;
 import Commuto.Backend.repository.RideRequestRepository;
-import Commuto.Backend.service.RatingService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
