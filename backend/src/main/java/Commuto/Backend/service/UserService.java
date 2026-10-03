@@ -83,4 +83,18 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
+    public void changePassword(
+            User user,
+            Commuto.Backend.dto.ChangePasswordRequest request) {
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Current password is incorrect"
+            );
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
 }

@@ -1,11 +1,125 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function WalletPage() {
   const [showAddMoney, setShowAddMoney] = useState(false);
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [balance, setBalance] = useState(2450);
+
+  // Load Razorpay checkout script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const getUserDetails = () => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const user = JSON.parse(stored);
+        return {
+          name: user.fullName || "Commuto User",
+          email: user.email || "",
+        };
+      }
+    } catch { /* ignore */ }
+    return { name: "Commuto User", email: "" };
+  };
+
+  const handleAddMoney = () => {
+    const numAmount = Number(amount);
+    if (!amount || numAmount <= 0) {
+      setMessage("Please enter a valid amount.");
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
+    if (numAmount < 10) {
+      setMessage("Minimum recharge amount is ₹10.");
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
+    // Check if Razorpay is loaded
+    if (typeof window !== "undefined" && window.Razorpay) {
+      initiateRazorpayPayment(numAmount);
+    } else {
+      // Fallback: simulate payment for demo
+      simulatePayment(numAmount);
+    }
+  };
+
+  const initiateRazorpayPayment = (numAmount: number) => {
+    setPaymentProcessing(true);
+    const user = getUserDetails();
+
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag",
+      amount: numAmount * 100, // Razorpay expects amount in paise
+      currency: "INR",
+      name: "Commuto",
+      description: `Wallet Recharge - ₹${numAmount}`,
+      handler: (response: { razorpay_payment_id: string }) => {
+        // Payment successful
+        setBalance((prev) => prev + numAmount);
+        setMessage(
+          `✅ ₹${numAmount} added to wallet successfully! Payment ID: ${response.razorpay_payment_id}`
+        );
+        setAmount("");
+        setShowAddMoney(false);
+        setPaymentProcessing(false);
+        setTimeout(() => setMessage(""), 5000);
+      },
+      prefill: {
+        name: user.name,
+        email: user.email,
+        contact: "",
+      },
+      theme: {
+        color: "#5b5ce2",
+      },
+      modal: {
+        ondismiss: () => {
+          setPaymentProcessing(false);
+          setMessage("Payment cancelled.");
+          setTimeout(() => setMessage(""), 3000);
+        },
+      },
+    };
+
+    try {
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", () => {
+        setPaymentProcessing(false);
+        setMessage("❌ Payment failed. Please try again or use a different method.");
+        setTimeout(() => setMessage(""), 5000);
+      });
+      rzp.open();
+    } catch {
+      setPaymentProcessing(false);
+      simulatePayment(numAmount);
+    }
+  };
+
+  const simulatePayment = (numAmount: number) => {
+    setPaymentProcessing(true);
+    setTimeout(() => {
+      setBalance((prev) => prev + numAmount);
+      setMessage(`✅ ₹${numAmount} added to wallet successfully! (Demo Mode)`);
+      setAmount("");
+      setShowAddMoney(false);
+      setPaymentProcessing(false);
+      setTimeout(() => setMessage(""), 5000);
+    }, 1500);
+  };
 
   const transactions = [
     {
@@ -41,18 +155,6 @@ export default function WalletPage() {
       icon: "↩️",
     },
   ];
-
-  const handleAddMoney = () => {
-    if (!amount || Number(amount) <= 0) return;
-
-    setMessage(`₹${amount} added successfully to your wallet.`);
-    setAmount("");
-    setShowAddMoney(false);
-
-    setTimeout(() => {
-      setMessage("");
-    }, 3000);
-  };
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -93,7 +195,9 @@ export default function WalletPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-300">Available Balance</p>
-                  <h2 className="mt-3 text-4xl font-bold">₹2,450.00</h2>
+                  <h2 className="mt-3 text-4xl font-bold">
+                    ₹{balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  </h2>
                 </div>
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-2xl">
@@ -381,9 +485,10 @@ export default function WalletPage() {
 
             <button
               onClick={handleAddMoney}
-              className="mt-7 w-full rounded-2xl bg-slate-900 py-4 font-semibold text-white hover:bg-slate-800"
+              disabled={paymentProcessing}
+              className="mt-7 w-full rounded-2xl bg-slate-900 py-4 font-semibold text-white hover:bg-slate-800 disabled:opacity-60 transition"
             >
-              Continue to Payment
+              {paymentProcessing ? "Processing Payment…" : "Continue to Payment"}
             </button>
           </div>
         </div>

@@ -118,9 +118,13 @@ export default function DriverDashboard() {
               </p>
             </div>
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700">
+            <Link
+              href="/profile"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700 transition hover:ring-2 hover:ring-indigo-300"
+              title="My Profile"
+            >
               {initials}
-            </div>
+            </Link>
 
             <button
               type="button"

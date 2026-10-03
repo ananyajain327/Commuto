@@ -1,12 +1,15 @@
 package Commuto.Backend.controller;
 
+import Commuto.Backend.dto.ChangePasswordRequest;
 import Commuto.Backend.dto.UpdateProfileRequest;
 import Commuto.Backend.dto.UserResponse;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -46,5 +49,20 @@ public class UserController {
                 userService.updateProfile(user, request);
 
         return new UserResponse(updatedUser);
+    }
+
+    // =========================
+    // CHANGE PASSWORD
+    // =========================
+
+    @PutMapping("/me/password")
+    public ResponseEntity<?> changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        User user = (User) authentication.getPrincipal();
+        userService.changePassword(user, request);
+
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 }

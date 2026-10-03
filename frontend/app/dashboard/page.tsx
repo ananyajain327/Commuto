@@ -64,6 +64,7 @@ export default function DashboardPage() {
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
   const [detectingLocation, setDetectingLocation] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const handleUseCurrentLocation = () => {
     if (typeof window === "undefined" || !("geolocation" in navigator)) {
@@ -160,8 +161,20 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-[#f7f9fc] text-[#172033]">
 
-      {/* SIDEBAR */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-slate-200 bg-white lg:flex lg:flex-col">
+      {/* MOBILE NAV OVERLAY */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
+
+      {/* SIDEBAR — desktop always visible, mobile slide-in */}
+      <aside
+        className={`fixed left-0 top-0 z-50 h-screen w-72 border-r border-slate-200 bg-white flex flex-col transition-transform duration-300 lg:w-64 lg:translate-x-0 ${
+          mobileNavOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 px-7 py-7">
@@ -176,6 +189,16 @@ export default function DashboardPage() {
             </p>
           </div>
         </Link>
+
+        {/* Mobile close button */}
+        <button
+          type="button"
+          onClick={() => setMobileNavOpen(false)}
+          className="absolute right-4 top-6 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition hover:bg-slate-50 lg:hidden"
+          aria-label="Close menu"
+        >
+          ✕
+        </button>
 
         {/* Navigation */}
         <nav className="mt-5 flex-1 px-4">
@@ -193,6 +216,7 @@ export default function DashboardPage() {
             Personal
           </p>
 
+          <SidebarItem icon="👤" label="My Profile" href="/profile" />
           <SidebarItem icon="💳" label="Wallet" href="/wallet" />
           <SidebarItem icon="🛡️" label="Safety Center" href="/safety" />
           <SidebarItem icon="★" label="Ratings" href="/ratings" />
@@ -224,17 +248,34 @@ export default function DashboardPage() {
       <div className="lg:ml-64">
 
         {/* TOP BAR */}
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur-xl lg:px-8">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-4 py-4 backdrop-blur-xl lg:px-8">
           <div className="flex items-center justify-between">
 
-            <div>
-              <p className="text-xs font-semibold text-slate-400">
-                Dashboard
-              </p>
+            <div className="flex items-center gap-3">
+              {/* Hamburger — mobile only */}
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(true)}
+                className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white transition hover:bg-slate-50 lg:hidden"
+                aria-label="Open menu"
+              >
+                <span className="h-0.5 w-5 rounded-full bg-slate-600" />
+                <span className="h-0.5 w-5 rounded-full bg-slate-600" />
+                <span className="h-0.5 w-3 self-start ml-1 rounded-full bg-slate-600" />
+              </button>
 
-              <p className="mt-1 text-sm font-bold text-slate-700">
-                {new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-              </p>
+              <div className="hidden sm:block">
+                <p className="text-xs font-semibold text-slate-400">Dashboard</p>
+                <p className="mt-0.5 text-sm font-bold text-slate-700">
+                  {new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                </p>
+              </div>
+
+              {/* Mobile brand */}
+              <div className="flex items-center gap-2 sm:hidden">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#172033] text-sm">🚗</div>
+                <span className="text-base font-black">Commuto</span>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -248,8 +289,11 @@ export default function DashboardPage() {
                 <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#5b5ce2] ring-2 ring-white" />
               </Link>
 
-              {/* Profile */}
-              <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white py-1.5 pl-2 pr-3">
+              {/* Profile – clickable */}
+              <Link
+                href="/profile"
+                className="flex items-center gap-3 rounded-full border border-slate-200 bg-white py-1.5 pl-2 pr-3 transition hover:border-indigo-200 hover:shadow-sm"
+              >
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 font-bold text-[#5b5ce2]">
                   {initial}
                 </div>
@@ -260,7 +304,7 @@ export default function DashboardPage() {
                     {roleDisplay}
                   </p>
                 </div>
-              </div>
+              </Link>
 
               {/* Sign Out */}
               <button
@@ -652,15 +696,18 @@ function SidebarItem({
   label,
   href = "/dashboard",
   active = false,
+  onClose,
 }: {
   icon: string;
   label: string;
   href?: string;
   active?: boolean;
+  onClose?: () => void;
 }) {
   return (
     <Link
       href={href}
+      onClick={onClose}
       className={`mb-1 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition ${
         active
           ? "bg-indigo-50 text-[#5b5ce2]"

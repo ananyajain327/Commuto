@@ -2,7 +2,17 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { apiUrl } from "@/lib/api";
+
+const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[300px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50">
+      <p className="text-xs font-semibold text-slate-400">Loading map...</p>
+    </div>
+  ),
+});
 
 interface Ride {
   id: number;
@@ -36,6 +46,8 @@ function RideRequestContent() {
   const [note, setNote] = useState("");
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationSuccess, setLocationSuccess] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const handleUseCurrentLocation = () => {
     if (typeof window === "undefined" || !("geolocation" in navigator)) {
@@ -426,6 +438,34 @@ function RideRequestContent() {
                       <p className="mt-1 text-xs font-medium text-emerald-600">
                         ✓ Current GPS location detected and filled.
                       </p>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowMap(!showMap)}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      <span>🗺️</span>
+                      <span>{showMap ? "Hide Map" : "Pick on Map"}</span>
+                    </button>
+
+                    {showMap && (
+                      <div className="mt-3">
+                        <LocationPickerMap
+                          onLocationSelect={(lat, lng, address) => {
+                            setPickupPreference(address);
+                            setSelectedCoords({ lat, lng });
+                            setLocationSuccess(true);
+                            setTimeout(() => setLocationSuccess(false), 4000);
+                          }}
+                          height="280px"
+                        />
+                        {selectedCoords && (
+                          <p className="mt-2 text-xs text-slate-400">
+                            📍 Coordinates: {selectedCoords.lat.toFixed(5)}, {selectedCoords.lng.toFixed(5)}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

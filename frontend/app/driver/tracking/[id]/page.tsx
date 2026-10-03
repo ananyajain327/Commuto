@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import RideChatDrawer from "@/components/RideChatDrawer";
 
 interface Ride {
   id: number;
@@ -34,6 +35,7 @@ export default function DriverTrackingPage() {
   const [sosContacts, setSosContacts] = useState<string[]>([]);
   const [showSosModal, setShowSosModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
 
   const getShareDetails = () => {
@@ -291,6 +293,13 @@ export default function DriverTrackingPage() {
           <div className="flex items-center gap-3">
             <button
               type="button"
+              onClick={() => setShowChat(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-bold text-[#5b5ce2] shadow-sm transition hover:bg-indigo-100 active:scale-95"
+            >
+              <span>💬</span> Chat
+            </button>
+            <button
+              type="button"
               onClick={() => setShowShareModal(true)}
               className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95"
             >
@@ -535,6 +544,14 @@ export default function DriverTrackingPage() {
           </div>
         </div>
       )}
+
+      {/* In-Ride Live Chat Drawer */}
+      <RideChatDrawer
+        rideId={Number(id)}
+        isOpen={showChat}
+        onClose={() => setShowChat(false)}
+        title="In-Ride Passenger Chat"
+      />
     </main>
   );
 }
