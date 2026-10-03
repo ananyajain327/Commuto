@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiUrl } from "@/lib/api";
-
-// ── types ──────────────────────────────────────────────────────────────────────
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface UserProfile {
   id: number;
@@ -17,8 +16,6 @@ interface UserProfile {
   verified: boolean;
   createdAt: string;
 }
-
-// ── helpers ────────────────────────────────────────────────────────────────────
 
 function initials(name: string) {
   return name
@@ -41,12 +38,9 @@ function joinDate(iso: string) {
   }
 }
 
-// ── page ───────────────────────────────────────────────────────────────────────
-
 export default function ProfilePage() {
   const router = useRouter();
 
-  // ── state ───────────────────────────────────────────────────────────────────
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -54,11 +48,9 @@ export default function ProfilePage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // edit form state
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
 
-  // ── fetch profile ────────────────────────────────────────────────────────────
   useEffect(() => {
     let alive = true;
 
@@ -90,7 +82,6 @@ export default function ProfilePage() {
           setProfile(data);
           setEditName(data.fullName);
           setEditPhone(data.phone ?? "");
-          // Sync localStorage user name
           try {
             const stored = localStorage.getItem("user");
             if (stored) {
@@ -118,7 +109,6 @@ export default function ProfilePage() {
     };
   }, [router]);
 
-  // ── save ─────────────────────────────────────────────────────────────────────
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
@@ -154,7 +144,6 @@ export default function ProfilePage() {
       setEditName(updated.fullName);
       setEditPhone(updated.phone ?? "");
 
-      // Sync localStorage
       try {
         const stored = localStorage.getItem("user");
         if (stored) {
@@ -193,7 +182,6 @@ export default function ProfilePage() {
     router.push("/login");
   };
 
-  // ── derived ──────────────────────────────────────────────────────────────────
   const roleLabel =
     profile?.role === "DRIVER"
       ? "Driver"
@@ -208,24 +196,23 @@ export default function ProfilePage() {
       ? "/admin"
       : "/dashboard";
 
-  // ── render ───────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#f7f9fc]">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-[#5b5ce2]" />
-        <p className="mt-4 text-sm font-semibold text-slate-500">Loading your profile…</p>
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#faf8f5] dark:bg-[#12100e]">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-stone-200 border-t-amber-700 dark:border-stone-800 dark:border-t-amber-500" />
+        <p className="mt-4 text-sm font-semibold text-stone-500 dark:text-stone-400">Loading your profile…</p>
       </main>
     );
   }
 
   if (!profile) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#f7f9fc] px-6 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#faf8f5] dark:bg-[#12100e] px-6 text-center text-stone-900 dark:text-stone-100">
         <p className="text-xl font-bold text-red-600">Profile unavailable</p>
-        <p className="mt-2 text-sm text-slate-500">{errorMsg || "Something went wrong."}</p>
+        <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">{errorMsg || "Something went wrong."}</p>
         <Link
           href="/login"
-          className="mt-6 rounded-2xl bg-[#172033] px-6 py-3 text-sm font-extrabold text-white"
+          className="mt-6 rounded-2xl bg-amber-700 px-6 py-3 text-sm font-extrabold text-white dark:bg-amber-600"
         >
           Back to Login
         </Link>
@@ -234,79 +221,76 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f9fc] text-[#172033]">
-
+    <main className="min-h-screen bg-[#faf8f5] text-stone-900 transition-colors dark:bg-[#12100e] dark:text-stone-100">
       {/* HEADER */}
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/90 px-6 py-4 backdrop-blur-xl dark:border-stone-800/80 dark:bg-stone-900/90">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href={dashboardHref}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
             >
               ←
             </Link>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
                 Account
               </p>
               <h1 className="mt-0.5 text-lg font-black">My Profile</h1>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
-          >
-            Sign out
-          </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700 cursor-pointer shadow-2xs"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-3xl px-6 py-8">
-
-        {/* SUCCESS */}
         {successMsg && (
-          <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">
+          <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
             ✅ {successMsg}
           </div>
         )}
 
         {/* PROFILE HERO CARD */}
-        <section className="mb-6 overflow-hidden rounded-4xl bg-[#172033] p-7 text-white shadow-[0_25px_60px_rgba(23,32,51,0.15)]">
+        <section className="mb-6 overflow-hidden rounded-4xl bg-[#1c1917] p-7 text-white shadow-xl">
           <div className="flex items-center gap-5">
-            {/* Avatar */}
             <div className="relative">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white/20 bg-white/10 text-3xl font-black text-white">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-amber-500/20 bg-amber-500/10 text-3xl font-black text-amber-300">
                 {initials(profile.fullName)}
               </div>
               {profile.verified && (
-                <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#172033] bg-emerald-500 text-xs">
+                <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#1c1917] bg-emerald-500 text-xs">
                   ✓
                 </span>
               )}
             </div>
 
-            {/* Info */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-300">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
                 {roleLabel}
               </p>
               <h2 className="mt-1 text-2xl font-black leading-tight">
                 {profile.fullName}
               </h2>
-              <p className="mt-1 text-sm text-slate-400">{profile.email}</p>
+              <p className="mt-1 text-sm text-stone-400">{profile.email}</p>
             </div>
           </div>
 
-          {/* Stats row */}
           <div className="mt-7 grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
             <div className="text-center">
               <p className="text-2xl font-black">
                 {profile.active ? "Active" : "Inactive"}
               </p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-stone-400">
                 Account Status
               </p>
             </div>
@@ -314,13 +298,13 @@ export default function ProfilePage() {
               <p className="text-2xl font-black">
                 {profile.verified ? "Verified" : "Unverified"}
               </p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-stone-400">
                 Identity
               </p>
             </div>
             <div className="text-center">
               <p className="text-sm font-black">{joinDate(profile.createdAt)}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-stone-400">
                 Member Since
               </p>
             </div>
@@ -328,10 +312,10 @@ export default function ProfilePage() {
         </section>
 
         {/* EDIT FORM */}
-        <section className="mb-6 rounded-[28px] border border-slate-200 bg-white p-6">
+        <section className="mb-6 rounded-[28px] border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900 shadow-2xs">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
                 Personal Info
               </p>
               <h2 className="mt-1 text-xl font-black">Profile details</h2>
@@ -340,7 +324,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-xs font-bold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 cursor-pointer shadow-2xs"
               >
                 ✏️ Edit Profile
               </button>
@@ -349,9 +333,8 @@ export default function ProfilePage() {
 
           {editing ? (
             <form onSubmit={handleSave} className="mt-6 space-y-4">
-              {/* Name */}
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-400">
                   Full Name
                 </label>
                 <input
@@ -359,13 +342,12 @@ export default function ProfilePage() {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder="Your full name"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-[#5b5ce2] focus:bg-white"
+                  className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-amber-700 focus:bg-white dark:border-stone-700 dark:bg-stone-800 dark:text-white dark:focus:border-amber-500"
                 />
               </div>
 
-              {/* Phone */}
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-400">
                   Phone Number
                 </label>
                 <input
@@ -373,26 +355,25 @@ export default function ProfilePage() {
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
                   placeholder="+91 XXXXX XXXXX"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-[#5b5ce2] focus:bg-white"
+                  className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-amber-700 focus:bg-white dark:border-stone-700 dark:bg-stone-800 dark:text-white dark:focus:border-amber-500"
                 />
               </div>
 
-              {/* Email (read-only) */}
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-400">
                   Email Address
                 </label>
                 <input
                   type="email"
                   value={profile.email}
                   disabled
-                  className="w-full cursor-not-allowed rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-400 outline-none"
+                  className="w-full cursor-not-allowed rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3.5 text-sm font-semibold text-stone-400 outline-none dark:border-stone-800 dark:bg-stone-800/40"
                 />
-                <p className="mt-1 text-xs text-slate-400">Email cannot be changed.</p>
+                <p className="mt-1 text-xs text-stone-400">Email cannot be changed.</p>
               </div>
 
               {errorMsg && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
                   {errorMsg}
                 </div>
               )}
@@ -401,7 +382,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 rounded-2xl bg-[#5b5ce2] py-3.5 text-sm font-extrabold text-white transition hover:bg-[#4d4ecf] disabled:opacity-60"
+                  className="flex-1 rounded-2xl bg-amber-700 py-3.5 text-sm font-extrabold text-white transition hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 disabled:opacity-60 cursor-pointer shadow-2xs"
                 >
                   {saving ? "Saving…" : "Save Changes"}
                 </button>
@@ -409,7 +390,7 @@ export default function ProfilePage() {
                   type="button"
                   onClick={cancelEdit}
                   disabled={saving}
-                  className="flex-1 rounded-2xl border border-slate-200 bg-white py-3.5 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+                  className="flex-1 rounded-2xl border border-stone-200 bg-white py-3.5 text-sm font-extrabold text-stone-700 transition hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -450,36 +431,36 @@ export default function ProfilePage() {
           />
           <QuickLink
             icon="🚗"
-            title={profile.role === "DRIVER" ? "Driver Dashboard" : "My Rides"}
+            title={profile.role === "DRIVER" ? "Driver Dashboard" : "My Bookings"}
             description={
               profile.role === "DRIVER"
                 ? "View and manage your offered rides"
                 : "See all your past and upcoming rides"
             }
-            href={profile.role === "DRIVER" ? "/driver/dashboard" : "/rides"}
+            href={profile.role === "DRIVER" ? "/driver/dashboard" : "/rides/my-requests"}
           />
         </section>
 
         {/* DANGER ZONE */}
-        <section className="mt-6 rounded-[28px] border border-red-100 bg-white p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-400">
+        <section className="mt-6 rounded-[28px] border border-red-200/80 bg-white p-6 dark:border-red-900/60 dark:bg-stone-900 shadow-2xs">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-500">
             Account Actions
           </p>
           <h2 className="mt-1 text-xl font-black">Sign out</h2>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
             You will be signed out of your Commuto account on this device.
           </p>
           <button
             type="button"
             onClick={handleSignOut}
-            className="mt-5 w-full rounded-2xl border border-red-200 bg-red-50 py-3.5 text-sm font-extrabold text-red-600 transition hover:bg-red-100"
+            className="mt-5 w-full rounded-2xl border border-red-200 bg-red-50 py-3.5 text-sm font-extrabold text-red-600 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300 cursor-pointer"
           >
             Sign out of Commuto
           </button>
         </section>
 
         <footer className="py-8 text-center">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-stone-400">
             Commuto · Share the Ride. Split the Fare. Travel Smarter.
           </p>
         </footer>
@@ -488,12 +469,10 @@ export default function ProfilePage() {
   );
 }
 
-// ── sub-components ─────────────────────────────────────────────────────────────
-
 function ProfileField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-t border-slate-100 pt-4 first:border-t-0 first:pt-0">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</p>
+    <div className="flex items-start justify-between gap-4 border-t border-stone-100 dark:border-stone-800 pt-4 first:border-t-0 first:pt-0">
+      <p className="text-xs font-bold uppercase tracking-wider text-stone-400">{label}</p>
       <p className="text-right text-sm font-extrabold">{value}</p>
     </div>
   );
@@ -513,16 +492,16 @@ function QuickLink({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-3xl border border-slate-200 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg"
+      className="group flex items-center gap-4 rounded-3xl border border-stone-200 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 shadow-2xs"
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-xl transition group-hover:bg-indigo-50">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-stone-100 text-xl transition group-hover:bg-amber-50 dark:bg-stone-800 dark:group-hover:bg-amber-950/60">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-extrabold">{title}</p>
-        <p className="mt-0.5 text-xs leading-5 text-slate-400">{description}</p>
+        <p className="text-sm font-extrabold text-stone-900 dark:text-white">{title}</p>
+        <p className="mt-0.5 text-xs leading-5 text-stone-400">{description}</p>
       </div>
-      <span className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#5b5ce2]">
+      <span className="text-stone-300 transition group-hover:translate-x-1 group-hover:text-amber-700 dark:group-hover:text-amber-400">
         →
       </span>
     </Link>
