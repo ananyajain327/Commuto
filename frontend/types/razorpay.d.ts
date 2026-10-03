@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface RazorpayOptions {
+export interface RazorpayOptions {
   key: string;
   amount: number;
   currency: string;
@@ -25,12 +25,14 @@ interface RazorpayOptions {
   };
 }
 
-interface RazorpayInstance {
+export interface RazorpayInstance {
   open: () => void;
   on: (event: string, handler: (...args: any[]) => void) => void;
   close: () => void;
 }
 
-interface Window {
-  Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+  }
 }

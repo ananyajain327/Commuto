@@ -2,7 +2,6 @@ package Commuto.Backend.controller;
 
 import Commuto.Backend.dto.AdminOverviewResponse;
 import Commuto.Backend.dto.DriverVerificationResponse;
-import Commuto.Backend.dto.RideResponse;
 import Commuto.Backend.dto.UserResponse;
 import Commuto.Backend.dto.VerificationReviewRequest;
 import Commuto.Backend.entity.User;

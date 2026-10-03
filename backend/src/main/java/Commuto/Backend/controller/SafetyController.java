@@ -1,6 +1,10 @@
 package Commuto.Backend.controller;
 
-import Commuto.Backend.dto.*;
+import Commuto.Backend.dto.EmergencyContactRequest;
+import Commuto.Backend.dto.EmergencyContactResponse;
+import Commuto.Backend.dto.SafetySummaryResponse;
+import Commuto.Backend.dto.SosAlertResponse;
+import Commuto.Backend.dto.SosTriggerRequest;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.service.SafetyService;
 import jakarta.validation.Valid;

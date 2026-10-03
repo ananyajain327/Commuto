@@ -56,7 +56,7 @@ public class UserController {
     // =========================
 
     @PutMapping("/me/password")
-    public ResponseEntity<?> changePassword(
+    public ResponseEntity<Map<String, String>> changePassword(
             Authentication authentication,
             @Valid @RequestBody ChangePasswordRequest request) {
 
