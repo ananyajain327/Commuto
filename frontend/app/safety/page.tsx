@@ -431,7 +431,7 @@ export default function SafetyCenterPage() {
               Manage your emergency contacts, broadcast SOS alerts in real time, and configure safety preferences designed for your journeys.
             </p>
           </div>
-          <div className="absolute right-[-20px] bottom-[-20px] opacity-10 text-9xl select-none">
+          <div className="absolute -right-5 -bottom-5 opacity-10 text-9xl select-none">
             🛡️
           </div>
         </section>
@@ -489,7 +489,7 @@ export default function SafetyCenterPage() {
           </div>
 
           {/* SOS Trigger Card */}
-          <div className="rounded-3xl bg-gradient-to-br from-red-600 to-rose-700 p-7 text-white shadow-xl flex flex-col justify-between">
+          <div className="rounded-3xl bg-linear-to-br from-red-600 to-rose-700 p-7 text-white shadow-xl flex flex-col justify-between">
             <div>
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl backdrop-blur-sm">
                 🚨

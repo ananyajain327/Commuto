@@ -202,7 +202,7 @@ export default function RideChatDrawer({
             <div className="flex h-full flex-col items-center justify-center text-center p-6 text-slate-400">
               <span className="text-4xl mb-2">🚗💬</span>
               <p className="text-sm font-bold text-slate-700">No messages yet</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-[220px]">
+              <p className="text-xs text-slate-400 mt-1 max-w-55">
                 Coordinate pickup, timing, or updates directly with your co-travelers.
               </p>
             </div>
