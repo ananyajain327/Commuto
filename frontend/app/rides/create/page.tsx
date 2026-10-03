@@ -27,6 +27,7 @@ function CreateRideContent() {
   const [notes, setNotes] = useState("AC Ride. Luggage space available. Please reach pickup on time.");
 
   const [loading, setLoading] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -44,6 +45,56 @@ function CreateRideContent() {
       setRideDate(today);
     }
   }, [searchParams]);
+
+  const handleUseCurrentLocation = () => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const road = data.address?.road || "";
+            const area =
+              data.address?.suburb ||
+              data.address?.neighbourhood ||
+              data.address?.city ||
+              data.address?.town ||
+              "";
+            const locationStr =
+              road && area
+                ? `${road}, ${area}`
+                : data.display_name?.split(",").slice(0, 3).join(",") ||
+                  `Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+            setStartLocation(locationStr.trim());
+          } else {
+            setStartLocation(`Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+          }
+        } catch {
+          setStartLocation(`Current Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+        } finally {
+          setDetectingLocation(false);
+        }
+      },
+      (err) => {
+        setDetectingLocation(false);
+        alert(
+          err.code === 1
+            ? "Location permission was denied. Please enter your pickup point manually."
+            : "Could not retrieve your GPS location. Please enter starting point manually."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const handlePublishRide = async () => {
     setMessage("");
@@ -99,7 +150,7 @@ function CreateRideContent() {
           startLocation: start,
           destination: dest,
           rideDate,
-          departureTime: formattedTime.slice(0, 5), // LocalTime in Spring Boot accepts HH:mm or HH:mm:ss
+          departureTime: formattedTime.slice(0, 5),
           availableSeats: seatsNum,
           expectedFare: fareNum,
           vehicleModel: vModel,
@@ -224,13 +275,35 @@ function CreateRideContent() {
                 </h3>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <InputField
-                    label="Starting point (Origin)"
-                    icon="📍"
-                    placeholder="e.g. Jaipur, Mansarovar"
-                    value={startLocation}
-                    onChange={(e) => setStartLocation(e.target.value)}
-                  />
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Starting point (Origin)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleUseCurrentLocation}
+                        disabled={detectingLocation}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-500 transition cursor-pointer dark:text-emerald-400"
+                      >
+                        <span className={detectingLocation ? "animate-spin" : ""}>🎯</span>
+                        <span>{detectingLocation ? "Locating..." : "Use Current Location"}</span>
+                      </button>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+                        📍
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="e.g. Jaipur, Mansarovar"
+                        value={startLocation}
+                        onChange={(e) => setStartLocation(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm font-medium outline-none transition focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      />
+                    </div>
+                  </div>
 
                   <InputField
                     label="Destination"
