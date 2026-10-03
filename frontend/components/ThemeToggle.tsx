@@ -28,10 +28,10 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
     <button
       type="button"
       onClick={toggleTheme}
-      className={`group relative inline-flex h-9 items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs ${
+      className={`group relative inline-flex h-9 items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all duration-200 active:scale-95 cursor-pointer shadow-xs ${
         isDark
-          ? "border-emerald-900/60 bg-zinc-900 text-emerald-400 hover:border-emerald-700 hover:bg-zinc-800"
-          : "border-zinc-300/90 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
+          ? "border-violet-800/70 bg-violet-950/40 text-violet-300 hover:border-violet-600 hover:bg-violet-900/50 shadow-violet-950/30"
+          : "border-slate-300/90 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
       } ${className}`}
       role="switch"
       aria-checked={isDark}
