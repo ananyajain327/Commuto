@@ -118,10 +118,9 @@ export default function DriverDashboard() {
                 };
               });
               setNewRequestNotification(`🔔 New ride request received from ${req.passengerName || "a passenger"} for ${req.route || "your ride"}!`);
-              setTimeout(() => setNewRequestNotification(null), 7000);
             }
           } catch {
-            // Ignore parse errors
+            // ignore malformed payloads
           }
         });
       },
@@ -142,13 +141,13 @@ export default function DriverDashboard() {
     .toUpperCase() || "DP";
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white">
+      <header className="border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
-            <h1 className="text-2xl font-bold">Driver Dashboard</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Driver Dashboard</h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Manage your rides, earnings and driver activity.
             </p>
           </div>
@@ -157,15 +156,15 @@ export default function DriverDashboard() {
             <ThemeToggle />
 
             <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold">{loading ? "Loading..." : driverName}</p>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{loading ? "Loading..." : driverName}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {analytics?.isVerified ? "✓ Verified Driver" : "Verification Pending"}
               </p>
             </div>
 
             <Link
               href="/profile"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700 transition hover:ring-2 hover:ring-indigo-300"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700 transition hover:ring-2 hover:ring-indigo-300 dark:bg-emerald-950/60 dark:text-emerald-400"
               title="My Profile"
             >
               {initials}
@@ -178,7 +177,7 @@ export default function DriverDashboard() {
                 localStorage.removeItem("user");
                 router.push("/login");
               }}
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
+              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               Sign out
             </button>
@@ -213,27 +212,27 @@ export default function DriverDashboard() {
         )}
 
         {/* Online Status */}
-        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
             <div className="flex items-center gap-4">
               <div
                 className={`flex h-14 w-14 items-center justify-center rounded-full ${
-                  online ? "bg-emerald-100" : "bg-slate-100"
+                  online ? "bg-emerald-100 dark:bg-emerald-950/60" : "bg-slate-100 dark:bg-slate-800"
                 }`}
               >
                 <span
                   className={`h-4 w-4 rounded-full ${
-                    online ? "bg-emerald-500" : "bg-slate-400"
+                    online ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
                   }`}
                 />
               </div>
 
               <div>
-                <p className="text-lg font-semibold">
+                <p className="text-lg font-bold text-slate-900 dark:text-white">
                   {online ? "You are Online" : "You are Offline"}
                 </p>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   {online
                     ? "You can now receive ride requests in real time."
                     : "Go online when you're ready to accept rides."}
@@ -243,7 +242,7 @@ export default function DriverDashboard() {
 
             <button
               onClick={() => setOnline(!online)}
-              className={`rounded-xl px-6 py-3 text-sm font-semibold text-white transition ${
+              className={`rounded-xl px-6 py-3 text-sm font-bold text-white shadow-sm transition ${
                 online
                   ? "bg-red-500 hover:bg-red-600"
                   : "bg-emerald-600 hover:bg-emerald-700"
@@ -305,7 +304,7 @@ export default function DriverDashboard() {
 
         {/* Quick Actions */}
         <section className="mt-8">
-          <h2 className="text-xl font-semibold">Quick Actions</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Quick Actions</h2>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <QuickAction
@@ -341,16 +340,16 @@ export default function DriverDashboard() {
         {/* Ride Requests + Upcoming */}
         <section className="mt-8 grid gap-6 lg:grid-cols-3">
           {/* Ride Requests */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 lg:col-span-2">
+          <div className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800 lg:col-span-2">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold">Pending Ride Requests</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Pending Ride Requests</h2>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   Passengers who requested seats on your published rides.
                 </p>
               </div>
 
-              <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+              <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
                 {analytics?.pendingRequests ? analytics.pendingRequests.length : 0} New
               </span>
             </div>
@@ -375,7 +374,7 @@ export default function DriverDashboard() {
                   />
                 ))
               ) : (
-                <div className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-500">
+                <div className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
                   No pending ride requests at this moment.
                 </div>
               )}
@@ -383,17 +382,17 @@ export default function DriverDashboard() {
           </div>
 
           {/* Upcoming Ride */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-lg font-semibold">Next Scheduled Ride</h2>
+          <div className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Next Scheduled Ride</h2>
 
             {analytics?.nextUpcomingRide ? (
-              <div className="mt-5 rounded-xl bg-indigo-50 p-5">
+              <div className="mt-5 rounded-xl bg-indigo-50 p-5 dark:bg-indigo-950/40">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+                  <span className="text-xs font-bold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
                     {analytics.nextUpcomingRide.rideDate}
                   </span>
 
-                  <span className="text-sm font-bold text-indigo-700">
+                  <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
                     {analytics.nextUpcomingRide.departureTime}
                   </span>
                 </div>
@@ -402,37 +401,37 @@ export default function DriverDashboard() {
                   <div className="flex gap-3">
                     <div className="mt-1 h-3 w-3 rounded-full bg-indigo-600" />
                     <div>
-                      <p className="text-xs text-slate-500">Pickup</p>
-                      <p className="text-sm font-semibold">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Pickup</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
                         {analytics.nextUpcomingRide.startLocation}
                       </p>
                     </div>
                   </div>
 
-                  <div className="ml-1.5 h-5 border-l border-dashed border-indigo-300" />
+                  <div className="ml-1.5 h-5 border-l border-dashed border-indigo-300 dark:border-indigo-700" />
 
                   <div className="flex gap-3">
                     <div className="mt-1 h-3 w-3 rounded-full bg-emerald-500" />
                     <div>
-                      <p className="text-xs text-slate-500">Destination</p>
-                      <p className="text-sm font-semibold">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Destination</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
                         {analytics.nextUpcomingRide.destination}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 flex items-center justify-between border-t border-indigo-100 pt-4">
+                <div className="mt-5 flex items-center justify-between border-t border-indigo-100 pt-4 dark:border-indigo-900/60">
                   <div>
-                    <p className="text-xs text-slate-500">Seats Available</p>
-                    <p className="text-sm font-semibold">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Seats Available</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
                       {analytics.nextUpcomingRide.availableSeats}
                     </p>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-xs text-slate-500">Expected Fare</p>
-                    <p className="text-sm font-bold text-indigo-700">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Expected Fare</p>
+                    <p className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
                       ₹{analytics.nextUpcomingRide.expectedFare.toFixed(0)}
                     </p>
                   </div>
@@ -440,17 +439,17 @@ export default function DriverDashboard() {
 
                 <Link
                   href={`/driver/tracking/${analytics.nextUpcomingRide.id}`}
-                  className="mt-4 block w-full rounded-xl bg-indigo-600 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-700 transition"
+                  className="mt-4 block w-full rounded-xl bg-indigo-600 py-3 text-center text-sm font-bold text-white hover:bg-indigo-700 transition"
                 >
                   Start / Track Ride
                 </Link>
               </div>
             ) : (
-              <div className="mt-5 rounded-xl border border-dashed border-slate-200 p-8 text-center">
-                <p className="text-sm text-slate-500">No active or upcoming rides scheduled.</p>
+              <div className="mt-5 rounded-xl border border-dashed border-slate-200 p-8 text-center dark:border-slate-800">
+                <p className="text-sm text-slate-500 dark:text-slate-400">No active or upcoming rides scheduled.</p>
                 <Link
                   href="/rides/create"
-                  className="mt-4 inline-block rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
+                  className="mt-4 inline-block rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700"
                 >
                   Publish a Ride
                 </Link>
@@ -462,51 +461,51 @@ export default function DriverDashboard() {
         {/* Earnings */}
         <section
           id="earnings"
-          className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"
+          className="mt-8 rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800"
         >
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-lg font-semibold">Earnings Overview</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Earnings Overview</h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Your performance and platform payout metrics.
               </p>
             </div>
 
             <Link
               href="/rides"
-              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50"
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
             >
               View Full Ride History
             </Link>
           </div>
 
           <div className="mt-6 grid gap-5 md:grid-cols-3">
-            <div className="rounded-xl bg-slate-50 p-5">
-              <p className="text-sm text-slate-500">This Week</p>
-              <p className="mt-2 text-2xl font-bold">
+            <div className="rounded-xl bg-slate-50 p-5 dark:bg-slate-800/60">
+              <p className="text-sm text-slate-500 dark:text-slate-400">This Week</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 ₹{analytics ? analytics.weekEarnings.toFixed(0) : "0"}
               </p>
-              <p className="mt-1 text-xs text-emerald-600">
+              <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
                 {analytics && analytics.weekEarnings > 0 ? "Active weekly earnings" : "No earnings this week"}
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-5">
-              <p className="text-sm text-slate-500">This Month</p>
-              <p className="mt-2 text-2xl font-bold">
+            <div className="rounded-xl bg-slate-50 p-5 dark:bg-slate-800/60">
+              <p className="text-sm text-slate-500 dark:text-slate-400">This Month</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 ₹{analytics ? analytics.monthEarnings.toFixed(0) : "0"}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {analytics ? `${analytics.totalCompletedRides} completed rides total` : "0 completed rides"}
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-5">
-              <p className="text-sm text-slate-500">Average / Ride</p>
-              <p className="mt-2 text-2xl font-bold">
+            <div className="rounded-xl bg-slate-50 p-5 dark:bg-slate-800/60">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Average / Ride</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                 ₹{analytics ? analytics.averagePerRide.toFixed(0) : "0"}
               </p>
-              <p className="mt-1 text-xs text-slate-500">After seat-share calculations</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">After seat-share calculations</p>
             </div>
           </div>
         </section>
@@ -515,16 +514,16 @@ export default function DriverDashboard() {
         <section
           className={`mt-8 rounded-2xl border p-6 ${
             analytics?.isVerified
-              ? "border-emerald-100 bg-emerald-50"
-              : "border-amber-200 bg-amber-50"
+              ? "border-emerald-100 bg-emerald-50 dark:border-emerald-950/60 dark:bg-emerald-950/30"
+              : "border-amber-200 bg-amber-50 dark:border-amber-950/60 dark:bg-amber-950/30"
           }`}
         >
           <div className="flex gap-4">
             <div
               className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl ${
                 analytics?.isVerified
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-amber-100 text-amber-700"
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300"
+                  : "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300"
               }`}
             >
               {analytics?.isVerified ? "✓" : "!"}
@@ -532,8 +531,8 @@ export default function DriverDashboard() {
 
             <div className="flex-1">
               <h2
-                className={`font-semibold ${
-                  analytics?.isVerified ? "text-emerald-900" : "text-amber-900"
+                className={`font-bold ${
+                  analytics?.isVerified ? "text-emerald-900 dark:text-emerald-200" : "text-amber-900 dark:text-amber-200"
                 }`}
               >
                 {analytics?.isVerified
@@ -543,7 +542,7 @@ export default function DriverDashboard() {
 
               <p
                 className={`mt-1 text-sm leading-6 ${
-                  analytics?.isVerified ? "text-emerald-700" : "text-amber-700"
+                  analytics?.isVerified ? "text-emerald-700 dark:text-emerald-300" : "text-amber-700 dark:text-amber-300"
                 }`}
               >
                 {analytics?.isVerified
@@ -554,7 +553,7 @@ export default function DriverDashboard() {
               <Link
                 href="/driver/verification"
                 className={`mt-4 inline-block text-sm font-semibold underline ${
-                  analytics?.isVerified ? "text-emerald-800" : "text-amber-800"
+                  analytics?.isVerified ? "text-emerald-800 dark:text-emerald-400" : "text-amber-800 dark:text-amber-400"
                 }`}
               >
                 {analytics?.isVerified ? "View Verification Details" : "Complete Verification Now →"}
@@ -581,18 +580,18 @@ function StatCard({
   icon: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">{title}</p>
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
 
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-sm text-indigo-700">
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-sm text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
           {icon}
         </span>
       </div>
 
-      <p className="mt-4 text-2xl font-bold">{value}</p>
+      <p className="mt-4 text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
 
-      <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
     </div>
   );
 }
@@ -611,15 +610,15 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-md"
+      className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-md dark:bg-slate-900 dark:ring-slate-800 dark:hover:ring-slate-700"
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-xl">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-xl dark:bg-slate-800">
         {icon}
       </div>
 
-      <h3 className="mt-4 font-semibold">{title}</h3>
+      <h3 className="mt-4 font-bold text-slate-900 dark:text-white">{title}</h3>
 
-      <p className="mt-1 text-xs text-slate-500">{description}</p>
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{description}</p>
     </Link>
   );
 }
@@ -642,28 +641,28 @@ function RequestCard({
   requestId: number;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800 dark:bg-slate-800/40">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700 dark:bg-emerald-950/60 dark:text-emerald-400">
             {initials}
           </div>
 
           <div>
-            <p className="font-semibold">{name}</p>
-            <p className="text-xs text-slate-500">
+            <p className="font-bold text-slate-900 dark:text-white">{name}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               ★ {rating} • Commuto Passenger
             </p>
           </div>
         </div>
 
         <div className="sm:text-right">
-          <p className="text-sm font-semibold">{route}</p>
-          <p className="mt-1 text-xs text-slate-500">{time}</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">{route}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{time}</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="font-bold text-indigo-700">{fare}</span>
+          <span className="font-bold text-indigo-700 dark:text-indigo-400">{fare}</span>
 
           <Link
             href={`/driver/requests?requestId=${requestId}`}

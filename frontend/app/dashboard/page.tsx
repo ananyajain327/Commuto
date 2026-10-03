@@ -160,7 +160,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f9fc] text-[#172033]">
+    <main className="min-h-screen bg-[#f7f9fc] text-[#172033] transition-colors dark:bg-slate-950 dark:text-slate-100">
 
       {/* MOBILE NAV OVERLAY */}
       {mobileNavOpen && (
@@ -172,14 +172,14 @@ export default function DashboardPage() {
 
       {/* SIDEBAR — desktop always visible, mobile slide-in */}
       <aside
-        className={`fixed left-0 top-0 z-50 h-screen w-72 border-r border-slate-200 bg-white flex flex-col transition-transform duration-300 lg:w-64 lg:translate-x-0 ${
+        className={`fixed left-0 top-0 z-50 h-screen w-72 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 flex flex-col transition-transform duration-300 lg:w-64 lg:translate-x-0 ${
           mobileNavOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
         }`}
       >
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 px-7 py-7">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#172033] text-xl shadow-lg">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#172033] text-xl shadow-lg dark:bg-emerald-600">
             🚗
           </div>
 
