@@ -160,12 +160,12 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f9fc] text-[#172033] transition-colors dark:bg-slate-950 dark:text-slate-100">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
 
       {/* MOBILE NAV OVERLAY */}
       {mobileNavOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileNavOpen(false)}
         />
       )}
@@ -178,13 +178,13 @@ export default function DashboardPage() {
       >
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 px-7 py-7">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#172033] text-xl shadow-lg dark:bg-emerald-600">
+        <Link href="/" className="flex items-center gap-3 px-6 py-6">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-xl shadow-lg dark:bg-emerald-600 text-white">
             🚗
           </div>
 
           <div>
-            <p className="text-xl font-black tracking-tight">Commuto</p>
+            <p className="text-xl font-black tracking-tight text-slate-900 dark:text-white">Commuto</p>
             <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
               Smart Mobility
             </p>
@@ -195,16 +195,16 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => setMobileNavOpen(false)}
-          className="absolute right-4 top-6 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition hover:bg-slate-50 lg:hidden"
+          className="absolute right-4 top-6 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800 lg:hidden cursor-pointer"
           aria-label="Close menu"
         >
           ✕
         </button>
 
         {/* Navigation */}
-        <nav className="mt-5 flex-1 px-4">
+        <nav className="mt-2 flex-1 px-4 overflow-y-auto">
 
-          <p className="px-4 pb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+          <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
             Main menu
           </p>
 
@@ -213,7 +213,7 @@ export default function DashboardPage() {
           <SidebarItem icon="🚗" label="Offer a Ride" href="/rides/create" />
           <SidebarItem icon="▣" label="My Rides" href="/rides" />
 
-          <p className="mt-8 px-4 pb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+          <p className="mt-6 px-4 pb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
             Personal
           </p>
 
@@ -225,20 +225,20 @@ export default function DashboardPage() {
         </nav>
 
         {/* Safety card */}
-        <div className="m-4 rounded-3xl bg-[#172033] p-5 text-white">
+        <div className="m-4 rounded-3xl bg-slate-900 dark:bg-slate-800/90 border border-slate-800 dark:border-slate-700 p-5 text-white shadow-md">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
             🛡️
           </div>
 
-          <p className="mt-4 text-sm font-bold">Stay safe</p>
+          <p className="mt-4 text-sm font-bold text-white">Stay safe</p>
 
-          <p className="mt-1 text-xs leading-5 text-slate-400">
+          <p className="mt-1 text-xs leading-5 text-slate-300 dark:text-slate-400">
             Your safety tools are always available during a ride.
           </p>
 
           <Link
             href="/safety"
-            className="mt-4 block text-xs font-bold text-indigo-300"
+            className="mt-4 block text-xs font-bold text-emerald-400 hover:underline"
           >
             Open Safety Center →
           </Link>
@@ -249,7 +249,7 @@ export default function DashboardPage() {
       <div className="lg:ml-64">
 
         {/* TOP BAR */}
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-4 py-4 backdrop-blur-xl lg:px-8">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-4 py-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/90 lg:px-8">
           <div className="flex items-center justify-between">
 
             <div className="flex items-center gap-3">
@@ -257,25 +257,25 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(true)}
-                className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white transition hover:bg-slate-50 lg:hidden"
+                className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 lg:hidden cursor-pointer"
                 aria-label="Open menu"
               >
-                <span className="h-0.5 w-5 rounded-full bg-slate-600" />
-                <span className="h-0.5 w-5 rounded-full bg-slate-600" />
-                <span className="h-0.5 w-3 self-start ml-1 rounded-full bg-slate-600" />
+                <span className="h-0.5 w-5 rounded-full bg-slate-600 dark:bg-slate-300" />
+                <span className="h-0.5 w-5 rounded-full bg-slate-600 dark:bg-slate-300" />
+                <span className="h-0.5 w-3 self-start ml-1 rounded-full bg-slate-600 dark:bg-slate-300" />
               </button>
 
               <div className="hidden sm:block">
                 <p className="text-xs font-semibold text-slate-400">Dashboard</p>
-                <p className="mt-0.5 text-sm font-bold text-slate-700">
+                <p className="mt-0.5 text-sm font-bold text-slate-800 dark:text-slate-100">
                   {new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                 </p>
               </div>
 
               {/* Mobile brand */}
               <div className="flex items-center gap-2 sm:hidden">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#172033] text-sm">🚗</div>
-                <span className="text-base font-black">Commuto</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-sm dark:bg-emerald-600 text-white">🚗</div>
+                <span className="text-base font-black text-slate-900 dark:text-white">Commuto</span>
               </div>
             </div>
 
@@ -286,24 +286,24 @@ export default function DashboardPage() {
               {/* Notification Link */}
               <Link
                 href="/notifications"
-                className="relative flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg transition hover:bg-slate-50"
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-base transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 🔔
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#5b5ce2] ring-2 ring-white" />
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-800" />
               </Link>
 
               {/* Profile – clickable */}
               <Link
                 href="/profile"
-                className="flex items-center gap-3 rounded-full border border-slate-200 bg-white py-1.5 pl-2 pr-3 transition hover:border-indigo-200 hover:shadow-sm"
+                className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 transition hover:border-emerald-500/50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-emerald-500/50 shadow-2xs"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 font-bold text-[#5b5ce2]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs">
                   {initial}
                 </div>
 
                 <div className="hidden text-left sm:block">
-                  <p className="text-xs font-extrabold">{passengerName}</p>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{passengerName}</p>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wider leading-tight">
                     {roleDisplay}
                   </p>
                 </div>
@@ -313,7 +313,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
+                className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
               >
                 Sign out
               </button>
@@ -327,39 +327,38 @@ export default function DashboardPage() {
           <section className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
 
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#5b5ce2]">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-400">
                 Welcome back
               </p>
 
-              <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">
                 Where are you going, {passengerName.split(" ")[0]}?
               </h1>
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500">
-                Find a compatible ride, share your journey and travel smarter
-                with Commuto.
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+                Find a compatible ride, share your journey and travel smarter with Commuto.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 dark:border-emerald-900/60 dark:bg-emerald-950/40 shadow-2xs">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
 
-              <span className="text-xs font-bold text-emerald-700">
+              <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
                 Account Active
               </span>
             </div>
           </section>
 
           {/* SEARCH CARD */}
-          <section className="mt-8 rounded-[30px] bg-[#172033] p-5 shadow-[0_25px_60px_rgba(23,32,51,0.15)] sm:p-7">
+          <section className="mt-8 rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-2xl dark:bg-slate-900 dark:border-slate-800">
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-300">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-400">
                   Smart ride search
                 </p>
 
-                <h2 className="mt-2 text-xl font-black text-white">
+                <h2 className="mt-1.5 text-xl font-black text-white">
                   Find your next ride
                 </h2>
               </div>
@@ -371,7 +370,7 @@ export default function DashboardPage() {
 
             <form onSubmit={handleSearchSubmit} className="mt-6 grid gap-3 lg:grid-cols-[1fr_1fr_160px]">
 
-              <div className="rounded-2xl bg-white/10 p-4">
+              <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-xs border border-white/5">
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     From
@@ -380,7 +379,7 @@ export default function DashboardPage() {
                     type="button"
                     onClick={handleUseCurrentLocation}
                     disabled={detectingLocation}
-                    className="inline-flex items-center gap-1 rounded-md bg-white/15 px-2 py-0.5 text-[11px] font-bold text-indigo-200 hover:bg-white/25 transition active:scale-95 disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-md bg-white/15 px-2 py-0.5 text-[11px] font-bold text-emerald-300 hover:bg-white/25 transition active:scale-95 disabled:opacity-50 cursor-pointer"
                   >
                     {detectingLocation ? (
                       <span>Detecting...</span>
@@ -401,12 +400,12 @@ export default function DashboardPage() {
                     value={fromLocation}
                     onChange={(e) => setFromLocation(e.target.value)}
                     placeholder="Pickup location"
-                    className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-slate-500"
+                    className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-slate-400"
                   />
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white/10 p-4">
+              <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-xs border border-white/5">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   To
                 </p>
@@ -419,30 +418,29 @@ export default function DashboardPage() {
                     value={toLocation}
                     onChange={(e) => setToLocation(e.target.value)}
                     placeholder="Destination"
-                    className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-slate-500"
+                    className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-slate-400"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="rounded-2xl bg-[#5b5ce2] px-5 py-4 text-sm font-extrabold text-white transition hover:bg-[#4d4ecf]"
+                className="rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-extrabold text-white transition hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 cursor-pointer"
               >
                 Find rides →
               </button>
             </form>
 
-            <div className="mt-4 flex flex-wrap gap-3">
-
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 text-xs font-semibold text-slate-300">
+            <div className="mt-4 flex flex-wrap gap-2.5">
+              <div className="rounded-xl bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-300 border border-white/5">
                 📅 Today
               </div>
 
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 text-xs font-semibold text-slate-300">
+              <div className="rounded-xl bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-300 border border-white/5">
                 👤 1 passenger
               </div>
 
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 text-xs font-semibold text-slate-300">
+              <div className="rounded-xl bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-300 border border-white/5">
                 👩 Women-only preference
               </div>
             </div>
@@ -457,7 +455,7 @@ export default function DashboardPage() {
                   Quick actions
                 </p>
 
-                <h2 className="mt-2 text-2xl font-black">
+                <h2 className="mt-1.5 text-2xl font-black text-slate-900 dark:text-white">
                   Everything you need
                 </h2>
               </div>
@@ -468,24 +466,24 @@ export default function DashboardPage() {
                 <Link
                   key={action.title}
                   href={action.href}
-                  className="group rounded-3xl border border-slate-200 bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl"
+                  className="group rounded-3xl border border-slate-200 bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-500/50 shadow-xs"
                 >
                   <div className="flex items-center justify-between">
 
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl transition group-hover:bg-indigo-50">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl transition group-hover:bg-emerald-50 dark:bg-slate-800 dark:group-hover:bg-emerald-950/60">
                       {action.icon}
                     </div>
 
-                    <span className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#5b5ce2]">
+                    <span className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-600 dark:text-slate-600 dark:group-hover:text-emerald-400">
                       →
                     </span>
                   </div>
 
-                  <h3 className="mt-5 text-sm font-extrabold">
+                  <h3 className="mt-5 text-sm font-extrabold text-slate-900 dark:text-white">
                     {action.title}
                   </h3>
 
-                  <p className="mt-2 text-xs leading-5 text-slate-400">
+                  <p className="mt-1.5 text-xs leading-5 text-slate-500 dark:text-slate-400">
                     {action.description}
                   </p>
                 </Link>
@@ -497,7 +495,7 @@ export default function DashboardPage() {
           <section className="mt-10 grid gap-5 xl:grid-cols-[1.4fr_0.6fr]">
 
             {/* Upcoming ride */}
-            <div className="rounded-[28px] border border-slate-200 bg-white p-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
 
               <div className="flex items-center justify-between">
                 <div>
@@ -505,69 +503,69 @@ export default function DashboardPage() {
                     Your next journey
                   </p>
 
-                  <h2 className="mt-2 text-2xl font-black">
+                  <h2 className="mt-1.5 text-2xl font-black text-slate-900 dark:text-white">
                     Upcoming ride
                   </h2>
                 </div>
 
-                <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-[10px] font-extrabold text-[#5b5ce2]">
+                <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
                   UPCOMING
                 </span>
               </div>
 
-              <div className="mt-6 rounded-3xl bg-[#f7f9fc] p-5">
+              <div className="mt-6 rounded-2xl bg-slate-50 border border-slate-200/70 p-5 dark:border-slate-800 dark:bg-slate-800/60">
 
                 <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
 
                   <div className="flex items-center gap-4">
 
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-xl shadow-sm">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-700 text-xl shadow-xs">
                       🚗
                     </div>
 
                     <div>
                       <Link
                         href="/rides/details"
-                        className="text-lg font-black text-slate-900 transition hover:text-[#5b5ce2]"
+                        className="text-lg font-black text-slate-900 dark:text-white transition hover:text-emerald-600 dark:hover:text-emerald-400"
                       >
                         Jaipur → Ajmer
                       </Link>
 
-                      <p className="mt-1 text-xs font-semibold text-slate-400">
+                      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
                         Tomorrow · 8:30 AM
                       </p>
                     </div>
                   </div>
 
                   <div className="text-left sm:text-right">
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Your share
                     </p>
 
-                    <p className="text-2xl font-black">
+                    <p className="text-2xl font-black text-slate-900 dark:text-white">
                       ₹280
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-5 flex flex-wrap gap-3">
+                <div className="mt-5 flex flex-wrap gap-2.5">
 
-                  <span className="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-500">
+                  <span className="rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
                     🛡️ Verified driver
                   </span>
 
-                  <span className="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-500">
+                  <span className="rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
                     ⭐ 4.8 rating
                   </span>
 
-                  <span className="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-500">
+                  <span className="rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
                     🧠 94% match
                   </span>
                 </div>
 
                 <Link
                   href="/rides/details"
-                  className="mt-5 block text-center w-full rounded-2xl bg-[#172033] py-3.5 text-xs font-extrabold text-white transition hover:bg-slate-800"
+                  className="mt-5 block text-center w-full rounded-2xl bg-slate-900 dark:bg-emerald-600 py-3.5 text-xs font-extrabold text-white transition hover:bg-slate-800 dark:hover:bg-emerald-500 shadow-md cursor-pointer"
                 >
                   View ride details →
                 </Link>
@@ -598,7 +596,7 @@ export default function DashboardPage() {
           </section>
 
           {/* RECENT RIDES */}
-          <section className="mt-10 rounded-[28px] border border-slate-200 bg-white p-6">
+          <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
 
             <div className="flex items-center justify-between">
               <div>
@@ -606,14 +604,14 @@ export default function DashboardPage() {
                   Activity
                 </p>
 
-                <h2 className="mt-2 text-2xl font-black">
+                <h2 className="mt-1.5 text-2xl font-black text-slate-900 dark:text-white">
                   Recent rides
                 </h2>
               </div>
 
               <Link
                 href="/rides"
-                className="text-xs font-extrabold text-[#5b5ce2] hover:underline"
+                className="text-xs font-extrabold text-emerald-600 hover:underline dark:text-emerald-400"
               >
                 View all →
               </Link>
@@ -625,20 +623,20 @@ export default function DashboardPage() {
                 {recentRides.map((ride, index) => (
                   <div
                     key={`${ride.route}-${index}`}
-                    className="flex items-center justify-between border-t border-slate-100 py-5"
+                    className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 py-4.5"
                   >
                     <div className="flex items-center gap-4">
 
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
                         🚗
                       </div>
 
                       <div>
-                        <p className="text-sm font-extrabold">
+                        <p className="text-sm font-extrabold text-slate-900 dark:text-white">
                           {ride.route}
                         </p>
 
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-0.5 text-xs text-slate-400">
                           {ride.date} · {ride.time}
                         </p>
                       </div>
@@ -649,7 +647,7 @@ export default function DashboardPage() {
                         Driver
                       </p>
 
-                      <p className="mt-1 text-xs font-bold">
+                      <p className="mt-0.5 text-xs font-bold text-slate-700 dark:text-slate-300">
                         {ride.driver}
                       </p>
                     </div>
@@ -657,21 +655,21 @@ export default function DashboardPage() {
                     <span
                       className={`rounded-full px-3 py-1.5 text-[10px] font-extrabold ${
                         ride.status === "Upcoming"
-                          ? "bg-indigo-50 text-[#5b5ce2]"
-                          : "bg-emerald-50 text-emerald-600"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60"
+                          : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60"
                       }`}
                     >
                       {ride.status}
                     </span>
 
                     <div className="flex items-center gap-3">
-                      <p className="text-sm font-black">
+                      <p className="text-sm font-black text-slate-900 dark:text-white">
                         {ride.fare}
                       </p>
 
                       <Link
                         href={`/rides/details?route=${encodeURIComponent(ride.route)}&driver=${encodeURIComponent(ride.driver)}&fare=${encodeURIComponent(ride.fare)}&date=${encodeURIComponent(ride.date)}&status=${encodeURIComponent(ride.status)}`}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-100 hover:border-slate-300"
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-100 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                       >
                         Details →
                       </Link>
@@ -713,8 +711,8 @@ function SidebarItem({
       onClick={onClose}
       className={`mb-1 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition ${
         active
-          ? "bg-indigo-50 text-[#5b5ce2]"
-          : "text-slate-500 hover:bg-slate-50 hover:text-[#172033]"
+          ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60"
+          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white"
       }`}
     >
       <span className="flex h-6 w-6 items-center justify-center text-base">
@@ -736,18 +734,18 @@ function StatCard({
   label: string;
 }) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+    <div className="rounded-3xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
       <div className="flex items-center justify-between">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
           {icon}
         </div>
 
-        <span className="text-emerald-500">↗</span>
+        <span className="text-emerald-500 font-bold">↗</span>
       </div>
 
-      <p className="mt-5 text-2xl font-black">{value}</p>
+      <p className="mt-4 text-2xl font-black text-slate-900 dark:text-white">{value}</p>
 
-      <p className="mt-1 text-xs font-semibold text-slate-400">
+      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
         {label}
       </p>
     </div>
