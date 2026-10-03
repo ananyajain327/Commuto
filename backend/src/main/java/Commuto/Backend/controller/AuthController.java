@@ -58,4 +58,21 @@ public class AuthController {
                 new LoginResponse(token, user)
         );
     }
+
+    // =========================
+    // GOOGLE AUTH
+    // =========================
+
+    @PostMapping("/google")
+    public ResponseEntity<LoginResponse> googleAuth(
+            @Valid @RequestBody Commuto.Backend.dto.GoogleAuthRequest request) {
+
+        User user = userService.googleAuth(request);
+
+        String token = jwtService.generateToken(user);
+
+        return ResponseEntity.ok(
+                new LoginResponse(token, user)
+        );
+    }
 }

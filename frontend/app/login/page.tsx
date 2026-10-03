@@ -42,17 +42,18 @@ export default function LoginPage() {
   const handleGoogleLoginAccount = async (fullName: string, accountEmail: string, role: "PASSENGER" | "DRIVER" | "ADMIN") => {
     setShowGoogleModal(false);
     setEmail(accountEmail);
-    // Use the demo password or auto-authenticate
-    const pwd = role === "ADMIN" ? "admin123" : "password123";
-    setPassword(pwd);
 
     try {
       setLoading(true);
       setError("");
-      const response = await fetch(apiUrl("/api/auth/login"), {
+      const response = await fetch(apiUrl("/api/auth/google"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: accountEmail, password: pwd }),
+        body: JSON.stringify({
+          email: accountEmail.trim().toLowerCase(),
+          fullName,
+          role,
+        }),
       });
 
       const data = (await response.json()) as LoginResponse;
@@ -71,8 +72,8 @@ export default function LoginPage() {
         else if (data.role === "ADMIN") router.push("/admin");
         else router.push("/dashboard");
       } else {
-        // Fallback for custom Google account: generate session
-        localStorage.setItem("token", "google-demo-token-" + Date.now());
+        // Fallback for custom Google account if backend error
+        localStorage.setItem("token", "google-token-" + Date.now());
         localStorage.setItem(
           "user",
           JSON.stringify({
@@ -87,7 +88,7 @@ export default function LoginPage() {
         else router.push("/dashboard");
       }
     } catch {
-      localStorage.setItem("token", "google-demo-token-" + Date.now());
+      localStorage.setItem("token", "google-token-" + Date.now());
       localStorage.setItem(
         "user",
         JSON.stringify({

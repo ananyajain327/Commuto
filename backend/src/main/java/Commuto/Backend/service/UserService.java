@@ -97,4 +97,19 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
+
+    public User googleAuth(Commuto.Backend.dto.GoogleAuthRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        return userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setFullName(request.getFullName() != null && !request.getFullName().isBlank() ? request.getFullName() : email.split("@")[0]);
+            newUser.setPhone(request.getPhone() != null && !request.getPhone().isBlank() ? request.getPhone() : "+919" + (int)(10000000 + Math.random() * 90000000));
+            newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            newUser.setRole(request.getRole() != null ? request.getRole() : User.Role.PASSENGER);
+            newUser.setActive(true);
+            newUser.setVerified(true);
+            return userRepository.save(newUser);
+        });
+    }
 }
