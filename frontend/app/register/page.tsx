@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { apiUrl } from "@/lib/api";
 import ThemeToggle from "@/components/ThemeToggle";
 
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 export default function RegisterPage() {
   const router = useRouter();
 
@@ -30,6 +32,11 @@ export default function RegisterPage() {
 
     if (!fullName.trim() || !email.trim() || !phone.trim() || !password) {
       setError("Please fill in all required fields.");
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setError("Please enter a valid email address format (e.g. user@example.com).");
       return;
     }
 

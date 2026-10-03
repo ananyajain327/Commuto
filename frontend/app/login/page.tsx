@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { apiUrl } from "@/lib/api";
 import ThemeToggle from "@/components/ThemeToggle";
 
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 interface LoginResponse {
   token: string;
   userId: number;
@@ -34,15 +36,24 @@ export default function LoginPage() {
 
   const handleGoogleClick = () => {
     const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (googleClientId) {
+    if (googleClientId && googleClientId.trim().length > 5) {
+      // Standard Google OAuth2 Authorization Code / Implicit Token flow
       const redirectUri = typeof window !== "undefined" ? `${window.location.origin}/login` : "";
-      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=email%20profile`;
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
+        googleClientId.trim()
+      )}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=email%20profile`;
       return;
     }
+    // If no client ID configured yet in .env, open the authenticated account selector
     setShowGoogleModal(true);
   };
 
   const handleGoogleLoginAccount = async (fullName: string, accountEmail: string, role: "PASSENGER" | "DRIVER" | "ADMIN") => {
+    if (!EMAIL_REGEX.test(accountEmail.trim())) {
+      setError("Please enter a valid Google email format (e.g. user@gmail.com).");
+      return;
+    }
+
     setShowGoogleModal(false);
     setEmail(accountEmail);
 
@@ -81,7 +92,7 @@ export default function LoginPage() {
           JSON.stringify({
             userId: 999,
             fullName,
-            email: accountEmail,
+            email: accountEmail.trim().toLowerCase(),
             role,
           })
         );
@@ -96,7 +107,7 @@ export default function LoginPage() {
         JSON.stringify({
           userId: 999,
           fullName,
-          email: accountEmail,
+          email: accountEmail.trim().toLowerCase(),
           role,
         })
       );
@@ -115,6 +126,11 @@ export default function LoginPage() {
 
     if (!email.trim() || !password) {
       setError("Please enter your email and password.");
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setError("Please enter a valid email address format (e.g. user@example.com).");
       return;
     }
 
@@ -506,7 +522,7 @@ export default function LoginPage() {
                   />
                   <input
                     type="email"
-                    placeholder="Google Email (@gmail.com)"
+                    placeholder="Google Email (e.g. yourname@gmail.com)"
                     value={customGoogleEmail}
                     onChange={(e) => setCustomGoogleEmail(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
@@ -522,7 +538,14 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (!customGoogleEmail.trim()) return;
+                      if (!customGoogleEmail.trim()) {
+                        setError("Please enter a Google email.");
+                        return;
+                      }
+                      if (!EMAIL_REGEX.test(customGoogleEmail.trim())) {
+                        setError("Please enter a valid Google email format (e.g. user@gmail.com).");
+                        return;
+                      }
                       handleGoogleLoginAccount(
                         customGoogleName.trim() || "Google User",
                         customGoogleEmail.trim(),
