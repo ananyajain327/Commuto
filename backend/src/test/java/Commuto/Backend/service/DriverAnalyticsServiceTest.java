@@ -3,6 +3,7 @@ package Commuto.Backend.service;
 import Commuto.Backend.dto.DriverAnalyticsResponse;
 import Commuto.Backend.entity.Ride;
 import Commuto.Backend.entity.User;
+import Commuto.Backend.repository.CustomRideRequestRepository;
 import Commuto.Backend.repository.RideRepository;
 import Commuto.Backend.repository.RideRequestRepository;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ class DriverAnalyticsServiceTest {
 
     @Mock
     private RideRequestRepository rideRequestRepository;
+
+    @Mock
+    private CustomRideRequestRepository customRideRequestRepository;
 
     @Mock
     private RatingService ratingService;
@@ -72,6 +76,8 @@ class DriverAnalyticsServiceTest {
         when(ratingService.getAverageRating(driver)).thenReturn(4.9);
         when(ratingService.getRatingCount(driver)).thenReturn(12L);
         when(rideRequestRepository.findByRide_DriverAndStatusOrderByCreatedAtDesc(driver, Commuto.Backend.entity.RideRequest.RequestStatus.PENDING))
+                .thenReturn(Collections.emptyList());
+        when(customRideRequestRepository.findByStatusOrderByCreatedAtDesc(Commuto.Backend.entity.CustomRideRequest.RequestStatus.OPEN))
                 .thenReturn(Collections.emptyList());
 
         DriverAnalyticsResponse analytics = driverAnalyticsService.getDriverAnalytics(driver);

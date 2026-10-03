@@ -178,7 +178,26 @@ function RideRequestContent() {
           return;
         }
 
-        // Check if there is an existing matching ride in backend
+        // Send custom broadcast request to backend API so all drivers can see it live
+        await fetch(apiUrl("/api/custom-ride-requests"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            startLocation: customFrom.trim(),
+            destination: customTo.trim(),
+            rideDate: customDate,
+            departureTime: customTime,
+            seatsNeeded: seats,
+            budgetPerSeat: Number(budget) || 0,
+            womenOnly,
+            note: note.trim(),
+          }),
+        }).catch(() => null);
+
+        // Also check if there is an existing matching ride in backend
         const searchRes = await fetch(
           apiUrl(`/api/rides/search?from=${encodeURIComponent(customFrom.trim())}&to=${encodeURIComponent(customTo.trim())}`),
           { headers: { Authorization: `Bearer ${token}` } }
@@ -207,7 +226,7 @@ function RideRequestContent() {
               pickupPreference: customFrom.trim(),
               note: note.trim() || `Custom travel request for ${customDate} at ${customTime}. Budget: ₹${budget}/seat.`,
             }),
-          });
+          }).catch(() => null);
         }
 
         // Save custom request locally so passenger can see in My Requests

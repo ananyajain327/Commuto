@@ -1,5 +1,6 @@
 package Commuto.Backend.dto;
 
+import Commuto.Backend.entity.CustomRideRequest;
 import Commuto.Backend.entity.RideRequest;
 
 import java.time.LocalDate;
@@ -29,6 +30,21 @@ public record DriverRequestSummaryDto(
                 request.getRide().getDepartureTime(),
                 request.getRide().getExpectedFare(),
                 request.getStatus().name()
+        );
+    }
+
+    public DriverRequestSummaryDto(CustomRideRequest customReq, double passengerRating) {
+        this(
+                customReq.getId(),
+                null,
+                customReq.getPassenger().getFullName(),
+                customReq.getPassenger().getPhone(),
+                passengerRating,
+                customReq.getStartLocation() + " → " + customReq.getDestination(),
+                customReq.getRideDate(),
+                customReq.getDepartureTime(),
+                customReq.getBudgetPerSeat() * customReq.getSeatsNeeded(),
+                customReq.getStatus().name()
         );
     }
 }

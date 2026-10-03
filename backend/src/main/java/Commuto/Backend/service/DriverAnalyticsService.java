@@ -3,9 +3,11 @@ package Commuto.Backend.service;
 import Commuto.Backend.dto.DriverAnalyticsResponse;
 import Commuto.Backend.dto.DriverRequestSummaryDto;
 import Commuto.Backend.dto.DriverRideSummaryDto;
+import Commuto.Backend.entity.CustomRideRequest;
 import Commuto.Backend.entity.Ride;
 import Commuto.Backend.entity.RideRequest;
 import Commuto.Backend.entity.User;
+import Commuto.Backend.repository.CustomRideRequestRepository;
 import Commuto.Backend.repository.RideRepository;
 import Commuto.Backend.repository.RideRequestRepository;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,14 +25,17 @@ public class DriverAnalyticsService {
 
     private final RideRepository rideRepository;
     private final RideRequestRepository rideRequestRepository;
+    private final CustomRideRequestRepository customRideRequestRepository;
     private final RatingService ratingService;
 
     public DriverAnalyticsService(
             RideRepository rideRepository,
             RideRequestRepository rideRequestRepository,
+            CustomRideRequestRepository customRideRequestRepository,
             RatingService ratingService) {
         this.rideRepository = rideRepository;
         this.rideRequestRepository = rideRequestRepository;
+        this.customRideRequestRepository = customRideRequestRepository;
         this.ratingService = ratingService;
     }
 
@@ -103,13 +109,25 @@ public class DriverAnalyticsService {
                 RideRequest.RequestStatus.PENDING
         );
 
-        List<DriverRequestSummaryDto> pendingRequests = pendingRequestsEntities.stream()
+        List<DriverRequestSummaryDto> pendingRequests = new ArrayList<>(pendingRequestsEntities.stream()
                 .limit(5)
                 .map(req -> {
                     Double pRating = ratingService.getAverageRating(req.getPassenger());
                     return new DriverRequestSummaryDto(req, pRating != null ? pRating : 5.0);
                 })
-                .toList();
+                .toList());
+
+        // If direct requests are fewer than 5, include open broadcasts so drivers can immediately see passengers needing rides
+        if (pendingRequests.size() < 5) {
+            List<CustomRideRequest> openCustomRequests = customRideRequestRepository.findByStatusOrderByCreatedAtDesc(
+                    CustomRideRequest.RequestStatus.OPEN
+            );
+            for (CustomRideRequest customReq : openCustomRequests) {
+                if (pendingRequests.size() >= 5) break;
+                Double pRating = ratingService.getAverageRating(customReq.getPassenger());
+                pendingRequests.add(new DriverRequestSummaryDto(customReq, pRating != null ? pRating : 5.0));
+            }
+        }
 
         return new DriverAnalyticsResponse(
                 driver.getFullName(),
