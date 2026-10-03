@@ -1,23 +1,30 @@
 package Commuto.Backend.service;
+
+import Commuto.Backend.dto.GoogleAuthRequest;
 import Commuto.Backend.dto.LoginRequest;
 import Commuto.Backend.dto.RegisterRequest;
+import Commuto.Backend.dto.UpdateProfileRequest;
+import Commuto.Backend.dto.ChangePasswordRequest;
 import Commuto.Backend.entity.User;
 import Commuto.Backend.repository.UserRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import Commuto.Backend.dto.UpdateProfileRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final GoogleAuthVerifierService googleAuthVerifierService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(
+            UserRepository userRepository,
+            GoogleAuthVerifierService googleAuthVerifierService) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
+        this.googleAuthVerifierService = googleAuthVerifierService;
     }
 
     public User registerUser(RegisterRequest request) {
@@ -54,6 +61,7 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
     public User loginUser(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
@@ -72,9 +80,8 @@ public class UserService {
         }
 
         return user;
-
-
     }
+
     public User updateProfile(
             User user,
             UpdateProfileRequest request) {
@@ -87,10 +94,10 @@ public class UserService {
 
     public void changePassword(
             User user,
-            Commuto.Backend.dto.ChangePasswordRequest request) {
+            ChangePasswordRequest request) {
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new org.springframework.web.server.ResponseStatusException(
+            throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Current password is incorrect"
             );
         }
@@ -99,15 +106,30 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public User googleAuth(Commuto.Backend.dto.GoogleAuthRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
-        return userRepository.findByEmail(email).orElseGet(() -> {
+    public User googleAuth(GoogleAuthRequest request) {
+        GoogleAuthVerifierService.VerifiedGoogleUser verifiedUser =
+                googleAuthVerifierService.verifyToken(request.getIdToken(), request.getAccessToken());
+
+        String verifiedEmail = verifiedUser.getEmail();
+
+        return userRepository.findByEmail(verifiedEmail).orElseGet(() -> {
             User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setFullName(request.getFullName() != null && !request.getFullName().isBlank() ? request.getFullName() : email.split("@")[0]);
-            newUser.setPhone(request.getPhone() != null && !request.getPhone().isBlank() ? request.getPhone() : "+919" + (int)(10000000 + Math.random() * 90000000));
+            newUser.setEmail(verifiedEmail);
+            newUser.setFullName(verifiedUser.getFullName());
+            newUser.setPhone(request.getPhone() != null && !request.getPhone().isBlank()
+                    ? request.getPhone().trim()
+                    : "+919" + (int)(10000000 + Math.random() * 90000000));
             newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
-            newUser.setRole(request.getRole() != null ? request.getRole() : User.Role.PASSENGER);
+
+            // Never allow public Google registration to elevate to ADMIN
+            User.Role role = request.getRole();
+            if (role == null || role == User.Role.ADMIN) {
+                role = User.Role.PASSENGER;
+            }
+            newUser.setRole(role);
+            if (request.getGender() != null) {
+                newUser.setGender(request.getGender());
+            }
             newUser.setActive(true);
             newUser.setVerified(true);
             return userRepository.save(newUser);
