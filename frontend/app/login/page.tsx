@@ -179,30 +179,30 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] text-stone-900 transition-colors duration-200 dark:bg-[#12100e] dark:text-stone-100">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
       <div className="grid min-h-screen lg:grid-cols-2">
         {/* LEFT — BRAND SECTION (DESKTOP) */}
-        <section className="relative hidden overflow-hidden bg-[#1c1917] lg:flex border-r border-stone-800">
-          <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-amber-600/20 blur-3xl" />
-          <div className="absolute -bottom-40 -right-20 h-125 w-125 rounded-full bg-amber-700/15 blur-3xl" />
+        <section className="relative hidden overflow-hidden bg-slate-950 lg:flex border-r border-slate-800">
+          <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-emerald-600/20 blur-3xl" />
+          <div className="absolute -bottom-40 -right-20 h-125 w-125 rounded-full bg-emerald-800/15 blur-3xl" />
 
           <div className="relative z-10 flex w-full flex-col justify-between p-10 xl:p-14">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-700 font-black text-xl text-white shadow-lg dark:bg-amber-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 font-black text-xl text-white shadow-lg dark:bg-emerald-500">
                 C
               </div>
               <div>
                 <p className="text-xl font-extrabold tracking-tight text-white">
                   Commuto
                 </p>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                   Smart Mobility
                 </p>
               </div>
             </Link>
 
             <div className="max-w-xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-900/40 bg-amber-950/30 px-4 py-2 text-xs font-semibold text-amber-300 backdrop-blur">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-900/50 bg-emerald-950/40 px-4 py-2 text-xs font-semibold text-emerald-300 backdrop-blur">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 Welcome back to Commuto
               </div>
@@ -210,10 +210,10 @@ export default function LoginPage() {
               <h1 className="text-4xl font-black leading-[1.1] tracking-tight text-white xl:text-5xl">
                 Your journey
                 <br />
-                starts <span className="text-amber-400">here.</span>
+                starts <span className="text-emerald-400">here.</span>
               </h1>
 
-              <p className="mt-5 max-w-lg text-sm leading-relaxed text-stone-400">
+              <p className="mt-5 max-w-lg text-sm leading-relaxed text-slate-400">
                 Connect with people going your way, share your journey, split travel costs and
                 travel smarter with Commuto.
               </p>
@@ -237,7 +237,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-slate-500">
               © 2026 Commuto · Share the Ride. Split the Fare. Travel Smarter.
             </p>
           </div>
@@ -248,8 +248,8 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
             {/* Top Bar */}
             <div className="mb-6 flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-2 text-stone-900 dark:text-white">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-700 font-black text-white text-base shadow-md dark:bg-amber-600">
+              <Link href="/" className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 font-black text-white text-base shadow-md dark:bg-emerald-500">
                   C
                 </div>
                 <span className="font-bold text-base tracking-tight">Commuto</span>
@@ -258,7 +258,7 @@ export default function LoginPage() {
                 <ThemeToggle />
                 <Link
                   href="/"
-                  className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-bold text-stone-600 hover:bg-stone-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 transition"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 transition"
                 >
                   Home
                 </Link>
@@ -267,13 +267,13 @@ export default function LoginPage() {
 
             {/* Heading */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-400">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-400">
                 Welcome back
               </p>
-              <h2 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+              <h2 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
                 Sign in to Commuto
               </h2>
-              <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+              <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                 Continue your journey and discover smarter ways to commute.
               </p>
             </div>
@@ -286,32 +286,32 @@ export default function LoginPage() {
             )}
 
             {/* Quick Demo Accounts */}
-            <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50/70 p-3.5 dark:border-amber-900/40 dark:bg-amber-950/30">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+            <div className="mt-5 rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-3.5 dark:border-emerald-900/40 dark:bg-emerald-950/30">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
                 ⚡ 1-Click Demo Accounts
               </p>
-              <p className="mt-0.5 text-[11px] text-stone-500 dark:text-stone-400">
+              <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                 Click any role to autofill test credentials:
               </p>
               <div className="mt-2.5 flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => fillDemoAccount("driver@commuto.com", "password123")}
-                  className="rounded-xl border border-amber-200 bg-white px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs transition hover:bg-amber-100 dark:border-amber-800 dark:bg-stone-900 dark:text-amber-200 dark:hover:bg-amber-900/50 cursor-pointer"
+                  className="rounded-xl border border-emerald-200 bg-white px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-2xs transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-200 dark:hover:bg-emerald-900/50 cursor-pointer"
                 >
                   🚗 Driver
                 </button>
                 <button
                   type="button"
                   onClick={() => fillDemoAccount("passenger@commuto.com", "password123")}
-                  className="rounded-xl border border-amber-200 bg-white px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs transition hover:bg-amber-100 dark:border-amber-800 dark:bg-stone-900 dark:text-amber-200 dark:hover:bg-amber-900/50 cursor-pointer"
+                  className="rounded-xl border border-emerald-200 bg-white px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-2xs transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-200 dark:hover:bg-emerald-900/50 cursor-pointer"
                 >
                   👤 Passenger
                 </button>
                 <button
                   type="button"
                   onClick={() => fillDemoAccount("admin@commuto.com", "admin123")}
-                  className="rounded-xl border border-amber-200 bg-white px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs transition hover:bg-amber-100 dark:border-amber-800 dark:bg-stone-900 dark:text-amber-200 dark:hover:bg-amber-900/50 cursor-pointer"
+                  className="rounded-xl border border-emerald-200 bg-white px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-2xs transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-200 dark:hover:bg-emerald-900/50 cursor-pointer"
                 >
                   🛡️ Admin
                 </button>
@@ -323,7 +323,7 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="mb-1.5 block text-xs font-bold text-stone-700 dark:text-stone-300"
+                  className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300"
                 >
                   Email address
                 </label>
@@ -334,7 +334,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
                 />
               </div>
 
@@ -342,13 +342,13 @@ export default function LoginPage() {
                 <div className="mb-1.5 flex items-center justify-between">
                   <label
                     htmlFor="password"
-                    className="text-xs font-bold text-stone-700 dark:text-stone-300"
+                    className="text-xs font-bold text-slate-700 dark:text-slate-300"
                   >
                     Password
                   </label>
                   <button
                     type="button"
-                    className="text-xs font-bold text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 transition"
+                    className="text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition"
                     onClick={() =>
                       alert("Password recovery: Use demo accounts above or register a new account.")
                     }
@@ -365,13 +365,13 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 pr-12 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 pr-12 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
                   />
 
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? "🙈" : "👁️"}
@@ -382,10 +382,10 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`h-12 w-full rounded-xl text-sm font-bold text-white shadow-md shadow-amber-900/20 transition cursor-pointer ${
+                className={`h-12 w-full rounded-xl text-sm font-bold text-white shadow-md shadow-emerald-900/20 transition cursor-pointer ${
                   loading
-                    ? "cursor-not-allowed bg-stone-400"
-                    : "bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500"
+                    ? "cursor-not-allowed bg-slate-400"
+                    : "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400"
                 }`}
               >
                 {loading ? "Signing in..." : "Sign in →"}
@@ -393,17 +393,17 @@ export default function LoginPage() {
             </form>
 
             <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-stone-200 dark:bg-stone-800" />
-              <span className="text-xs font-semibold text-stone-400">
+              <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+              <span className="text-xs font-semibold text-slate-400">
                 OR
               </span>
-              <div className="h-px flex-1 bg-stone-200 dark:bg-stone-800" />
+              <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
             </div>
 
             <button
               type="button"
               onClick={handleGoogleClick}
-              className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-stone-200 bg-white text-xs sm:text-sm font-bold text-stone-700 shadow-2xs transition hover:bg-stone-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800 cursor-pointer"
+              className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
             >
               <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
                 <path
@@ -426,11 +426,11 @@ export default function LoginPage() {
               Continue with Google
             </button>
 
-            <p className="mt-6 text-center text-xs text-stone-500 dark:text-stone-400">
+            <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
               Don&apos;t have an account?{" "}
               <Link
                 href="/register"
-                className="font-bold text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 transition"
+                className="font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition"
               >
                 Sign up for free
               </Link>
@@ -442,15 +442,15 @@ export default function LoginPage() {
       {/* Google Sign-in Modal */}
       {showGoogleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-sm rounded-3xl border border-stone-200 bg-white p-6 shadow-2xl dark:border-stone-800 dark:bg-stone-900">
+          <div className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-black text-stone-900 dark:text-white">
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
                 Choose Google Account
               </h3>
               <button
                 type="button"
                 onClick={() => setShowGoogleModal(false)}
-                className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
               >
                 ✕
               </button>
@@ -460,38 +460,38 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleGoogleLoginAccount("Ananya Jain", "ananya.jain@google.com", "PASSENGER")}
-                className="flex w-full items-center gap-3 rounded-2xl border border-stone-200 p-3 text-left transition hover:bg-amber-50/50 dark:border-stone-700 dark:hover:bg-amber-950/20 cursor-pointer"
+                className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 p-3 text-left transition hover:bg-emerald-50/50 dark:border-slate-700 dark:hover:bg-emerald-950/20 cursor-pointer"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 font-bold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                   AJ
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-stone-900 dark:text-white">Ananya Jain</p>
-                  <p className="text-[11px] text-stone-400">ananya.jain@google.com (Passenger)</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">Ananya Jain</p>
+                  <p className="text-[11px] text-slate-400">ananya.jain@google.com (Passenger)</p>
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleGoogleLoginAccount("Vikram Sharma", "vikram.driver@google.com", "DRIVER")}
-                className="flex w-full items-center gap-3 rounded-2xl border border-stone-200 p-3 text-left transition hover:bg-amber-50/50 dark:border-stone-700 dark:hover:bg-amber-950/20 cursor-pointer"
+                className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 p-3 text-left transition hover:bg-emerald-50/50 dark:border-slate-700 dark:hover:bg-emerald-950/20 cursor-pointer"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                   VS
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-stone-900 dark:text-white">Vikram Sharma</p>
-                  <p className="text-[11px] text-stone-400">vikram.driver@google.com (Driver)</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">Vikram Sharma</p>
+                  <p className="text-[11px] text-slate-400">vikram.driver@google.com (Driver)</p>
                 </div>
               </button>
             </div>
 
-            <div className="mt-4 border-t border-stone-100 pt-3 dark:border-stone-800">
+            <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
               {!showCustomGoogleInput ? (
                 <button
                   type="button"
                   onClick={() => setShowCustomGoogleInput(true)}
-                  className="w-full text-center text-xs font-bold text-amber-700 hover:underline dark:text-amber-400 cursor-pointer"
+                  className="w-full text-center text-xs font-bold text-emerald-600 hover:underline dark:text-emerald-400 cursor-pointer"
                 >
                   + Use another Google Account
                 </button>
@@ -502,19 +502,19 @@ export default function LoginPage() {
                     placeholder="Your Full Name"
                     value={customGoogleName}
                     onChange={(e) => setCustomGoogleName(e.target.value)}
-                    className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs outline-none dark:border-stone-700 dark:bg-stone-800 dark:text-white"
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                   <input
                     type="email"
                     placeholder="Google Email (@gmail.com)"
                     value={customGoogleEmail}
                     onChange={(e) => setCustomGoogleEmail(e.target.value)}
-                    className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs outline-none dark:border-stone-700 dark:bg-stone-800 dark:text-white"
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                   <select
                     value={customGoogleRole}
                     onChange={(e) => setCustomGoogleRole(e.target.value as "PASSENGER" | "DRIVER")}
-                    className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs outline-none dark:border-stone-700 dark:bg-stone-800 dark:text-white"
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   >
                     <option value="PASSENGER">Passenger Account</option>
                     <option value="DRIVER">Driver Account</option>
@@ -529,7 +529,7 @@ export default function LoginPage() {
                         customGoogleRole
                       );
                     }}
-                    className="w-full rounded-xl bg-amber-700 py-2 text-xs font-bold text-white shadow-xs hover:bg-amber-800 dark:bg-amber-600 cursor-pointer"
+                    className="w-full rounded-xl bg-emerald-600 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 dark:bg-emerald-500 cursor-pointer"
                   >
                     Sign In with this Account
                   </button>
@@ -553,13 +553,13 @@ function Feature({
   description: string;
 }) {
   return (
-    <div className="flex items-start gap-4 rounded-2xl border border-stone-800 bg-stone-900/60 p-4 backdrop-blur">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-800 text-lg">
+    <div className="flex items-start gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-lg">
         {icon}
       </div>
       <div>
         <h4 className="text-sm font-bold text-white">{title}</h4>
-        <p className="mt-0.5 text-xs text-stone-400">{description}</p>
+        <p className="mt-0.5 text-xs text-slate-400">{description}</p>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { useTheme } from "./ThemeProvider";
 const emptySubscribe = () => () => {};
 
 export default function ThemeToggle({ className = "" }: { className?: string }) {
-  const { theme, setTheme } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
   const mounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -16,61 +16,33 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
   if (!mounted) {
     return (
       <div
-        className={`inline-flex items-center gap-1 rounded-2xl border border-stone-200 bg-white/80 p-1 backdrop-blur-md shadow-2xs dark:border-stone-800 dark:bg-stone-900/80 ${className}`}
+        className={`inline-flex h-9 w-20 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-100 p-1 text-xs font-semibold text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 ${className}`}
         aria-hidden="true"
       >
-        <span className="px-3 py-1 text-xs font-bold text-stone-400">Theme</span>
+        Theme
       </div>
     );
   }
 
   return (
-    <div
-      className={`inline-flex items-center gap-1 rounded-2xl border border-stone-200 bg-white/80 p-1 backdrop-blur-md shadow-2xs transition-colors dark:border-stone-800 dark:bg-stone-900/80 ${className}`}
-      role="group"
-      aria-label="Theme switcher"
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className={`group relative inline-flex h-9 items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs ${
+        isDark
+          ? "border-emerald-900/60 bg-zinc-900 text-emerald-400 hover:border-emerald-700 hover:bg-zinc-800"
+          : "border-zinc-300/90 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
+      } ${className}`}
+      role="switch"
+      aria-checked={isDark}
+      title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
     >
-      <button
-        type="button"
-        onClick={() => setTheme("light")}
-        className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
-          theme === "light"
-            ? "bg-amber-700 text-white shadow-xs dark:bg-amber-600 dark:text-white"
-            : "text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800"
-        }`}
-        title="Light mode"
-      >
-        <span>☀️</span>
-        <span className="hidden sm:inline">Light</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setTheme("dark")}
-        className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
-          theme === "dark"
-            ? "bg-amber-700 text-white shadow-xs dark:bg-amber-600 dark:text-white"
-            : "text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800"
-        }`}
-        title="Dark mode"
-      >
-        <span>🌙</span>
-        <span className="hidden sm:inline">Dark</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setTheme("system")}
-        className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
-          theme === "system"
-            ? "bg-amber-700 text-white shadow-xs dark:bg-amber-600 dark:text-white"
-            : "text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800"
-        }`}
-        title="System default"
-      >
-        <span>💻</span>
-        <span className="hidden sm:inline">System</span>
-      </button>
-    </div>
+      <span className="text-sm transition-transform duration-200 group-hover:scale-110">
+        {isDark ? "🌙" : "☀️"}
+      </span>
+      <span className="font-extrabold tracking-wide">
+        {isDark ? "Dark" : "Light"}
+      </span>
+    </button>
   );
 }

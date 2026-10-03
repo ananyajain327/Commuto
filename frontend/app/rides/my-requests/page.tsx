@@ -155,7 +155,7 @@ export default function MyRequestsPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 font-black text-white text-sm shadow-md">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600 font-black text-white text-sm shadow-md">
                 C
               </span>
               <h1 className="text-xl font-bold tracking-tight">My Ride Requests</h1>
@@ -179,7 +179,7 @@ export default function MyRequestsPage() {
       <section className="mx-auto max-w-5xl space-y-5 px-6 py-8">
         {loading && (
           <div className="py-16 text-center text-slate-500 dark:text-slate-400">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mb-3" />
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent mb-3" />
             Loading your ride requests...
           </div>
         )}
@@ -195,7 +195,7 @@ export default function MyRequestsPage() {
 
         {!loading && !errorMessage && !hasAnyRequests && (
           <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-2xl dark:bg-indigo-950/60 text-indigo-600">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-2xl dark:bg-emerald-950/60 text-emerald-600">
               🚗
             </div>
             <h2 className="mt-4 text-base font-bold text-slate-900 dark:text-slate-100">
@@ -207,7 +207,7 @@ export default function MyRequestsPage() {
             <div className="mt-5 flex justify-center gap-3">
               <Link
                 href="/rides/search"
-                className="rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-indigo-700 transition"
+                className="rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition"
               >
                 Search Available Rides
               </Link>
@@ -228,11 +228,11 @@ export default function MyRequestsPage() {
           return (
             <article
               key={`cb-${broadcast.id}`}
-              className="rounded-2xl border-2 border-amber-200/80 bg-white p-6 shadow-sm dark:border-amber-900/40 dark:bg-slate-900"
+              className="rounded-2xl border-2 border-emerald-200/80 bg-white p-6 shadow-sm dark:border-emerald-900/40 dark:bg-slate-900"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <span className="inline-block rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                  <span className="inline-block rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                     📢 Custom City Broadcast
                   </span>
                   <h2 className="mt-2 text-lg font-bold text-slate-900 dark:text-slate-100">
@@ -245,7 +245,7 @@ export default function MyRequestsPage() {
                     isAccepted
                       ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200"
                       : isPending
-                      ? "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200"
+                      ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
                       : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                   }`}
                 >
@@ -268,7 +268,7 @@ export default function MyRequestsPage() {
                 </div>
                 <div>
                   <dt className="text-[10px] text-slate-400 font-semibold">Your Budget</dt>
-                  <dd className="mt-0.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                  <dd className="mt-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     ₹{broadcast.budgetPerSeat * broadcast.seatsNeeded} (₹{broadcast.budgetPerSeat}/seat)
                   </dd>
                 </div>
@@ -281,7 +281,7 @@ export default function MyRequestsPage() {
               </dl>
 
               {isPending && (
-                <div className="mt-4 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40">
+                <div className="mt-4 rounded-xl bg-emerald-50/60 p-3 text-xs text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40">
                   📡 Broadcast is live! Drivers driving on this route can see your request and accept it.
                 </div>
               )}
@@ -316,7 +316,7 @@ export default function MyRequestsPage() {
             request.status === "ACCEPTED"
               ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
               : request.status === "PENDING"
-              ? "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+              ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
               : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
 
           return (
@@ -360,14 +360,14 @@ export default function MyRequestsPage() {
                 </div>
                 <div>
                   <dt className="text-[10px] text-slate-400 font-semibold">Fare</dt>
-                  <dd className="mt-0.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                  <dd className="mt-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     ₹{Math.round(request.fare)}
                   </dd>
                 </div>
               </dl>
 
               {request.status === "PENDING" && (
-                <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-xs font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40">
+                <p className="mt-4 rounded-xl bg-slate-100 px-4 py-3 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   ⏳ Waiting for the driver to review and accept your booking.
                 </p>
               )}
@@ -394,7 +394,7 @@ export default function MyRequestsPage() {
               <div className="mt-4 flex flex-wrap gap-2.5">
                 <Link
                   href={`/booking/confirmation?requestId=${request.id}`}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition"
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition"
                 >
                   View Details
                 </Link>
@@ -409,7 +409,7 @@ export default function MyRequestsPage() {
                 {request.status === "ACCEPTED" && request.ride.status === "ACTIVE" && (
                   <Link
                     href={`/rides/tracking/${request.ride.id}`}
-                    className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-indigo-700 transition"
+                    className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition"
                   >
                     Live Track Ride
                   </Link>

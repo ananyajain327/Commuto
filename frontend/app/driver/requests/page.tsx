@@ -573,17 +573,17 @@ function BroadcastCard({
   const totalBudget = (broadcast.budgetPerSeat || 0) * (broadcast.seatsNeeded || 1);
 
   return (
-    <div className="rounded-2xl border-2 border-amber-200/80 bg-white p-6 shadow-sm dark:border-amber-900/40 dark:bg-slate-900">
+    <div className="rounded-2xl border-2 border-emerald-200/80 bg-white p-6 shadow-sm dark:border-emerald-900/40 dark:bg-slate-900">
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 font-black text-white text-base shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 font-black text-white text-base shadow-sm">
             {initials}
           </div>
 
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">{passengerName}</h2>
-              <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+              <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 📢 City Broadcast
               </span>
               {broadcast.womenOnly && (
@@ -602,7 +602,7 @@ function BroadcastCard({
 
         <div className="text-right">
           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Offered Budget</p>
-          <p className="text-xl font-extrabold text-amber-600 dark:text-amber-400">
+          <p className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
             ₹{Math.round(totalBudget)}
             <span className="text-xs font-normal text-slate-400 ml-1">
               (₹{broadcast.budgetPerSeat}/seat)
@@ -633,7 +633,7 @@ function BroadcastCard({
             </div>
             <div>
               <p className="text-[10px] font-semibold text-slate-400">Seats Needed</p>
-              <p className="mt-0.5 font-bold text-indigo-600 dark:text-indigo-400">
+              <p className="mt-0.5 font-bold text-emerald-600 dark:text-emerald-400">
                 {broadcast.seatsNeeded} Seat(s)
               </p>
             </div>
@@ -652,7 +652,7 @@ function BroadcastCard({
         <button
           disabled={isActionLoading}
           onClick={() => onAccept(broadcast.id)}
-          className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-bold text-white shadow-md shadow-amber-500/20 hover:bg-amber-600 disabled:opacity-50 transition"
+          className="rounded-xl bg-emerald-600 px-6 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 disabled:opacity-50 transition cursor-pointer"
         >
           {isActionLoading ? "Claiming..." : "⚡ Accept & Pick Up Passenger"}
         </button>

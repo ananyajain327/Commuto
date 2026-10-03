@@ -2,31 +2,26 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "light" | "dark";
 
 interface ThemeContextType {
   theme: Theme;
+  toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
-  resolvedTheme: "light" | "dark";
+  isDark: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "system",
+  theme: "light",
+  toggleTheme: () => {},
   setTheme: () => {},
-  resolvedTheme: "light",
+  isDark: false,
 });
 
-function applyThemeToDOM(theme: Theme): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
-  
+function applyThemeToDOM(theme: Theme) {
+  if (typeof window === "undefined") return;
   const root = document.documentElement;
-  const isDark =
-    theme === "dark" ||
-    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-  const active = isDark ? "dark" : "light";
-
-  if (isDark) {
+  if (theme === "dark") {
     root.classList.add("dark");
     root.setAttribute("data-theme", "dark");
     root.style.colorScheme = "dark";
@@ -35,57 +30,60 @@ function applyThemeToDOM(theme: Theme): "light" | "dark" {
     root.setAttribute("data-theme", "light");
     root.style.colorScheme = "light";
   }
-
-  return active;
 }
 
-function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "system";
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "light";
   try {
-    const stored = localStorage.getItem("commuto_theme") as Theme | null;
-    if (stored === "light" || stored === "dark" || stored === "system") {
+    const stored = localStorage.getItem("commuto_theme");
+    if (stored === "dark" || stored === "light") {
       return stored;
     }
+    // Check user system preference on first visit
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      return "dark";
+    }
   } catch {
-    // Fallback
+    // fallback
   }
-  return "system";
+  return "light";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => {
-    return typeof window !== "undefined" ? applyThemeToDOM(getInitialTheme()) : "light";
-  });
+  const [theme, setThemeState] = useState<Theme>("light");
+  const [mounted, setMounted] = useState(false);
 
-  // Listen to system preference changes if in system mode
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handleChange = () => {
-      if (theme === "system") {
-        const resolved = applyThemeToDOM("system");
-        setResolvedTheme(resolved);
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme]);
+    const initial = getStoredTheme();
+    setThemeState(initial);
+    applyThemeToDOM(initial);
+    setMounted(true);
+  }, []);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
+    applyThemeToDOM(newTheme);
     try {
       localStorage.setItem("commuto_theme", newTheme);
     } catch {
-      // Ignore
+      // ignore
     }
-    const resolved = applyThemeToDOM(newTheme);
-    setResolvedTheme(resolved);
+  };
+
+  const toggleTheme = () => {
+    const nextTheme: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        toggleTheme,
+        setTheme,
+        isDark: theme === "dark",
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

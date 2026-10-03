@@ -92,19 +92,19 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] text-stone-900 transition-colors dark:bg-[#12100e] dark:text-stone-100 flex flex-col justify-between">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100 flex flex-col justify-between">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-30 border-b border-stone-200/80 bg-[#faf8f5]/90 px-6 py-3.5 backdrop-blur-md dark:border-stone-800/80 dark:bg-[#12100e]/90">
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-slate-50/90 px-6 py-3.5 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/90">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-700 font-bold text-lg text-white shadow-2xs transition group-hover:scale-105 dark:bg-amber-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 font-bold text-lg text-white shadow-2xs transition group-hover:scale-105 dark:bg-emerald-500">
               C
             </div>
             <div>
-              <span className="text-lg font-black tracking-tight text-stone-900 dark:text-white">
+              <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
                 Commuto
               </span>
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-400">
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
                 Smart Mobility
               </p>
             </div>
@@ -114,7 +114,7 @@ export default function RegisterPage() {
             <ThemeToggle />
             <Link
               href="/login"
-              className="rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 hover:bg-stone-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800 transition shadow-2xs"
+              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 transition shadow-2xs"
             >
               Log in
             </Link>
@@ -124,16 +124,16 @@ export default function RegisterPage() {
 
       {/* Main Container */}
       <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
-        <div className="w-full max-w-lg rounded-3xl border border-stone-200/80 bg-white p-6 sm:p-10 shadow-xl dark:border-stone-800 dark:bg-stone-900">
+        <div className="w-full max-w-lg rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-10 shadow-xl dark:border-slate-800 dark:bg-slate-900">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-xs font-bold text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
               <span>🚀</span> Join the Commuto Community
             </div>
 
-            <h1 className="mt-4 text-2xl sm:text-3xl font-black tracking-tight text-stone-900 dark:text-white">
+            <h1 className="mt-4 text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
               Create your account
             </h1>
-            <p className="mt-1.5 text-xs sm:text-sm text-stone-500 dark:text-stone-400">
+            <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
               Start sharing rides, splitting costs, and connecting with verified commuters.
             </p>
           </div>
@@ -153,7 +153,7 @@ export default function RegisterPage() {
 
           {/* Role selector */}
           <div className="mt-6">
-            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Choose your role
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -162,8 +162,8 @@ export default function RegisterPage() {
                 onClick={() => setRole("PASSENGER")}
                 className={`flex flex-col items-start rounded-2xl border p-4 text-left transition cursor-pointer ${
                   role === "PASSENGER"
-                    ? "border-amber-700 bg-amber-50/60 text-amber-900 shadow-xs dark:border-amber-500 dark:bg-amber-950/30 dark:text-amber-200"
-                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300 dark:hover:bg-stone-800/80"
+                    ? "border-emerald-600 bg-emerald-50/60 text-emerald-900 shadow-xs dark:border-emerald-500 dark:bg-emerald-950/30 dark:text-emerald-200"
+                    : "border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300 dark:hover:bg-slate-800/80"
                 }`}
               >
                 <span className="text-xl">👤</span>
@@ -176,8 +176,8 @@ export default function RegisterPage() {
                 onClick={() => setRole("DRIVER")}
                 className={`flex flex-col items-start rounded-2xl border p-4 text-left transition cursor-pointer ${
                   role === "DRIVER"
-                    ? "border-amber-700 bg-amber-50/60 text-amber-900 shadow-xs dark:border-amber-500 dark:bg-amber-950/30 dark:text-amber-200"
-                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300 dark:hover:bg-stone-800/80"
+                    ? "border-emerald-600 bg-emerald-50/60 text-emerald-900 shadow-xs dark:border-emerald-500 dark:bg-emerald-950/30 dark:text-emerald-200"
+                    : "border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300 dark:hover:bg-slate-800/80"
                 }`}
               >
                 <span className="text-xl">🚗</span>
@@ -189,7 +189,7 @@ export default function RegisterPage() {
 
           {/* Gender selector */}
           <div className="mt-5">
-            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Gender
             </label>
             <div className="grid grid-cols-3 gap-2.5">
@@ -198,8 +198,8 @@ export default function RegisterPage() {
                 onClick={() => setGender("MALE")}
                 className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-xs font-bold transition cursor-pointer ${
                   gender === "MALE"
-                    ? "border-amber-700 bg-amber-50/70 text-amber-900 shadow-2xs dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-200"
-                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300"
+                    ? "border-emerald-600 bg-emerald-50/70 text-emerald-900 shadow-2xs dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-200"
+                    : "border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300"
                 }`}
               >
                 <span>👨</span>
@@ -211,8 +211,8 @@ export default function RegisterPage() {
                 onClick={() => setGender("FEMALE")}
                 className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-xs font-bold transition cursor-pointer ${
                   gender === "FEMALE"
-                    ? "border-amber-700 bg-amber-50/70 text-amber-900 shadow-2xs dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-200"
-                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300"
+                    ? "border-emerald-600 bg-emerald-50/70 text-emerald-900 shadow-2xs dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-200"
+                    : "border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300"
                 }`}
               >
                 <span>👩</span>
@@ -224,8 +224,8 @@ export default function RegisterPage() {
                 onClick={() => setGender("OTHER")}
                 className={`flex items-center justify-center gap-2 rounded-2xl border p-3 text-xs font-bold transition cursor-pointer ${
                   gender === "OTHER"
-                    ? "border-amber-700 bg-amber-50/70 text-amber-900 shadow-2xs dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-200"
-                    : "border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70 dark:border-stone-800 dark:bg-stone-800/40 dark:text-stone-300"
+                    ? "border-emerald-600 bg-emerald-50/70 text-emerald-900 shadow-2xs dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-200"
+                    : "border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300"
                 }`}
               >
                 <span>✨</span>
@@ -237,7 +237,7 @@ export default function RegisterPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="mb-1.5 block text-xs font-bold text-stone-700 dark:text-stone-300">
+              <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
                 Full Name
               </label>
               <input
@@ -246,13 +246,13 @@ export default function RegisterPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Ananya Jain"
-                className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+                className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
               />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-stone-700 dark:text-stone-300">
+                <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
                   Email Address
                 </label>
                 <input
@@ -261,12 +261,12 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-stone-700 dark:text-stone-300">
+                <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
                   Phone Number
                 </label>
                 <input
@@ -275,13 +275,13 @@ export default function RegisterPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-bold text-stone-700 dark:text-stone-300">
+              <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
                 Password
               </label>
               <div className="relative">
@@ -291,12 +291,12 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Minimum 8 characters"
-                  className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3.5 pr-12 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-amber-700 focus:ring-4 focus:ring-amber-100 dark:border-stone-800 dark:bg-stone-900 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500 dark:focus:ring-amber-950"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 pr-12 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? "🙈" : "👁️"}
@@ -307,21 +307,21 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`h-12 w-full rounded-xl text-sm font-extrabold text-white shadow-md shadow-amber-900/20 transition cursor-pointer ${
+              className={`h-12 w-full rounded-xl text-sm font-extrabold text-white shadow-md shadow-emerald-900/20 transition cursor-pointer ${
                 loading
-                  ? "cursor-not-allowed bg-stone-400"
-                  : "bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 active:scale-95"
+                  ? "cursor-not-allowed bg-slate-400"
+                  : "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 active:scale-95"
               }`}
             >
               {loading ? "Creating your account..." : "Complete Registration →"}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-stone-500 dark:text-stone-400">
+          <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
             Already have an account?{" "}
             <Link
               href="/login"
-              className="font-bold text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 transition"
+              className="font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition"
             >
               Sign in here
             </Link>
@@ -330,7 +330,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-stone-200 bg-white/50 py-6 text-center text-xs text-stone-400 dark:border-stone-800 dark:bg-stone-900/40">
+      <footer className="border-t border-slate-200 bg-white/50 py-6 text-center text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900/40">
         © 2026 Commuto · Smart Mobility & Safe Carpooling.
       </footer>
     </main>
